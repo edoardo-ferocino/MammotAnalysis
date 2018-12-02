@@ -28,6 +28,11 @@ AllCounts = sum(A,4);
 CountRatesImage = AllCounts./AcqTime;
 Xv = linspace(CH.LoopFirst(1),CH.LoopLast(1),CH.LoopNum(1));
 Yv = linspace(CH.LoopFirst(2),CH.LoopLast(2),CH.LoopNum(2));
+if (CH.LoopFirst(1)<CH.LoopLast(1))
+    Xv=flip(Xv); isXDirReverse = true;
+else
+    isXDirReverse = false;
+end
 if isfield(H,'FH')
     H.FH(end+1) = FFS('Name','Count rates per channel');
 else
@@ -40,6 +45,7 @@ for ich = 1 : NumChan
     imagesc(Xv,Yv,CountRatesImage(:,:,ich)./AcqTime);
     colormap pink, shading interp, axis equal;
     %subH(ich).YDir = 'reverse';
+    if(isXDirReverse), subH(ich).XDir = 'reverse'; end
     colorbar
     title(num2str(ich));
 end
@@ -60,6 +66,7 @@ for iw = 1:numel(Wavelengths)
     imagesc(Xv,Yv,Wave(iw).CountsAllChan./AcqTime);
     colormap pink, shading interp, axis equal;
     %subH(iw).YDir = 'reverse';
+    if(isXDirReverse) subH(iw).XDir = 'reverse'; end
     colorbar
     title(num2str(Wavelengths(iw)));
 end
@@ -70,11 +77,13 @@ CountRatesImageAllChan=sum(CountRatesImage,3);
 subplot1(1,1); subplot1(1);
 imh = imagesc(Xv,Yv,CountRatesImageAllChan);
 %axh = gca; axh.YDir = 'normal';
+if(isXDirReverse), axh = gca; axh.XDir = 'reverse'; end
 colormap pink, shading interp, axis equal;
 colorbar
 SumChan = squeeze(sum(A,3));
 PickCurve(H.FH(end),SumChan);
 AddSelectRoi(H.FH(end),imh);
+AddGetDataProfile(H.FH(end),imh);
 
 % figure
 % 
