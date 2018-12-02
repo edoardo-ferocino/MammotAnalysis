@@ -3,7 +3,12 @@ H=guidata(gcbo);
 StartWait(H.MFH);
 FileName = H.DatFilePath(1:end-4);
 [A,~,CH]=DatRead3(FileName,'ForceReading',true);
+H.CompiledHeaderDat = CH;
 [NumY,NumX,NumChan,NumBin]=size(A);
+if NumBin == 1
+   NumBin = NumChan; NumChan = 1;
+   A = permute(A,[1 2 4 3]);
+end
 if isfield(H,'TRSSetFilePath')
     SETT = TRSread(H.TRSSetFilePath);
 else
@@ -28,7 +33,8 @@ if isfield(H,'FH')
 else
     H.FH = FFS('Name','Count rates per channel');
 end
-subH = subplot1(2,4);
+nsub = numSubplots(NumChan);
+subH = subplot1(nsub(1),nsub(2));
 for ich = 1 : NumChan
     subplot1(ich);
     imagesc(Xv,Yv,CountRatesImage(:,:,ich)./AcqTime);
@@ -39,8 +45,9 @@ for ich = 1 : NumChan
 end
 
 H.FH(end+1) = FFS('Name','Wavelenghts images count rate');
-subH = subplot1(2,4);
 Wavelengths =[635 680 785 905 930 975 1060];
+nSub = numSubplots(numel(Wavelengths));
+subH = subplot1(nSub(1),nSub(2));
 for iw = 1:numel(Wavelengths)
     Wave(iw).Data = A(:,:,:,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1);
     for ich = 1:NumChan
@@ -58,13 +65,16 @@ for iw = 1:numel(Wavelengths)
 end
 delete(subH(iw+1:end))
 
-H.FH(end+1) = figure('Name','Total count rate image');
+H.FH(end+1) = FFS('Name','Total count rate image');
 CountRatesImageAllChan=sum(CountRatesImage,3);
-imagesc(Xv,Yv,CountRatesImageAllChan);
-axh = gca; axh.YDir = 'normal';
+subplot1(1,1); subplot1(1);
+imh = imagesc(Xv,Yv,CountRatesImageAllChan);
+%axh = gca; axh.YDir = 'normal';
 colormap pink, shading interp, axis equal;
+colorbar
 SumChan = squeeze(sum(A,3));
 PickCurve(H.FH(end),SumChan);
+AddSelectRoi(H.FH(end),imh);
 
 % figure
 % 

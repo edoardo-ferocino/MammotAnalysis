@@ -1,7 +1,11 @@
-function SumChannels()
+function SumChannels(src,event)
+H=guidata(gcbo);
+IRF_FN = H.IrfFilePath(1:end-4);
+Data_FN = H.DatFilePath(1:end-4);
+StartWait(H.MFH);
+
 is_scan = true;
-SETT = TRSread('../Settings/TRS');
-[IRF,H,CH,SH,CSH,UnSquezSubs]=DatRead3(IRF_FN,'compilesub',true);
+[IRF,~,CH,SH]=DatRead3(IRF_FN,'compilesub',false);
 ndIRF = ndims(IRF);
 if ndIRF == 2
     [NumChan,NumBin]=size(IRF);
@@ -13,15 +17,26 @@ else
     return
 end
 
+if isfield(H,'TRSSetFilePath')
+    SETT = TRSread(H.TRSSetFilePath);
+else
+    SETT.Roi = zeros(7,3);
+    limits = round(linspace(0,NumBin-1,8));
+    for ir = 1:7
+       SETT.Roi(ir,2) = limits(ir);
+       SETT.Roi(ir,3) = limits(ir+1); 
+    end
+end
+
+
 POS_IRF_raw = zeros(NumChan,1);
 for ich = 1:NumChan
     StartBin = SETT.Roi(1,2)+1;
     StopBin = SETT.Roi(1,3)+1;
     B=squeeze(IRF(ich,StartBin:StopBin));
-    [width,~,maxpos] = CalcWidth(B,0.5);
+    [~,~,maxpos] = CalcWidth(B,0.5);
     pos = maxpos;
     pos = pos + StartBin-1;
-    %pos = pos + round((iw-1)*Period/Factor);
     POS_IRF_raw(ich) = pos;
 end
 
@@ -37,8 +52,8 @@ save('shift.mat','shift');
 
 fid_out = fopen([IRF_FN '_summed.DAT'], 'wb');
 CH.LoopNum(1) = 1; CH.LoopLast(1) = 1;
-H=CompileHeader(CH);
-fwrite(fid_out, H, 'uint8');
+Header=CompileHeader(CH);
+fwrite(fid_out, Header, 'uint8');
 if NumRep
     fwrite(fid_out, SH(1,1,:), 'uint8');
 else
@@ -51,7 +66,7 @@ fclose(fid_out);
 
 
 %%
-[Data,H,CH,SH,CSH] = DatRead3(Data_FN,'forcereading',true);
+[Data,Header,CH,SH,~] = DatRead3(Data_FN,'forcereading',true);
 if is_scan == 1
     [NumY,NumX,NumChan,NumBin]=size(Data);
     Data_Shifted = zeros(NumY,NumX,NumChan,NumBin);
@@ -84,7 +99,7 @@ end
 fid_out = fopen([Data_FN '_summed.DAT'], 'wb');
 
 if is_scan == 1
-    fwrite(fid_out, H, 'uint8');
+    fwrite(fid_out, Header, 'uint8');
     for iy = 1:NumY
         for ix = 1:NumX
             fwrite(fid_out, SH(iy,ix,1,:), 'uint8');
@@ -95,13 +110,15 @@ if is_scan == 1
     end
 else
     CH.LoopNum(1) = 1; CH.LoopLast(1) = 1;
-    H=CompileHeader(CH);
-    fwrite(fid_out, H, 'uint8');
+    Header=CompileHeader(CH);
+    fwrite(fid_out, Header, 'uint8');
     fwrite(fid_out, SH(1,:), 'uint8');
     curve=Data_Shifted_Summed;
     fwrite(fid_out, curve, 'uint32');
 end
 
 fclose(fid_out);
+msgbox({'Files Created' 'Please load the new files'},'Success','help');
+StopWait(H.MFH)
 
 end

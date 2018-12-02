@@ -1,9 +1,16 @@
-function ReadFitData(src,event,FitFileName)
+function ReadFitData(src,event)
 H = guidata(gcbo);
 StartWait(H.MFH)
 FitFileName = H.FitFilePath;
 AllData=readtable(FitFileName,'ReadVariableNames',1,'Delimiter','\t','EndOfLine','\r\n');
 H.FitAllData = AllData;
+if isfield(H,'CompiledHeaderDat')
+    Xv = linspace(H.CompiledHeaderDat.LoopFirst(1),H.CompiledHeaderDat.LoopLast(1),H.CompiledHeaderDat.LoopNum(1));
+    Yv = linspace(H.CompiledHeaderDat.LoopFirst(2),H.CompiledHeaderDat.LoopLast(2),H.CompiledHeaderDat.LoopNum(2));
+else
+    
+end
+
 % Cats.LambdaCats = categories(categorical(AllData.Lambda));
 % Wavelenghts=cellfun(@str2num,Cats.LambdaCats);
 % Cats.Yindx = categories(categorical(AllData.Loop2Actual));
@@ -42,13 +49,15 @@ for ic = 1:nConc-2
 end
 C.HbTot.Variables = C.Hb.Variables+C.HbO2.Variables;
 subplot1(ic+1);
-imagesc(C.HbTot.Variables);
+imh = imagesc(C.HbTot.Variables);
+AddSelectRoi(H.FH(end),imh);
 colormap pink, shading interp, axis image;
 title(CompNames{ic+1})
 colorbar('southoutside')
 C.So2.Variables = C.HbO2.Variables./C.HbTot.Variables;
 subplot1(ic+2);
-imagesc(C.So2.Variables);
+imh = imagesc(C.So2.Variables);
+AddSelectRoi(H.FH(end),imh);
 colormap pink, shading interp, axis image;
 title(CompNames{ic+2})
 colorbar('southoutside')
