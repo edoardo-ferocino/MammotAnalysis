@@ -37,6 +37,12 @@ mmh = uimenu(cmh,'Label','Get profile','CallBack',{@SelectProfileOnGraph,parentf
         else
             FH=figure('NumberTitle','off','Name','Profile');
             src.UserData.FigProfileHandle = FH;
+            MFH = findobj('Type','Figure','-and','Name','Main panel');
+            if ~isfield(MFH.UserData,'FigHandles')
+                MFH.UserData.SideFigs = FH;
+            else
+                MFH.UserData.SideFigs(end+1) = FH;
+            end
         end
         nchild = numel(src.Parent.Children);
         for inc = 1:nchild

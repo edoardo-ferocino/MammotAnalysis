@@ -1,5 +1,5 @@
 InitScript
-MFH = FFS; %MFH.Units = 'normalized';
+MFH = FFS('Name','Main panel'); %MFH.Units = 'normalized';
 H = guihandles(MFH);
 H.MFH = MFH;
 addpath('./utilities');

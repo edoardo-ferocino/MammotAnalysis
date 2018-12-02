@@ -6,8 +6,8 @@ FileName = H.DatFilePath(1:end-4);
 H.CompiledHeaderDat = CH;
 [NumY,NumX,NumChan,NumBin]=size(A);
 if NumBin == 1
-   NumBin = NumChan; NumChan = 1;
-   A = permute(A,[1 2 4 3]);
+    NumBin = NumChan; NumChan = 1;
+    A = permute(A,[1 2 4 3]);
 end
 if isfield(H,'TRSSetFilePath')
     SETT = TRSread(H.TRSSetFilePath);
@@ -15,8 +15,8 @@ else
     SETT.Roi = zeros(7,3);
     limits = round(linspace(0,NumBin-1,8));
     for ir = 1:7
-       SETT.Roi(ir,2) = limits(ir);
-       SETT.Roi(ir,3) = limits(ir+1); 
+        SETT.Roi(ir,2) = limits(ir);
+        SETT.Roi(ir,3) = limits(ir+1);
     end
 end
 if (CH.LoopFirst(1)<CH.LoopLast(1))
@@ -86,7 +86,7 @@ AddSelectRoi(H.FH(end),imh);
 AddGetDataProfile(H.FH(end),imh);
 
 % figure
-% 
+%
 % figure
 % AllChanCopy = AllChan;
 % AllChanCopy(AllChanCopy(:)==0)=NaN;
@@ -97,10 +97,16 @@ AddGetDataProfile(H.FH(end),imh);
 %     pause
 % end
 numAddedFigs = 3;
+MFH = findobj('Type','Figure','-and','Name','Main panel');
 for ifigs = numel(H.FH)-(numAddedFigs-1):numel(H.FH)
-   H.FH(ifigs).Visible = 'off';
-   H.FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,H.FH(ifigs)};
-   AddElementToList(H.ListFigures,H.FH(ifigs));
+    H.FH(ifigs).Visible = 'off';
+    H.FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,H.FH(ifigs)};
+    AddElementToList(H.ListFigures,H.FH(ifigs));
+end
+if isfield(MFH.UserData,'AllDataFigs')
+    MFH.UserData.AllDataFigs(end+1:end+numAddedFigs) = H.FH;
+else
+    MFH.UserData.AllDataFigs = H.FH;
 end
 StopWait(H.MFH)
 guidata(gcbo,H);
