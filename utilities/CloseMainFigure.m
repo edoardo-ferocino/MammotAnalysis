@@ -1,7 +1,6 @@
 function CloseMainFigure(src,event)
-H = guidata(gcbo);
-if isfield(H,'FH')
-    FH = H.FH;
+if isfield(src.UserData,'AllDataFigs')
+    FH = src.UserData.AllDataFigs;
     for ifigs = 1:numel(FH)
         FH(ifigs).CloseRequestFcn = 'closereq';
         delete(FH(ifigs))

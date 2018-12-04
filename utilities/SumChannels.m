@@ -1,8 +1,8 @@
-function SumChannels(src,event)
+function SumChannels(src,event,MFH)
 H=guidata(gcbo);
 IRF_FN = H.IrfFilePath(1:end-4);
 Data_FN = H.DatFilePath(1:end-4);
-StartWait(H.MFH);
+StartWait(MFH);
 
 is_scan = true;
 [IRF,~,CH,SH]=DatRead3(IRF_FN,'compilesub',false);
@@ -119,6 +119,6 @@ end
 
 fclose(fid_out);
 msgbox({'Files Created' 'Please load the new files'},'Success','help');
-StopWait(H.MFH)
+StopWait(MFH)
 
 end

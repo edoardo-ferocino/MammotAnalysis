@@ -1,16 +1,17 @@
-function PlotScan(src,event)
+function PlotScan(~,~,MFH)
 H=guidata(gcbo);
-StartWait(H.MFH);
+StartWait(MFH);
+[~,NameFile,~] = fileparts(MFH.UserData.DispDatFilePath.String);
 FileName = H.DatFilePath(1:end-4);
 [A,~,CH]=DatRead3(FileName,'ForceReading',true);
 H.CompiledHeaderDat = CH;
-[NumY,NumX,NumChan,NumBin]=size(A);
+[~,~,NumChan,NumBin]=size(A);
 if NumBin == 1
     NumBin = NumChan; NumChan = 1;
     A = permute(A,[1 2 4 3]);
 end
-if isfield(H,'TRSSetFilePath')
-    SETT = TRSread(H.TRSSetFilePath);
+if isfield(MFH.UserData,'TRSSetFilePath')
+    SETT = TRSread(MFH.UserData.TRSSetFilePath);
 else
     SETT.Roi = zeros(7,3);
     limits = round(linspace(0,NumBin-1,8));
@@ -33,24 +34,22 @@ if (CH.LoopFirst(1)<CH.LoopLast(1))
 else
     isXDirReverse = false;
 end
-if isfield(H,'FH')
-    H.FH(end+1) = FFS('Name','Count rates per channel');
-else
-    H.FH = FFS('Name','Count rates per channel');
-end
+MFH.UserData.isXDirReverse = isXDirReverse;
+MFH.UserData.Xv = Xv;MFH.UserData.Yv = Yv;
+FH = FFS('Name',['Count rates per channel - ' NameFile]);
 nsub = numSubplots(NumChan);
 subH = subplot1(nsub(1),nsub(2));
 for ich = 1 : NumChan
     subplot1(ich);
     imagesc(Xv,Yv,CountRatesImage(:,:,ich)./AcqTime);
-    colormap pink, shading interp, axis equal;
+    colormap pink, shading interp, axis image;
     %subH(ich).YDir = 'reverse';
     if(isXDirReverse), subH(ich).XDir = 'reverse'; end
     colorbar
     title(num2str(ich));
 end
 
-H.FH(end+1) = FFS('Name','Wavelenghts images count rate');
+FH(end+1) = FFS('Name',['Wavelenghts images count rate - ' NameFile]);
 Wavelengths =[635 680 785 905 930 975 1060];
 nSub = numSubplots(numel(Wavelengths));
 subH = subplot1(nSub(1),nSub(2));
@@ -61,54 +60,41 @@ for iw = 1:numel(Wavelengths)
     end
     Wave(iw).SumChanData = squeeze(sum(Wave(iw).Data,3));
     Wave(iw).Curves = Wave(iw).SumChanData;
-    Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3));
+    Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
     subplot1(iw);
     imagesc(Xv,Yv,Wave(iw).CountsAllChan./AcqTime);
-    colormap pink, shading interp, axis equal;
+    colormap pink, shading interp, axis image;
     %subH(iw).YDir = 'reverse';
-    if(isXDirReverse) subH(iw).XDir = 'reverse'; end
+    if(isXDirReverse), subH(iw).XDir = 'reverse'; end
     colorbar
     title(num2str(Wavelengths(iw)));
 end
 delete(subH(iw+1:end))
 
-H.FH(end+1) = FFS('Name','Total count rate image');
+FH(end+1) = FFS('Name',['Total count rate image - ' NameFile]);
 CountRatesImageAllChan=sum(CountRatesImage,3);
 subplot1(1,1); subplot1(1);
 imh = imagesc(Xv,Yv,CountRatesImageAllChan);
 %axh = gca; axh.YDir = 'normal';
 if(isXDirReverse), axh = gca; axh.XDir = 'reverse'; end
-colormap pink, shading interp, axis equal;
+colormap pink, shading interp, axis image;
 colorbar
 SumChan = squeeze(sum(A,3));
-PickCurve(H.FH(end),SumChan);
-AddSelectRoi(H.FH(end),imh);
-AddGetDataProfile(H.FH(end),imh);
+AddPickCurve(FH(end),imh,SumChan,MFH);
+AddSelectRoi(FH(end),imh,MFH);
+AddGetDataProfile(FH(end),imh,MFH);
 
-% figure
-%
-% figure
-% AllChanCopy = AllChan;
-% AllChanCopy(AllChanCopy(:)==0)=NaN;
-% MeanRows = mean(AllChanCopy,2,'omitnan');
-% for ir = 1:NumY
-%     plot(1:NumX,repmat(MeanRows(ir),1,NumX)./0.025,1:NumX,AllChanCopy(ir,:)./0.025)
-%     title(num2str(ir))
-%     pause
-% end
-numAddedFigs = 3;
-MFH = findobj('Type','Figure','-and','Name','Main panel');
-for ifigs = numel(H.FH)-(numAddedFigs-1):numel(H.FH)
-    H.FH(ifigs).Visible = 'off';
-    H.FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,H.FH(ifigs)};
-    AddElementToList(H.ListFigures,H.FH(ifigs));
+for ifigs = 1:numel(FH)
+    FH(ifigs).Visible = 'off';
+    FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
+    AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
 end
 if isfield(MFH.UserData,'AllDataFigs')
-    MFH.UserData.AllDataFigs(end+1:end+numAddedFigs) = H.FH;
+    MFH.UserData.AllDataFigs = [MFH.UserData.AllDataFigs FH];
 else
-    MFH.UserData.AllDataFigs = H.FH;
+    MFH.UserData.AllDataFigs = FH;
 end
-StopWait(H.MFH)
+StopWait(MFH)
 guidata(gcbo,H);
 end
 

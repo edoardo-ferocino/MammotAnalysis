@@ -1,15 +1,22 @@
-function ReadFitData(src,event)
+function ReadFitData(src,event,MFH)
 H = guidata(gcbo);
+global MainFigureName;
+MainFigureName = 'Main panel';
+[~,name,~] = fileparts(H.DispDatFilePath.String);
+global FigureName;
+FigureName = ['Components - ' name];
+global FigureNameHandle;
+FigureNameHandle = 'ProfileCurveHandle';
+global CallBackHandle;
+CallBackHandle = @SelectProfileOnGraph;
+global MenuName;
+MenuName = 'Get profile';
+
 StartWait(H.MFH)
-FitFileName = H.FitFilePath;
-AllData=readtable(FitFileName,'ReadVariableNames',1,'Delimiter','\t','EndOfLine','\r\n');
-H.FitAllData = AllData;
-if isfield(H,'CompiledHeaderDat')
-    Xv = linspace(H.CompiledHeaderDat.LoopFirst(1),H.CompiledHeaderDat.LoopLast(1),H.CompiledHeaderDat.LoopNum(1));
-    Yv = linspace(H.CompiledHeaderDat.LoopFirst(2),H.CompiledHeaderDat.LoopLast(2),H.CompiledHeaderDat.LoopNum(2));
-else
-    
-end
+FitFileName = MFH.UserData.FitFilePath;
+opts = detectImportOptions(FitFileName);
+VarTypes = opts.VariableTypes;
+AllData=readtable(FitFileName,opts,'ReadVariableNames',1);%,'Delimiter','\t','EndOfLine','\r\n');
 
 % Cats.LambdaCats = categories(categorical(AllData.Lambda));
 % Wavelenghts=cellfun(@str2num,Cats.LambdaCats);
@@ -17,63 +24,69 @@ end
 % Yindx=cellfun(@str2num,Cats.Yindx);
 % Cats.Xindx = categories(categorical(AllData.Loop3Actual));
 % Xindx=cellfun(@str2num,Cats.Xindx);
+OriginalColNames = {'loop3actual','loop2actual','CodeActual','varconc00opt','varconc01opt',...
+    'varconc02opt','varconc03opt','varconc04opt','vara0opt','varb0opt','varmua0opt','varmus0opt'};
+RealColNames = {'X','Y','CodeActualLoop','Hb','HbO2','Lipid',...
+    'H20','Collagen','A','B','mua','mus'};
 ColumnNames = AllData.Properties.VariableNames;
-Indx.X=find(strcmpi(ColumnNames,'loop3actual'));
-AllData.Properties.VariableNames{Indx.X}='X';
-Indx.Y=find(strcmpi(ColumnNames,'loop2actual'));
-AllData.Properties.VariableNames{Indx.Y}='Y';
-nConc = sum(contains(lower(AllData.Properties.VariableNames),'varconc'))+2;
-nScaP = 2;
-[nsub]=numSubplots(nConc);
-CompNames = {'Hb' 'HbO2' 'H20' 'Lipid' 'Collagen' 'HbTot' 'So2' 'A' 'B'};
-if isfield(H,'FH')
-    H.FH(end+1)=FFS('Name','Components');
-else
-    H.FH = FFS('Name','Components');
-end
-subH=subplot1(nsub(1),nsub(2));
-for ic = 1:nConc-2
-    indx=find(strcmpi(ColumnNames,['varconc0' num2str(ic-1) 'opt']));
-    Indx.(CompNames{ic})=indx;
-    AllData.Properties.VariableNames{indx}=CompNames{ic};
-    C.(CompNames{ic}) = AllData(:,[Indx.(CompNames{ic}) Indx.X Indx.Y]);
-    C.(CompNames{ic})=...
-        unstack(C.(CompNames{ic}),CompNames{ic},'X','AggregationFunction',@mean);
-    C.(CompNames{ic})(:,1)=[];
-    subplot1(ic);
-    imagesc(C.(CompNames{ic}).Variables);
-    colormap pink, shading interp, axis image;
-    title(CompNames{ic})
-    colorbar('southoutside')
-    H.C.(CompNames{ic}) = C.(CompNames{ic});
-end
-C.HbTot.Variables = C.Hb.Variables+C.HbO2.Variables;
-subplot1(ic+1);
-imh = imagesc(C.HbTot.Variables);
-AddSelectRoi(H.FH(end),imh);
-colormap pink, shading interp, axis image;
-title(CompNames{ic+1})
-colorbar('southoutside')
-C.So2.Variables = C.HbO2.Variables./C.HbTot.Variables;
-subplot1(ic+2);
-imh = imagesc(C.So2.Variables);
-AddSelectRoi(H.FH(end),imh);
-colormap pink, shading interp, axis image;
-title(CompNames{ic+2})
-colorbar('southoutside')
-delete(subH(nConc+1:end));
-H.C.HbTot = C.HbTot;
-H.C.So2 = C.So2;
-H.C.SubH = subH;
+% CompNames = {'Hb' 'HbO2' 'Lipid' 'H20' 'Collagen' 'HbTot' 'So2' 'A' 'B'};
+CompNames = {'Hb' 'HbO2' 'Lipid' 'H20' 'Collagen' 'A' 'B'};
+MuaMusNames = {'mua','mus'};
+LocationNames = {'X','Y'};
 
-numAddedFigs = 1;
-for ifigs = numel(H.FH)-(numAddedFigs-1):numel(H.FH)
-   H.FH(ifigs).Visible = 'off';
-   H.FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,H.FH(ifigs)};
-   AddElementToList(H.ListFigures,H.FH(ifigs));
+for ic = 1:numel(ColumnNames)
+    match = find(strcmpi(OriginalColNames,ColumnNames{ic}));
+    if match
+        AllData.Properties.VariableNames{ic} = RealColNames{match};
+        %         RealColIndx.(RealColNames{match}) = ic;
+    end
 end
-StopWait(H.MFH)
-guidata(gcbo,H);
+ColumnNames = AllData.Properties.VariableNames;
+
+% isMuaMusFit = false; isConcFit = false;
+if any(strcmpi(ColumnNames,MuaMusNames{1}))
+    %     isMuaMusFit = true;
+    %     nFittedParams = numel(MuaMusNames);
+    fitType = 'muamus';
+    FitParamsNames = MuaMusNames;
+end
+if any(strcmpi(ColumnNames,CompNames{1}))
+    %     isConcFit  = true;
+    %     nFittedParams = numel(CompNames);
+    fitType = 'conc';
+    FitParamsNames = CompNames;
+end
+ifil = 1; ifitp = 1; Vect2Match = [FitParamsNames,LocationNames];
+for ic = 1:numel(ColumnNames)
+    match = find(strcmpi(Vect2Match,ColumnNames{ic}));
+    if match
+        FitParams(ifitp).Name = Vect2Match{match}; %#ok<*AGROW>
+        FitParams(ifitp).ColID = ic;
+        FitParams(ifitp).Type = VarTypes{ic};
+        FitParams(ifitp).FitType = fitType;
+        ifitp = ifitp +1;
+    else
+        try
+            Filters(ifil).Categories = categories(categorical(AllData.(ColumnNames{ic})));
+            if ~isempty(Filters(ifil).Categories)
+                Filters(ifil).Categories = ['Any' Filters(ifil).Categories'];
+                Filters(ifil).Name = ColumnNames{ic};
+                Filters(ifil).ColID = ic;
+                Filters(ifil).Type = VarTypes{ic};
+                Filters(ifil).FitType = fitType;
+                ifil = ifil +1;
+            else
+                Filters(ifil) = [];
+            end
+        catch ME
+            if ~strcmpi(ME.identifier,'MATLAB:categorical:CantCreateCategoryNames')
+                throw(ME);
+            end
+        end
+    end
+end
+StopWait(MFH)
+SetFiltersForFit(AllData,FitParams,Filters,MFH);
 end
 
 

@@ -1,4 +1,4 @@
-function AddSelectRoi(parentfigure,object2attach)
+function AddSelectRoi(parentfigure,object2attach,MFH)
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);
     object2attach.UIContextMenu = cmh;
@@ -8,11 +8,11 @@ end
 mmh = uimenu(cmh,'Label','Select roi on graph');
 Shapes = {'Rectangle' 'Freehand' 'Circle'};
 for is = 1:numel(Shapes)
-    submh = uimenu(mmh,'Label',Shapes{is},'CallBack',{@SelectRoiOnGraph,Shapes{is},object2attach});
+    uimenu(mmh,'Label',Shapes{is},'CallBack',{@SelectRoiOnGraph,Shapes{is},object2attach});
 end
 
 
-    function SelectRoiOnGraph(src,event,shape,object2attach)
+    function SelectRoiOnGraph(~,~,shape,object2attach)
         RoiObjs = findobj('Type','images.roi');
         ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
         AxH = object2attach.Parent;
@@ -26,17 +26,15 @@ end
         ShapeHandle.Color = ColorList{ShapeHandle.UserData.ID};
         ShapeHandle.UIContextMenu.Children(1).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
         uimenu(ShapeHandle.UIContextMenu,'Label','Copy ROI','CallBack',{@CopyRoi,ShapeHandle});
-        %uimenu(ShapeHandle.UIContextMenu,'Label','Paste ROI','CallBack',{@PasteRoi,ShapeHandle});
         addlistener(ShapeHandle,'DrawingFinished',@GetData);
         draw(ShapeHandle)
         addlistener(ShapeHandle,'ROIMoved',@GetData);
     end
-    function DeleteRoi(src,event,roiobj)
+    function DeleteRoi(~,~,roiobj)
         delete(roiobj.UserData.FigRoiHandle)
         delete(roiobj)
     end
-    function CopyRoi(src,event,roiobj)
-        MFH = findobj('Type','Figure','-and','Name','Main panel');
+    function CopyRoi(~,~,roiobj)
         MFH.UserData.CopiedRoi = roiobj;
         icntxh = 1;
         for ifigs = 1:numel(MFH.UserData.AllDataFigs)
@@ -55,8 +53,7 @@ end
         end
         msgbox('Copied ROI object','Success','help');
     end
-    function PasteRoi(src,event,obj2attach)
-        MFH = findobj('Type','Figure','-and','Name','Main panel');
+    function PasteRoi(~,~,obj2attach)
         copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
         RoiObj = findobj(obj2attach.Parent.Children,'Type','images.roi');
         RoiObj.UserData = rmfield(RoiObj.UserData,'FigRoiHandle');
@@ -74,7 +71,7 @@ end
         MFH.UserData = rmfield(MFH.UserData,'TempMenuH');
         MFH.UserData = rmfield(MFH.UserData,'CopiedRoi');
     end
-    function GetData(src,event)
+    function GetData(src,~)
         StartWait(ancestor(src,'figure'));
         nchild = numel(src.Parent.Children);
         for inc = 1:nchild
@@ -110,7 +107,6 @@ end
         else
             FH=figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag),'ToolBar','none');
             src.UserData.FigRoiHandle = FH;
-            MFH = findobj('Type','Figure','-and','Name','Main panel');
             if ~isfield(MFH.UserData,'SideFigs')
                 MFH.UserData.SideFigs = FH;
             else
