@@ -2,7 +2,8 @@ function SetFiltersForFit(AllData,FitParams,Filters,MFH)
 [~,name,~] = fileparts(MFH.UserData.DispFitFilePath.String);
 global FigureName;
 FigureName = ['Plot fitted values - ' name];
-
+global PercFract
+PercFract = 95;
 FigFilterName = ['Select filters - ' name];
 global FigFilterHandle
 
@@ -47,11 +48,11 @@ end
             end
             FigFilterHandle.UserData.Filters(ip) = Filters(ip);
         end
-        Pages = CreateActualPage();
-        PlotPages(Pages);
+        [Pages,rows] = CreateActualPage();
+        PlotPages(Pages,rows);
         StopWait(FigFilterHandle);
     end
-    function Page = CreateActualPage()
+    function [Page,rows] = CreateActualPage()
         cols = sort([FitParams.ColID]);
         ip = 1;
         for ifilt = 1:numel(Filters)
@@ -65,7 +66,7 @@ end
         rows = all(rows,2);
         Page = AllData(rows,cols);
     end
-    function PlotPages(Pages)
+    function PlotPages(Pages,rows)
         XColID = find(strcmpi(Pages.Properties.VariableNames,'X'));
         YColID = find(strcmpi(Pages.Properties.VariableNames,'Y'));
         X.LoopFirst = min(Pages(:,XColID).Variables);
@@ -76,15 +77,14 @@ end
         Y.Num = (Y.LoopLast-Y.LoopFirst)+1;
         Xv = linspace(X.LoopFirst,X.LoopLast,X.Num);
         Yv = linspace(Y.LoopFirst,Y.LoopLast,Y.Num);
+        isYDirReverse = false;isXDirReverse = false;
         if (Y.LoopFirst<Y.LoopLast)
-            Xv=flip(Xv); isXDirReverse = true;
-        else
-            isXDirReverse = false;
+%             Xv=flip(Xv); isXDirReverse = true;
+            isXDirReverse = true;
         end
         if (Y.LoopFirst<Y.LoopLast)
-            %             Yv=flip(Yv); isYDirReverse = true;
-        else
-            %             isYDirReverse = false;
+%             Yv=flip(Yv); isYDirReverse = true;
+            isYDirReverse = true;
         end
         if isfield(MFH.UserData,'Xv')
             Xv = MFH.UserData.Xv;Yv = MFH.UserData.Yv;
@@ -103,12 +103,23 @@ end
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
                 RealPage.(FitParams(ifit).Name) = Pages(:,[ifit XColID YColID]);
-                RealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
+                [UnstuckedRealPage.(FitParams(ifit).Name), IndxUnstack.(FitParams(ifit).Name)] = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
+                UnstuckedRealPage.(FitParams(ifit).Name)(:,1) = [];
                 subplot1(ifit);
-                imh = imagesc(Xv,Yv,RealPage.(FitParams(ifit).Name).Variables);
+                PercVal = GetPercentile(UnstuckedRealPage.(FitParams(ifit).Name).Variables,PercFract);
+                if (isXDirReverse)
+%                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
+%                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,2);
+                end
+                if (isYDirReverse)
+%                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
+%                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,1);
+                end
+                imh = imagesc(Xv,Yv,UnstuckedRealPage.(FitParams(ifit).Name).Variables,[0 PercVal]);
+                AddGetTableInfo(FH(end),imh,MFH,Filters,rows,UnstuckedRealPage.(FitParams(ifit).Name),RealPage.(FitParams(ifit).Name),AllData,IndxUnstack.(FitParams(ifit).Name))
                 colormap pink, shading interp, axis image;
-                %                 if(isYDirReverse), subH(ifit).YDir = 'reverse'; end
-                if(isXDirReverse), subH(ifit).XDir = 'reverse'; end
+                 if(isYDirReverse), subH(ifit).YDir = 'reverse'; end
+                 if(isXDirReverse), subH(ifit).XDir = 'reverse'; end
                 title(FitParams(ifit).Name)
                 colorbar('southoutside')
                 AddSelectRoi(FH,imh,MFH);
@@ -116,13 +127,16 @@ end
         end
         delete(subH(numel(FitParams)-2+1:end))
         
+        if strcmpi(FitParams(1).FitType,'muamus')
+            
+        end
         if strcmpi(FitParams(1).FitType,'conc')
-            RealPage.HbTot = RealPage.Hb;
-            RealPage.HbTot.Variables = ...
-                RealPage.Hb.Variables+RealPage.HbO2.Variables;
-            RealPage.So2 = RealPage.Hb;
-            RealPage.So2.Variables = ...
-                RealPage.HbO2.Variables./RealPage.HbTot.Variables;
+            UnstuckedRealPage.HbTot = UnstuckedRealPage.Hb;
+            UnstuckedRealPage.HbTot.Variables = ...
+                UnstuckedRealPage.Hb.Variables+UnstuckedRealPage.HbO2.Variables;
+            UnstuckedRealPage.So2 = UnstuckedRealPage.Hb;
+            UnstuckedRealPage.So2.Variables = ...
+                UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
             ExtraFitParams(1).Name = 'HbTot';
             ExtraFitParams(2).Name = 'So2';
             if isfield(MFH.UserData,'AllDataFigs')
@@ -136,7 +150,8 @@ end
             for ifit = 1:numel(ExtraFitParams)
                 if ~any(ifit==[XColID YColID])
                     subplot1(ifit);
-                    imh = imagesc(Xv,Yv,RealPage.(ExtraFitParams(ifit).Name).Variables);
+                    PercVal = GetPercentile(UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,PercFract);
+                    imh = imagesc(Xv,Yv,UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,[0 PercVal]);
                     colormap pink, shading interp, axis image;
                     %                 if(isXDirReverse), subH(ifit).YDir = 'reverse'; end
                     if(isXDirReverse), subH(ifit).XDir = 'reverse'; end

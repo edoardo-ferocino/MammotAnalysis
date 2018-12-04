@@ -7,7 +7,6 @@ if isfield(FH.UserData,'InfoFitData')
     src.UIContextMenu = src.UserData.CntxMH;
     CreateInfoUIContextMenu(src.UIContextMenu,FH.UserData.InfoFitData);
 else
-    src.UserData = rmfield(src.UserData,'CntxMH');
     src.UIContextMenu = [];    
 end
 end

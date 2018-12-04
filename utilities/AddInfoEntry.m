@@ -2,7 +2,7 @@ function AddInfoEntry(ctxmh,figentry,infodata)
 uimenu(ctxmh,'Label',figentry.Name,'Callback',{@GetInfoData,infodata});
     function GetInfoData(~,~,infodata)
         FH = figure(468);
-        FH.ToolBar = 'none'; FH.MenuBar = 'none'; FH.Name = figentry.Name;
+        FH.ToolBar = 'none'; FH.MenuBar = 'none'; FH.Name = ['Report: ' figentry.Name];
         FH.NumberTitle = 'off';
         if isrow(infodata.Name), infodata.Name = infodata.Name'; end
         if isrow(infodata.Value), infodata.Value = infodata.Value'; end
