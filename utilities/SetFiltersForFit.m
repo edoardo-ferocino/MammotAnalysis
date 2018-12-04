@@ -3,23 +3,41 @@ function SetFiltersForFit(AllData,FitParams,Filters,MFH)
 global FigureName;
 FigureName = ['Plot fitted values - ' name];
 
-FigName = 'Select filters';
-SelFiltH = figure('Name',FigName,'Toolbar','None','MenuBar','none','Units','normalized');
+FigFilterName = ['Select filters - ' name];
+global FigFilterHandle
+
+FigFilterHandleName = 'SelectFilters';
+Obj = MFH.UserData.DispFitFilePath;
+if (isfield(Obj.UserData,FigFilterHandleName))
+    FigFilterHandle = Obj.UserData.(FigFilterHandleName);
+    FigFilterHandle.UserData.(FigFilterHandleName) = Obj.UserData.(FigFilterHandleName);
+    figure(FigFilterHandle);
+else
+    FigFilterHandle = figure('Name',FigFilterName,'Toolbar','None','MenuBar','none','Units','normalized');
+    Obj.UserData.(FigFilterHandleName) = FigFilterHandle;
+    if ~isfield(MFH.UserData,'SideFigs')
+        MFH.UserData.SideFigs = FigFilterHandle;
+    else
+        MFH.UserData.SideFigs(end+1) = FigFilterHandle;
+    end
+end
 for ifil = 1:numel(Filters)
-    ch = CreateContainer(SelFiltH,'Position',[0 0.1*(ifil-1) 0.5 1/numel(Filters)],'Visible','on');
+    ch = CreateContainer(FigFilterHandle,'Position',[0 0.1*(ifil-1) 0.5 1/numel(Filters)],'Visible','on');
     poph(ifil) = CreatePopUpMenu(ch,'Units','Normalized','String',Filters(ifil).Categories,...
         'Position',[0 0 0.3 0.8],'Value',1);
     poph(ifil).UserData.IDFilter = ifil; %#ok<*AGROW>
     CreateEdit(ch,'Units','Normalized','Position',...
         [0.4 0.3 0.3 0.5],'String',Filters(ifil).Name,'HorizontalAlignment','left');
 end
-movegui(SelFiltH,'northeast')
+movegui(FigFilterHandle,'northeast')
+
+
 for ifil = 1:numel(Filters)
     poph(ifil).Callback = {@SetFilter,poph};
 end
 
-    function SetFilter(src,~,poph)
-        StartWait(ancestor(src,'figure'));
+    function SetFilter(~,~,poph)
+        StartWait(FigFilterHandle);
         for ip = 1:numel(poph)
             Filters(ip).ActualValue = poph(ip).String{poph(ip).Value};
             if ~strcmpi(Filters(ip).ActualValue,'Any')
@@ -27,10 +45,11 @@ end
                     Filters(ip).ActualValue = str2double(Filters(ip).ActualValue);
                 end
             end
+            FigFilterHandle.UserData.Filters(ip) = Filters(ip);
         end
         Pages = CreateActualPage();
         PlotPages(Pages);
-        StopWait(ancestor(src,'figure'));
+        StopWait(FigFilterHandle);
     end
     function Page = CreateActualPage()
         cols = sort([FitParams.ColID]);
@@ -105,7 +124,7 @@ end
             RealPage.So2.Variables = ...
                 RealPage.HbO2.Variables./RealPage.HbTot.Variables;
             ExtraFitParams(1).Name = 'HbTot';
-            ExtraFitParams(2).Name = 'HbTot';
+            ExtraFitParams(2).Name = 'So2';
             if isfield(MFH.UserData,'AllDataFigs')
                 FH(end+1) = findobj('Type','figure','-and','Name',['Extra' FigureName]);
                 figure(FH(end));
@@ -127,10 +146,14 @@ end
                 end
             end
         end
+        
         for ifigs = 1:numel(FH)
             %FH(ifigs).Visible = 'off';
             FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
             AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
+            FH(ifigs).UserData.InfoData.Name = {Filters.Name};
+            FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
+            AddInfoEntry(MFH.UserData.ListFigures.UserData.InfoCtxMH,FH(ifigs),FH(ifigs).UserData.InfoData);
         end
         if isfield(MFH.UserData,'AllDataFigs')
             MFH.UserData.AllDataFigs = [MFH.UserData.AllDataFigs FH];

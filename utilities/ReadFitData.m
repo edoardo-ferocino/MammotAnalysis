@@ -1,8 +1,7 @@
 function ReadFitData(src,event,MFH)
-H = guidata(gcbo);
 global MainFigureName;
 MainFigureName = 'Main panel';
-[~,name,~] = fileparts(H.DispDatFilePath.String);
+[~,name,~] = fileparts(MFH.UserData.DispFitFilePath.String);
 global FigureName;
 FigureName = ['Components - ' name];
 global FigureNameHandle;
@@ -12,7 +11,7 @@ CallBackHandle = @SelectProfileOnGraph;
 global MenuName;
 MenuName = 'Get profile';
 
-StartWait(H.MFH)
+StartWait(MFH)
 FitFileName = MFH.UserData.FitFilePath;
 opts = detectImportOptions(FitFileName);
 VarTypes = opts.VariableTypes;
