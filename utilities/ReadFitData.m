@@ -1,28 +1,10 @@
 function ReadFitData(src,event,MFH)
-global MainFigureName;
-MainFigureName = 'Main panel';
-[~,name,~] = fileparts(MFH.UserData.DispFitFilePath.String);
-global FigureName;
-FigureName = ['Components - ' name];
-global FigureNameHandle;
-FigureNameHandle = 'ProfileCurveHandle';
-global CallBackHandle;
-CallBackHandle = @SelectProfileOnGraph;
-global MenuName;
-MenuName = 'Get profile';
-
 StartWait(MFH)
 FitFileName = MFH.UserData.FitFilePath;
 opts = detectImportOptions(FitFileName);
 VarTypes = opts.VariableTypes;
 AllData=readtable(FitFileName,opts,'ReadVariableNames',1);%,'Delimiter','\t','EndOfLine','\r\n');
 
-% Cats.LambdaCats = categories(categorical(AllData.Lambda));
-% Wavelenghts=cellfun(@str2num,Cats.LambdaCats);
-% Cats.Yindx = categories(categorical(AllData.Loop2Actual));
-% Yindx=cellfun(@str2num,Cats.Yindx);
-% Cats.Xindx = categories(categorical(AllData.Loop3Actual));
-% Xindx=cellfun(@str2num,Cats.Xindx);
 OriginalColNames = {'loop3actual','loop2actual','CodeActual','varconc00opt','varconc01opt',...
     'varconc02opt','varconc03opt','varconc04opt','vara0opt','varb0opt','varmua0opt','varmus0opt'};
 RealColNames = {'X','Y','CodeActualLoop','Hb','HbO2','Lipid',...

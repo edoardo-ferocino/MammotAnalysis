@@ -1,4 +1,4 @@
-function AddGetTableInfo(parentfigure,object2attach,MFH,Filters,rows,UnstackedRealPage,RealPage,AllData,Indxes)
+function AddGetTableInfo(parentfigure,object2attach,MFH,Filters,rows,UnstackedRealPage,AllData)
 global CallBackHandle;
 CallBackHandle = @PickInfo;
 global MenuName;

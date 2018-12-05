@@ -79,11 +79,11 @@ end
         Yv = linspace(Y.LoopFirst,Y.LoopLast,Y.Num);
         isYDirReverse = false;isXDirReverse = false;
         if (Y.LoopFirst<Y.LoopLast)
-%             Xv=flip(Xv); isXDirReverse = true;
+            %             Xv=flip(Xv); isXDirReverse = true;
             isXDirReverse = true;
         end
         if (Y.LoopFirst<Y.LoopLast)
-%             Yv=flip(Yv); isYDirReverse = true;
+            %             Yv=flip(Yv); isYDirReverse = true;
             isYDirReverse = true;
         end
         if isfield(MFH.UserData,'Xv')
@@ -92,8 +92,9 @@ end
         end
         
         [nsub]=numSubplots(numel(FitParams)-2);
-        if isfield(MFH.UserData,'AllDataFigs')
-            FH = findobj('Type','figure','-and','Name',FigureName);
+        FH = findobj('Type','figure','-and','Name',FigureName);
+        if ~isempty(FH)
+            %isfield(MFH.UserData,'AllDataFigs')
             figure(FH);
         else
             FH = FFS('Name',FigureName);
@@ -103,23 +104,23 @@ end
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
                 RealPage.(FitParams(ifit).Name) = Pages(:,[ifit XColID YColID]);
-                [UnstuckedRealPage.(FitParams(ifit).Name), IndxUnstack.(FitParams(ifit).Name)] = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
+                UnstuckedRealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
                 UnstuckedRealPage.(FitParams(ifit).Name)(:,1) = [];
                 subplot1(ifit);
                 PercVal = GetPercentile(UnstuckedRealPage.(FitParams(ifit).Name).Variables,PercFract);
                 if (isXDirReverse)
-%                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
-%                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,2);
+                    %                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
+                    %                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,2);
                 end
                 if (isYDirReverse)
-%                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
-%                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,1);
+                    %                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
+                    %                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,1);
                 end
                 imh = imagesc(Xv,Yv,UnstuckedRealPage.(FitParams(ifit).Name).Variables,[0 PercVal]);
-                AddGetTableInfo(FH(end),imh,MFH,Filters,rows,UnstuckedRealPage.(FitParams(ifit).Name),RealPage.(FitParams(ifit).Name),AllData,IndxUnstack.(FitParams(ifit).Name))
+                AddGetTableInfo(FH(end),imh,MFH,Filters,rows,UnstuckedRealPage.(FitParams(ifit).Name),AllData)
                 colormap pink, shading interp, axis image;
-                 if(isYDirReverse), subH(ifit).YDir = 'reverse'; end
-                 if(isXDirReverse), subH(ifit).XDir = 'reverse'; end
+                if(isYDirReverse), subH(ifit).YDir = 'reverse'; end
+                if(isXDirReverse), subH(ifit).XDir = 'reverse'; end
                 title(FitParams(ifit).Name)
                 colorbar('southoutside')
                 AddSelectRoi(FH,imh,MFH);
@@ -139,8 +140,9 @@ end
                 UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
             ExtraFitParams(1).Name = 'HbTot';
             ExtraFitParams(2).Name = 'So2';
-            if isfield(MFH.UserData,'AllDataFigs')
-                FH(end+1) = findobj('Type','figure','-and','Name',['Extra' FigureName]);
+            FH(end+1) = findobj('Type','figure','-and','Name',['Extra' FigureName]);
+            if ~isempty(FH(end))
+                %isfield(MFH.UserData,'AllDataFigs')
                 figure(FH(end));
             else
                 FH(end+1) = FFS('Name',['Extra' FigureName]);
