@@ -14,7 +14,7 @@ if (isfield(Obj.UserData,FigFilterHandleName))
     FigFilterHandle.UserData.(FigFilterHandleName) = Obj.UserData.(FigFilterHandleName);
     figure(FigFilterHandle);
 else
-    FigFilterHandle = figure('Name',FigFilterName,'Toolbar','None','MenuBar','none','Units','normalized');
+    FigFilterHandle = figure('Name',FigFilterName,'Toolbar','None','MenuBar','none');
     Obj.UserData.(FigFilterHandleName) = FigFilterHandle;
     if ~isfield(MFH.UserData,'SideFigs')
         MFH.UserData.SideFigs = FigFilterHandle;
@@ -22,79 +22,113 @@ else
         MFH.UserData.SideFigs(end+1) = FigFilterHandle;
     end
 end
+if strcmpi(Filters(1).FitType,'muamus')
+    addcheckbox = true;
+else
+    addcheckbox = false;
+end
 for ifil = 1:numel(Filters)
-    ch = CreateContainer(FigFilterHandle,'Position',[0 0.1*(ifil-1) 0.5 1/numel(Filters)],'Visible','on');
+    ch = CreateContainer(FigFilterHandle,'Units','pixels','Position',[0 FigFilterHandle.Position(4)/numel(Filters)*(ifil-1) FigFilterHandle.Position(3) FigFilterHandle.Position(4)/numel(Filters)],'BorderType','none');
     poph(ifil) = CreatePopUpMenu(ch,'Units','Normalized','String',Filters(ifil).Categories,...
         'Position',[0 0 0.3 0.8],'Value',1);
     poph(ifil).UserData.IDFilter = ifil; %#ok<*AGROW>
     CreateEdit(ch,'Units','Normalized','Position',...
         [0.4 0.3 0.3 0.5],'String',Filters(ifil).Name,'HorizontalAlignment','left');
+    if addcheckbox
+        cbh(ifil) = CreateCheckBox(ch,'Units','Normalized','Position',...
+            [0.75 0.3 0.3 0.5],'String','Is lambda filter','Callback',{@Checked});
+    else
+        cbh(ifil) = 0;
+    end
 end
 movegui(FigFilterHandle,'northeast')
 
 
 for ifil = 1:numel(Filters)
-    poph(ifil).Callback = {@SetFilter,poph};
+    poph(ifil).Callback = {@SetFilter,poph,cbh};
 end
-
-    function SetFilter(~,~,poph)
+    function Checked(src,~)
+        src.UserData.Value = src.Value;
+    end
+    function SetFilter(~,~,poph,cbh)
         StartWait(FigFilterHandle);
         for ip = 1:numel(poph)
             Filters(ip).ActualValue = poph(ip).String{poph(ip).Value};
+            Filters(ip).Checked = 0;
             if ~strcmpi(Filters(ip).ActualValue,'Any')
                 if strcmpi(Filters(ip).Type,'double')
                     Filters(ip).ActualValue = str2double(Filters(ip).ActualValue);
                 end
+                if strcmpi(Filters(ip).Type,'char')
+                    Filters(ip).ActualValue = Filters(ip).ActualValue;
+                end
+            end
+            if ~isnumeric(cbh(ip))
+                if cbh(ip).Value
+                    if strcmpi(Filters(ip).Type,'double')
+                        Filters(ip).ActualValue = str2double(poph(ip).String(2:end));
+                    end
+                    Filters(ip).Checked = 1;
+                end
             end
             FigFilterHandle.UserData.Filters(ip) = Filters(ip);
         end
+        MFH.UserData.Filters = Filters;
+        MFH.UserData.FitParams = FitParams;
         [Pages,rows] = CreateActualPage();
+        if isempty(Pages)
+            StopWait(FigFilterHandle);
+            return
+        end
+        MFH.UserData.rows = rows;
+        MFH.UserData.AllData = AllData;
         PlotPages(Pages,rows);
         StopWait(FigFilterHandle);
     end
-    function [Page,rows] = CreateActualPage()
+    function [ActualPage,ActualRows] = CreateActualPage()
         cols = sort([FitParams.ColID]);
-        ip = 1;
-        for ifilt = 1:numel(Filters)
-            if ~strcmpi(Filters(ifilt).ActualValue,'Any')
-                rows(:,ip)= AllData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue;
-                ip = ip +1;
-            else
-                rows(:,ip) = ones(numel(AllData(:,1)),1);
-            end
+        actpage = 1; nactv = 1;
+        if find([Filters.Checked])
+            nactv = numel(Filters(find([Filters.Checked])).ActualValue); %#ok<FNDSB>
         end
-        rows = all(rows,2);
-        Page = AllData(rows,cols);
+        for av = 1:nactv
+            ip = 1; rows = zeros(size(AllData(:,1).Variables,1),1);
+            for ifilt = 1:numel(Filters)
+                if ~strcmpi(Filters(ifilt).ActualValue,'Any')
+                    if Filters(ifilt).Checked
+                        rows(:,ip)= AllData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue(av);
+                    else
+                        if strcmpi(Filters(ifilt).Type,'char')
+                            rows(:,ip) = strcmpi(AllData.(Filters(ifilt).Name),Filters(ifilt).ActualValue);
+                        else
+                            rows(:,ip)= AllData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue;
+                        end
+                    end
+                    ip = ip +1;
+                else
+                    rows(:,ip) = ones(numel(AllData(:,1)),1);
+                    ip = ip +1;
+                end
+            end
+            rows = all(rows,2);
+            if sum(rows)==numel(rows)
+                ActualPage = [];ActualRows = [];
+                msh = msgbox({'This combination of filters won''t work.' 'Please select a valid filter combination'},'Warning','help');
+                movegui(msh,'center');
+                return
+            end
+            Page = AllData(rows,cols);
+            ActualPage{actpage}= Page;
+            ActualRows(:,actpage) = rows;
+            actpage = actpage+1;
+        end
     end
     function PlotPages(Pages,rows)
-        XColID = find(strcmpi(Pages.Properties.VariableNames,'X'));
-        YColID = find(strcmpi(Pages.Properties.VariableNames,'Y'));
-        X.LoopFirst = min(Pages(:,XColID).Variables);
-        X.LoopLast = max(Pages(:,XColID).Variables);
-        X.Num = (X.LoopLast-X.LoopFirst)+2;
-        Y.LoopFirst = min(Pages(:,YColID).Variables);
-        Y.LoopLast = max(Pages(:,YColID).Variables);
-        Y.Num = (Y.LoopLast-Y.LoopFirst)+1;
-        Xv = linspace(X.LoopFirst,X.LoopLast,X.Num);
-        Yv = linspace(Y.LoopFirst,Y.LoopLast,Y.Num);
-        isYDirReverse = false;isXDirReverse = false;
-        if (Y.LoopFirst<Y.LoopLast)
-            %             Xv=flip(Xv); isXDirReverse = true;
-            isXDirReverse = true;
-        end
-        if (Y.LoopFirst<Y.LoopLast)
-            %             Yv=flip(Yv); isYDirReverse = true;
-            isYDirReverse = true;
-        end
-        if isfield(MFH.UserData,'Xv')
-            Xv = MFH.UserData.Xv;Yv = MFH.UserData.Yv;
-            isXDirReverse = MFH.UserData.isXDirReverse;
-        end
-        
+        XColID = find(strcmpi(Pages{1}.Properties.VariableNames,'X'));
+        YColID = find(strcmpi(Pages{1}.Properties.VariableNames,'Y'));
         [nsub]=numSubplots(numel(FitParams)-2);
         FH = findobj('Type','figure','-and','Name',FigureName);
         if ~isempty(FH)
-            %isfield(MFH.UserData,'AllDataFigs')
             figure(FH);
         else
             FH = FFS('Name',FigureName);
@@ -103,33 +137,59 @@ end
         subH=subplot1(nsub(1),nsub(2));
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
-                RealPage.(FitParams(ifit).Name) = Pages(:,[ifit XColID YColID]);
+                RealPage.(FitParams(ifit).Name) = Pages{1}(:,[ifit XColID YColID]);
                 UnstuckedRealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
                 UnstuckedRealPage.(FitParams(ifit).Name)(:,1) = [];
                 subplot1(ifit);
                 PercVal = GetPercentile(UnstuckedRealPage.(FitParams(ifit).Name).Variables,PercFract);
-                if (isXDirReverse)
-                    %                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
-                    %                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,2);
-                end
-                if (isYDirReverse)
-                    %                     UnstuckedRealPage.(FitParams(ifit).Name).Variables=...
-                    %                         flip(UnstuckedRealPage.(FitParams(ifit).Name).Variables,1);
-                end
-                imh = imagesc(Xv,Yv,UnstuckedRealPage.(FitParams(ifit).Name).Variables,[0 PercVal]);
-                AddGetTableInfo(FH(end),imh,MFH,Filters,rows,UnstuckedRealPage.(FitParams(ifit).Name),AllData)
+                imh = imagesc(UnstuckedRealPage.(FitParams(ifit).Name).Variables,[0 PercVal]);
+                subH(ifit).YDir = 'reverse';
                 colormap pink, shading interp, axis image;
-                if(isYDirReverse), subH(ifit).YDir = 'reverse'; end
-                if(isXDirReverse), subH(ifit).XDir = 'reverse'; end
                 title(FitParams(ifit).Name)
                 colorbar('southoutside')
-                AddSelectRoi(FH,imh,MFH);
+                AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
+                AddSelectRoi(FH(end),imh,MFH);
+                AddDefineBorder(FH(end),imh,MFH);
             end
         end
         delete(subH(numel(FitParams)-2+1:end))
         
         if strcmpi(FitParams(1).FitType,'muamus')
-            
+            CheckedID = find([Filters.Checked]);
+            if CheckedID
+                nactv = numel(Filters(CheckedID).ActualValue);
+                [numsub] = numSubplots(nactv);
+                for ifit = 1:numel(FitParams)-2
+                    tFH = findobj('Type','figure','-and','Name',['GlobalView: ' FitParams(ifit).Name '-' FigureName]);
+                    if ~isempty(tFH)
+                        FH(end+1) = tFH;
+                        figure(FH(end));
+                    else
+                        FH(end+1) = FFS('Name',['GlobalView: ' FitParams(ifit).Name '-' FigureName]);
+                    end
+                    subH = subplot1(numsub(1),numsub(2));
+                    for av = 1:nactv
+                        if ~any(ifit==[XColID YColID])
+                            RealName = ([FitParams(ifit).Name num2str(Filters(CheckedID).ActualValue(av))]);
+                            RealPage.(RealName) = Pages{av}(:,[ifit XColID YColID]);
+                            UnstuckedRealPage.(RealName) = ...
+                                unstack(RealPage.((RealName)),FitParams(ifit).Name,'X','AggregationFunction',@mean);
+                            UnstuckedRealPage.(RealName)(:,1) = [];
+                            subplot1(av);
+                            PercVal = GetPercentile(UnstuckedRealPage.(RealName).Variables,PercFract);
+                            imh = imagesc(UnstuckedRealPage.(RealName).Variables,[0 PercVal]);
+                            colormap pink, shading interp, axis image;
+                            subH(av).YDir = 'reverse';
+                            title(RealName)
+                            colorbar('southoutside')
+                            AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
+                            AddSelectRoi(FH(end),imh,MFH);
+                            AddDefineBorder(FH(end),imh,MFH);
+                        end
+                    end
+                   delete(subH(nactv+1:end)) 
+                end
+            end
         end
         if strcmpi(FitParams(1).FitType,'conc')
             UnstuckedRealPage.HbTot = UnstuckedRealPage.Hb;
@@ -140,9 +200,9 @@ end
                 UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
             ExtraFitParams(1).Name = 'HbTot';
             ExtraFitParams(2).Name = 'So2';
-            FH(end+1) = findobj('Type','figure','-and','Name',['Extra' FigureName]);
-            if ~isempty(FH(end))
-                %isfield(MFH.UserData,'AllDataFigs')
+            tFH = findobj('Type','figure','-and','Name',['Extra' FigureName]);
+            if ~isempty(tFH)
+                FH(end+1) = tFH;
                 figure(FH(end));
             else
                 FH(end+1) = FFS('Name',['Extra' FigureName]);
@@ -153,24 +213,24 @@ end
                 if ~any(ifit==[XColID YColID])
                     subplot1(ifit);
                     PercVal = GetPercentile(UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,PercFract);
-                    imh = imagesc(Xv,Yv,UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,[0 PercVal]);
+                    imh = imagesc(UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,[0 PercVal]);
+                    subH(ifit).YDir = 'reverse';
                     colormap pink, shading interp, axis image;
-                    %                 if(isXDirReverse), subH(ifit).YDir = 'reverse'; end
-                    if(isXDirReverse), subH(ifit).XDir = 'reverse'; end
                     title(ExtraFitParams(ifit).Name)
                     colorbar('southoutside')
+                    AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
                     AddSelectRoi(FH(end),imh,MFH);
+                    AddDefineBorder(FH(end),imh,MFH);
                 end
             end
         end
         
         for ifigs = 1:numel(FH)
-            %FH(ifigs).Visible = 'off';
             FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
             AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
             FH(ifigs).UserData.InfoData.Name = {Filters.Name};
             FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
-            AddInfoEntry(MFH.UserData.ListFigures.UserData.InfoCtxMH,FH(ifigs),FH(ifigs).UserData.InfoData);
+            AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),FH(ifigs).UserData.InfoData,MFH);
         end
         if isfield(MFH.UserData,'AllDataFigs')
             MFH.UserData.AllDataFigs = [MFH.UserData.AllDataFigs FH];

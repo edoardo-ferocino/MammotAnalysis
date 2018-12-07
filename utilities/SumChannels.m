@@ -1,7 +1,9 @@
-function SumChannels(src,event,MFH)
-H=guidata(gcbo);
-IRF_FN = H.IrfFilePath(1:end-4);
-Data_FN = H.DatFilePath(1:end-4);
+function SumChannels(~,~,MFH)
+%% ReadFiles
+[IrfPath ,IrfFileName,~] = fileparts(MFH.UserData.IrfFilePath);
+[DatPath ,DatFileName,~] = fileparts(MFH.UserData.DatFilePath);
+IRF_FN = fullfile(IrfPath,IrfFileName);
+Data_FN = fullfile(DatPath,DatFileName);
 StartWait(MFH);
 
 is_scan = true;
@@ -16,13 +18,14 @@ elseif ndIRF == 3
 else
     return
 end
+Wavelengths =[635 680 785 905 930 975 1060];
 
-if isfield(H,'TRSSetFilePath')
-    SETT = TRSread(H.TRSSetFilePath);
+if isfield(MFH.UserData,'TRSSetFilePath')
+    SETT = TRSread(MFH.UserData.TRSSetFilePath.String);
 else
-    SETT.Roi = zeros(7,3);
+    SETT.Roi = zeros(numel(Wavelengths),3);
     limits = round(linspace(0,NumBin-1,8));
-    for ir = 1:7
+    for ir = 1:numel(Wavelengths)
        SETT.Roi(ir,2) = limits(ir);
        SETT.Roi(ir,3) = limits(ir+1); 
     end
@@ -40,16 +43,19 @@ for ich = 1:NumChan
     POS_IRF_raw(ich) = pos;
 end
 
+%% Calc shift for each channel respect to the average position of the first wavelenght
 mean_pos = mean(POS_IRF_raw);
 shift = mean_pos - POS_IRF_raw;
+
+%% Aplly shifts
 IRF_Shifted = zeros(NumChan,NumBin);
 for ich = 1:NumChan
     IRF_Shifted(ich,:)=circshift(IRF(ich,:),round(shift(ich)));
 end
 
 IRF_Shifted_summed = squeeze(sum(IRF_Shifted,1));
-save('shift.mat','shift');
 
+%% Write IRF file
 fid_out = fopen([IRF_FN '_summed.DAT'], 'wb');
 CH.LoopNum(1) = 1; CH.LoopLast(1) = 1;
 Header=CompileHeader(CH);
@@ -65,7 +71,7 @@ warning('\nConversion to long (uint32) required for file: %s', [IRF_FN '_summed'
 fclose(fid_out);
 
 
-%%
+%% Apply shifts to Data
 [Data,Header,CH,SH,~] = DatRead3(Data_FN,'forcereading',true);
 if is_scan == 1
     [NumY,NumX,NumChan,NumBin]=size(Data);
@@ -96,6 +102,7 @@ else
     Data_Shifted_Summed = squeeze(sum(Data_Shifted,1));
 end
 
+%% Write DATA file
 fid_out = fopen([Data_FN '_summed.DAT'], 'wb');
 
 if is_scan == 1

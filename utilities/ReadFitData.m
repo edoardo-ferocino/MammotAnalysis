@@ -1,4 +1,4 @@
-function ReadFitData(src,event,MFH)
+function ReadFitData(~,~,MFH)
 StartWait(MFH)
 FitFileName = MFH.UserData.FitFilePath;
 opts = detectImportOptions(FitFileName);
@@ -19,21 +19,15 @@ for ic = 1:numel(ColumnNames)
     match = find(strcmpi(OriginalColNames,ColumnNames{ic}));
     if match
         AllData.Properties.VariableNames{ic} = RealColNames{match};
-        %         RealColIndx.(RealColNames{match}) = ic;
     end
 end
 ColumnNames = AllData.Properties.VariableNames;
 
-% isMuaMusFit = false; isConcFit = false;
 if any(strcmpi(ColumnNames,MuaMusNames{1}))
-    %     isMuaMusFit = true;
-    %     nFittedParams = numel(MuaMusNames);
     fitType = 'muamus';
     FitParamsNames = MuaMusNames;
 end
 if any(strcmpi(ColumnNames,CompNames{1}))
-    %     isConcFit  = true;
-    %     nFittedParams = numel(CompNames);
     fitType = 'conc';
     FitParamsNames = CompNames;
 end
@@ -66,6 +60,8 @@ for ic = 1:numel(ColumnNames)
         end
     end
 end
+XColID = find(strcmpi(ColumnNames,'X'));
+AllData(:,XColID).Variables = flip(AllData(:,XColID).Variables);
 StopWait(MFH)
 SetFiltersForFit(AllData,FitParams,Filters,MFH);
 end

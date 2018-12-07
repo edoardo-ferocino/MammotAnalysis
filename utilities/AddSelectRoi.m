@@ -5,27 +5,30 @@ if isempty(object2attach.UIContextMenu)
 else
     cmh = object2attach.UIContextMenu;
 end
-mmh = uimenu(cmh,'Label','Select roi on graph');
+mmh = uimenu(cmh,'Text','Select roi on graph');
 Shapes = {'Rectangle' 'Freehand' 'Circle'};
 for is = 1:numel(Shapes)
-    uimenu(mmh,'Label',Shapes{is},'CallBack',{@SelectRoiOnGraph,Shapes{is},object2attach});
+    uimenu(mmh,'Text',Shapes{is},'CallBack',{@SelectRoiOnGraph,Shapes{is},object2attach});
 end
 
 
     function SelectRoiOnGraph(~,~,shape,object2attach)
-        RoiObjs = findobj('Type','images.roi');
+        RoiObjs = findobj(object2attach,'Type','images.roi');
         ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
         AxH = object2attach.Parent;
         ShapeHandle = images.roi.(shape)(AxH);
+        ShapeHandle.UserData.Type = 'SelectRoi';
         if isempty(RoiObjs)
             ShapeHandle.UserData.ID = 1;
         else
             ShapeHandle.UserData.ID = numel(RoiObjs)+1;
         end
         ShapeHandle.FaceAlpha = 0;
-        ShapeHandle.Color = ColorList{ShapeHandle.UserData.ID};
-        ShapeHandle.UIContextMenu.Children(1).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
-        uimenu(ShapeHandle.UIContextMenu,'Label','Copy ROI','CallBack',{@CopyRoi,ShapeHandle});
+        ColIDX = rem(ShapeHandle.UserData.ID,numel(ColorList));
+        ShapeHandle.Color = ColorList{ColIDX};
+        ShapeHandle.UIContextMenu.Children(...
+            contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
+        uimenu(ShapeHandle.UIContextMenu,'Text','Copy ROI','CallBack',{@CopyRoi,ShapeHandle});
         addlistener(ShapeHandle,'DrawingFinished',@GetData);
         draw(ShapeHandle)
         addlistener(ShapeHandle,'ROIMoved',@GetData);
@@ -46,7 +49,7 @@ end
                 else
                     cntxh = obj2attach(in).UIContextMenu;
                 end
-                umh = uimenu(cntxh,'Label','Paste roi','CallBack',{@PasteRoi,obj2attach(in)});
+                umh = uimenu(cntxh,'Text','Paste roi','CallBack',{@PasteRoi,obj2attach(in)});
                 MFH.UserData.TempMenuH(icntxh) = umh;
                 icntxh = icntxh+1;
             end
@@ -54,14 +57,23 @@ end
         msgbox('Copied ROI object','Success','help');
     end
     function PasteRoi(~,~,obj2attach)
-        copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
-        RoiObj = findobj(obj2attach.Parent.Children,'Type','images.roi');
+        RoiObj = copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
         RoiObj.UserData = rmfield(RoiObj.UserData,'FigRoiHandle');
-        RoiObj.UserData.ID = RoiObj.UserData.ID+1;
+        AllImages = findall(MFH.UserData.AllDataFigs,'type','images.roi');
+        MaxIDPos = zeros(numel(AllImages),1);
+        for iAl = 1:numel(AllImages)
+            MaxIDPos(iAl) = AllImages(iAl).UserData.ID;
+        end
+        MaxVal = max(MaxIDPos);
+        RoiObj.UserData.ID = MaxVal+1;  
+
         ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
-        RoiObj.UIContextMenu.Children(1).MenuSelectedFcn{2} = RoiObj;
-        RoiObj.UIContextMenu.Children(2).MenuSelectedFcn = {@DeleteRoi,RoiObj};
-        RoiObj.Color = ColorList{RoiObj.UserData.ID};
+        RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).MenuSelectedFcn{2} = RoiObj;
+        RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,RoiObj};
+        ColIDX = rem(RoiObj.UserData.ID,numel(ColorList))+1;
+        RoiObj.Color = ColorList{ColIDX};
         GetData(RoiObj,RoiObj);
         addlistener(RoiObj,'ROIMoved',@GetData);
         for icntxh = 1:numel(MFH.UserData.TempMenuH)
@@ -72,34 +84,16 @@ end
         MFH.UserData = rmfield(MFH.UserData,'CopiedRoi');
     end
     function GetData(src,~)
-        StartWait(ancestor(src,'figure'));
-        nchild = numel(src.Parent.Children);
-        for inc = 1:nchild
-            if strcmpi(src.Parent.Children(inc).Type,'image')
-                realhandle = src.Parent.Children(inc);
-            end
-        end
-        
-        Xv = realhandle.XData; Yv = realhandle.YData;
+        AncestorFigure = ancestor(src,'figure');
+        StartWait(AncestorFigure);
+        realhandle = findobj(ancestor(src,'axes'),'type','image');
         Data = realhandle.CData;
-        [numy,numx]=size(Data);
-        if (numel(Xv)==2)
-            Xv = linspace(Xv(1),Xv(2),numx);
-            Yv = linspace(Yv(1),Yv(2),numy);
-        end
-        RoiData = zeros(size(Data));
-        for iy=1:numy
-            for ix=1:numx
-                if(src.inROI(Xv(ix),Yv(iy)))
-                    RoiData(iy,ix) = Data(iy,ix);
-                end
-            end
-        end
-        RoiData(RoiData==0) = nan;
+        RoiData = Data.*src.createMask;
+        RoiData(RoiData==0) = NaN;
         Roi.Median = median(RoiData(:),'omitnan');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
-        Roi.CV = Roi.Std./Roi.Mean;
+        Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0; 
         if (isfield(src.UserData,'FigRoiHandle'))
             FH = src.UserData.FigRoiHandle;
             FH.UserData.RoiObjHandle = src;
@@ -117,6 +111,7 @@ end
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
-        StopWait(ancestor(src,'figure'));
+        movegui(FH,'southwest')
+        StopWait(AncestorFigure);
     end
 end

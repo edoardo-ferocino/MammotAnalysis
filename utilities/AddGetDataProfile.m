@@ -74,6 +74,7 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SelectProfileOnGraph,parentfigure});
             ph.Parent.XDir = 'reverse';
         end
         figure(ancestor(src,'figure'));
+        movegui(FH,'southwest')
         MinimizeFFS(ancestor(src,'figure'));
     end
 end

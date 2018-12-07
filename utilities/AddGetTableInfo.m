@@ -1,4 +1,4 @@
-function AddGetTableInfo(parentfigure,object2attach,MFH,Filters,rows,UnstackedRealPage,AllData)
+function AddGetTableInfo(parentfigure,object2attach,Filters,rows,AllData)
 global CallBackHandle;
 CallBackHandle = @PickInfo;
 global MenuName;
@@ -10,15 +10,15 @@ if isempty(object2attach.UIContextMenu)
 else
     cmh = object2attach.UIContextMenu;
 end
-umh = uimenu(cmh,'Label',MenuName);
+menuh = uimenu(cmh,'Text',MenuName);
 
 for info = 1:numel(PickInfoNames)
-   submh = uimenu(umh,'Label',PickInfoNames{info},'CallBack',{CallBackHandle,parentfigure});
+   submh = uimenu(menuh,'Text',PickInfoNames{info},'CallBack',{CallBackHandle,parentfigure,menuh});
    submh.UserData.submh = submh;
 end
 
 
-    function PickInfo(src,~,figh)
+    function PickInfo(src,~,figh,menuh)
         if strcmpi(src.Checked,'off')
             src.Checked = 'on';
             src.UserData.originalprops = datacursormode(figh);
@@ -33,34 +33,24 @@ end
         end
         
         datacursormode on
-        dch.DisplayStyle = 'window'; ObjMenu = src;
+        dch.DisplayStyle = 'window'; 
+        ObjMenu = menuh.Children(strcmpi({menuh.Children.Checked},'on'));
         dch.UpdateFcn = {@PickInfoOnGraph,ObjMenu};
     end
     function output_txt=PickInfoOnGraph(src,~,ObjMenu)
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        nchild = numel(src.Parent.Children);
-        for inc = 1:nchild
-            if strcmpi(src.Parent.Children(inc).Type,'image')
-                realhandle = src.Parent.Children(inc);
-            end
-        end
-        [numy,numx]=size(UnstackedRealPage.Variables);
-        Xv = realhandle.XData; Yv = realhandle.YData;
-        if (numel(Xv)==2)
-            Xv = linspace(Xv(1),Xv(2),numx);
-            Yv = linspace(Yv(1),Yv(2),numy);
-        end
-        [~,MinIndxX]=min(abs(Xv-Xpos));[~,MinIndxY]=min(abs(Yv-Ypos));
-        DataXpos = MinIndxX;DataYpos = MinIndxY;
-%         TableInfoVal = AllData(rows,ObjMenu.UserData.submh.Label);
-        Xrows = AllData.X == Xpos;
-        Yrows = AllData.Y == Ypos;
+        realhandle = findobj(ancestor(src,'axes'),'type','image');
+        Xrows = AllData.X == Xpos-1;
+        Yrows = AllData.Y == Ypos-1;
         newrows = all([rows Xrows Yrows],2);
-        newval = AllData(newrows,ObjMenu.UserData.submh.Label).Variables;
-        Zval = UnstackedRealPage(Ypos+1,Xpos+1).Variables;
+        for iobj = 1:numel(ObjMenu)
+            newval = mean(AllData(newrows,ObjMenu(iobj).UserData.submh.Text).Variables);
+            string2plot{iobj} = [ObjMenu(iobj).UserData.submh.Text, ': ',num2str(newval)];
+        end
+        Zval = realhandle.CData(Ypos,Xpos);
         output_txt = {['X: ',num2str(round(Xpos))],...
             ['Y: ',num2str(round(Ypos))],...
             ['Z: ',num2str(Zval)],...
-            [ObjMenu.UserData.submh.Label, ': ',num2str(newval)]};
+            string2plot{:}};%[ObjMenu.UserData.submh.Label, ': ',num2str(newval)]};
     end
 end
