@@ -204,7 +204,7 @@ waitfor(pushbh,'Tag');
         semilogy(1:numbin,Reference);
         MFH.UserData.GateCurveReference.CurveReference = Reference;
                 
-        AddToFigureListStruct(FH,MFH,'data');
+        AddToFigureListStruct(FH,MFH,'side');
         pushbh.Tag = '';
     end
 end

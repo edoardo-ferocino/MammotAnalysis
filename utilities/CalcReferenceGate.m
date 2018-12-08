@@ -24,8 +24,9 @@ if ~isempty(FH)
 else
     FH=figure('NumberTitle','off','Name',['Gate plots - ' FileName]);
 end
+AddToFigureListStruct(FH,MFH,'data')
 nSub = numSubplots(numwave);
-subH = subplot1(nSub(1),nSub(2),'XTickL','all');
+subH = subplot1(nSub(1),nSub(2),'XTickL','all','Gap',[0.01 0.07]);
 for iw = 1:numwave
     Wave(iw).Roi = Roi(iw,1):Roi(iw,2);
     Wave(iw).RefCurve = RefCurve(Wave(iw).Roi); %#ok<*AGROW>
