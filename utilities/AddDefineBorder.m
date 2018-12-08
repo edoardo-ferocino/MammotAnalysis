@@ -66,11 +66,7 @@ end
             FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
             AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
         end
-        if isfield(MFH.UserData,'AllDataFigs')
-            MFH.UserData.AllDataFigs = [MFH.UserData.AllDataFigs FH];
-        else
-            MFH.UserData.AllDataFigs = FH;
-        end
+        AddToFigureListStruct(FH,MFH,'data')
         movegui(FH,'center')
         StopWait(FigureParent);
         StopWait(FH);

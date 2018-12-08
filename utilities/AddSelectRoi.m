@@ -94,24 +94,19 @@ end
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0; 
-        if (isfield(src.UserData,'FigRoiHandle'))
-            FH = src.UserData.FigRoiHandle;
-            FH.UserData.RoiObjHandle = src;
-            figure(FH)
+        FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag,'ToolBar','none'));
+        if ~isempty(FH)
+            figure(FH);
         else
-            FH=figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag),'ToolBar','none');
-            src.UserData.FigRoiHandle = FH;
-            if ~isfield(MFH.UserData,'SideFigs')
-                MFH.UserData.SideFigs = FH;
-            else
-                MFH.UserData.SideFigs(end+1) = FH;
-            end
+            FH = figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag,'ToolBar','none'));
         end
+        
         FH.Color = src.Color;
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
         movegui(FH,'southwest')
+        AddToFigureListStruct(FH,MFH,'side');
         StopWait(AncestorFigure);
     end
 end

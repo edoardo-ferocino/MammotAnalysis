@@ -9,19 +9,15 @@ global FigFilterHandle
 
 FigFilterHandleName = 'SelectFilters';
 Obj = MFH.UserData.DispFitFilePath;
-if (isfield(Obj.UserData,FigFilterHandleName))
-    FigFilterHandle = Obj.UserData.(FigFilterHandleName);
-    FigFilterHandle.UserData.(FigFilterHandleName) = Obj.UserData.(FigFilterHandleName);
+
+FigFilterHandle = findobj('Type','figure','-and','Name',FigFilterName);
+if ~isempty(FigFilterHandle)
     figure(FigFilterHandle);
 else
-    FigFilterHandle = figure('Name',FigFilterName,'Toolbar','None','MenuBar','none');
-    Obj.UserData.(FigFilterHandleName) = FigFilterHandle;
-    if ~isfield(MFH.UserData,'SideFigs')
-        MFH.UserData.SideFigs = FigFilterHandle;
-    else
-        MFH.UserData.SideFigs(end+1) = FigFilterHandle;
-    end
+    FigFilterHandle=figure('Name',FigFilterName,'Toolbar','None','MenuBar','none');
 end
+AddToFigureListStruct(FigFilterHandle,MFH,'side');
+
 if strcmpi(Filters(1).FitType,'muamus')
     addcheckbox = true;
 else
@@ -187,7 +183,7 @@ end
                             AddDefineBorder(FH(end),imh,MFH);
                         end
                     end
-                   delete(subH(nactv+1:end)) 
+                    delete(subH(nactv+1:end))
                 end
             end
         end

@@ -14,7 +14,6 @@ OriginalColNames = {'loop3actual','loop2actual','CodeActual','varconc00opt','var
 RealColNames = {'X','Y','CodeActualLoop','Hb','HbO2','Lipid',...
     'H20','Collagen','A','B','mua','mus'};
 ColumnNames = AllData.Properties.VariableNames;
-% CompNames = {'Hb' 'HbO2' 'Lipid' 'H20' 'Collagen' 'HbTot' 'So2' 'A' 'B'};
 CompNames = {'Hb' 'HbO2' 'Lipid' 'H20' 'Collagen' 'A' 'B'};
 MuaMusNames = {'mua','mus'};
 LocationNames = {'X','Y'};

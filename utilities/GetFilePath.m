@@ -1,7 +1,6 @@
 function GetFilePath(src,~,type,MFH)
 [FileName,PathName,FilterIndex]=uigetfilecustom('*.txt;*.dat;*.fit;*.trs');
 if FilterIndex == 0, return, end
-H = guidata(gcbo);
 FullPath = fullfile(PathName,FileName);
 switch type
     case 'fit'
@@ -21,6 +20,5 @@ switch type
         src.UserData.TRSSetFilePath = FullPath;
         MFH.UserData.DispTRSSetFilePath.String = FileName;
 end
-guidata(gcbo,H)
 end
 

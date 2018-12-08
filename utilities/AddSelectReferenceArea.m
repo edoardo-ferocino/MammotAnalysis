@@ -1,7 +1,7 @@
 function AddSelectReferenceArea(parentfigure,object2attach,Data,MFH)
-[~,name,~] = fileparts(MFH.UserData.DispDatFilePath.String);
+[~,FileName,~] = fileparts(MFH.UserData.DispDatFilePath.String);
 global FigureName;
-FigureName = ['Reference Curve - ' name];
+FigureName = ['Reference Curve - ' FileName];
 global FigureNameHandle;
 FigureNameHandle = 'ReferenceHandle';
 if isempty(object2attach.UIContextMenu)
@@ -41,22 +41,17 @@ waitfor(pushbh,'Tag');
         dch.DisplayStyle = 'window'; ObjMenu = src;
         dch.UpdateFcn = {@PickReferenceCurveOnGraph,ObjMenu};
     end
-    function output_txt=PickReferenceCurveOnGraph(src,~,ObjMenu)
+    function output_txt=PickReferenceCurveOnGraph(src,~,~)
         AncestorFigure = ancestor(src,'figure');
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        if (isfield(ObjMenu.UserData,FigureNameHandle))
-            FH = ObjMenu.UserData.(FigureNameHandle);
-            FH.UserData.(FigureNameHandle) = ObjMenu.UserData.(FigureNameHandle);
+        
+        FH = findobj('Type','figure','-and','Name',FigureName);
+        if ~isempty(FH)
             figure(FH);
         else
             FH=figure('NumberTitle','off','Name',FigureName);
-            ObjMenu.UserData.(FigureNameHandle) = FH;
-            if ~isfield(MFH.UserData,'SideFigs')
-                MFH.UserData.SideFigs = FH;
-            else
-                MFH.UserData.SideFigs(end+1) = FH;
-            end
         end
+        
         movegui(FH,'northwest')
         
         %realhandle = findobj(ancestor(src,'axes'),'type','image');
@@ -67,6 +62,7 @@ waitfor(pushbh,'Tag');
         ylim([10 max(Data(:))]);
         figure(AncestorFigure);
         MinimizeFFS(AncestorFigure);
+        AddToFigureListStruct(FH,MFH,'side');
         MFH.UserData.GateCurveReference.Type = 'Spot';
         MFH.UserData.GateCurveReference.Position = [Ypos Xpos];
     end
@@ -152,29 +148,40 @@ waitfor(pushbh,'Tag');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
-        if (isfield(src.UserData,'FigRoiHandle'))
-            FH = src.UserData.FigRoiHandle;
-            FH.UserData.RoiObjHandle = src;
-            figure(FH)
+        FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag));
+        if ~isempty(FH)
+            figure(FH);
         else
-            FH=figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag),'ToolBar','none');
-            src.UserData.FigRoiHandle = FH;
-            if ~isfield(MFH.UserData,'SideFigs')
-                MFH.UserData.SideFigs = FH;
-            else
-                MFH.UserData.SideFigs(end+1) = FH;
-            end
+            FH = figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag));
         end
+        
         FH.Color = src.Color;
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
         movegui(FH,'northwest')
+        
+        tFH = findobj('Type','figure','-and','Name',FigureName);
+        if ~isempty(tFH)
+            FH(end+1) = tFH;
+            figure(FH(end));
+        else
+            FH(end+1)=figure('NumberTitle','off','Name',FigureName);
+        end
+        
+        dummyReference = Data;
+        dummyReference(~repmat(src.createMask,[1 1 size(Data,3)])) = nan;
+        dummyReference = mean(dummyReference,[1 2],'omitnan');
+        dummyReference = squeeze(dummyReference);
+        semilogy(1:size(Data,3),dummyReference);
+        ylim([10 max(Data(:))]);
+        
+        AddToFigureListStruct(FH,MFH,'side');
         StopWait(AncestorFigure);
         MFH.UserData.GateCurveReference.Type = 'Area';
         MFH.UserData.GateCurveReference.Position = src.createMask;
     end
-    function ApplyReference(src,~)
+    function ApplyReference(~,~)
         if ~isfield(MFH.UserData,'GateCurveReference')
             msgbox('Please, select a ROI for the reference measure','Warning','help');
             return
@@ -186,25 +193,21 @@ waitfor(pushbh,'Tag');
         else
             Reference = Data;
             Reference(~repmat(MFH.UserData.GateCurveReference.Position,[1 1 numbin])) = nan;
-            Reference = permute(Reference,[3 1 2]);
-            Reference = mean(Reference,[2 3],'omitnan');
+            Reference = mean(Reference,[1 2],'omitnan');
         end
-        if (isfield(src.UserData,'FigRoiHandle'))
-            FH = src.UserData.FigRoiHandle;
-            FH.UserData.RoiObjHandle = src;
-            figure(FH)
+        
+        FH = findobj('Type','figure','-and','Name',['Reference for gates - ' FileName]);
+        if ~isempty(FH)
+            figure(FH);
         else
-            FH=figure('NumberTitle','off','Name','Reference for gates','ToolBar','none');
-            src.UserData.FigRoiHandle = FH;
-            if ~isfield(MFH.UserData,'SideFigs')
-                MFH.UserData.SideFigs = FH;
-            else
-                MFH.UserData.SideFigs(end+1) = FH;
-            end
+            FH=figure('NumberTitle','off','Name',['Reference for gates - ' FileName],'ToolBar','none');
         end
+        
         Reference = squeeze(Reference);
         semilogy(1:numbin,Reference);
         MFH.UserData.GateCurveReference.CurveReference = Reference;
+                
+        AddToFigureListStruct(FH,MFH,'side');
         pushbh.Tag = '';
     end
 end

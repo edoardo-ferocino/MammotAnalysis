@@ -71,7 +71,7 @@ axh = gca; axh.YDir = 'reverse';
 colormap pink, shading interp, axis image;
 colorbar
 Data = squeeze(sum(A,3));
-AddDefineBorder(FH,imh,MFH)
+% AddDefineBorder(FH,imh,MFH)
 AddSelectReferenceArea(FH,imh,Data,MFH)
 ReferenceCurveS = CalcReferenceGate(SETT.Roi(1:numel(Wavelengths),2:end)+1,IRF,MFH);
 DataCurveS = ApplyGates(ReferenceCurveS,Data,MFH);

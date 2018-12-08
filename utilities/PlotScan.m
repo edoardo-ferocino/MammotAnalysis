@@ -109,11 +109,7 @@ for ifigs = 1:numel(FH)
     FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
     AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
 end
-if isfield(MFH.UserData,'AllDataFigs')
-    MFH.UserData.AllDataFigs = [MFH.UserData.AllDataFigs FH];
-else
-    MFH.UserData.AllDataFigs = FH;
-end
+AddToFigureListStruct(FH,MFH,'data');
 %% StopWait
 StopWait(MFH)
 end
