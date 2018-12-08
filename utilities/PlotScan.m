@@ -103,12 +103,6 @@ AddSelectRoi(FH(end),imh,MFH);
 AddGetDataProfile(FH(end),imh,MFH);
 AddDefineBorder(FH(end),imh,MFH);
 
-%% Set figures properties
-for ifigs = 1:numel(FH)
-    FH(ifigs).Visible = 'off';
-    FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
-    AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
-end
 AddToFigureListStruct(FH,MFH,'data');
 %% StopWait
 StopWait(MFH)

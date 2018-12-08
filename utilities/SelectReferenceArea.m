@@ -65,6 +65,7 @@ if ~isempty(FH)
 else
     FH = FFS('Name',['Choose reference area - ' NameFile]);
 end
+AddToFigureListStruct(FH,MFH,'side');
 subplot1(1,1); subplot1(1);
 imh = imagesc(CountRatesImageAllChan);
 axh = gca; axh.YDir = 'reverse';

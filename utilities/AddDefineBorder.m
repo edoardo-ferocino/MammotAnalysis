@@ -1,5 +1,4 @@
 function AddDefineBorder(parentfigure,object2attach,MFH)
-global PercFract
 PercFract = 95;
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);

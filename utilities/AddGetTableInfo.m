@@ -1,7 +1,5 @@
 function AddGetTableInfo(parentfigure,object2attach,Filters,rows,AllData)
-global CallBackHandle;
 CallBackHandle = @PickInfo;
-global MenuName;
 MenuName = 'Pick Info';
 PickInfoNames = {Filters.Name};
 if isempty(object2attach.UIContextMenu)

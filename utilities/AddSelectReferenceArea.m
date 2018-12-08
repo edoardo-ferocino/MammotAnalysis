@@ -1,9 +1,6 @@
 function AddSelectReferenceArea(parentfigure,object2attach,Data,MFH)
 [~,FileName,~] = fileparts(MFH.UserData.DispDatFilePath.String);
-global FigureName;
 FigureName = ['Reference Curve - ' FileName];
-global FigureNameHandle;
-FigureNameHandle = 'ReferenceHandle';
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);
     object2attach.UIContextMenu = cmh;
@@ -196,18 +193,18 @@ waitfor(pushbh,'Tag');
             Reference = mean(Reference,[1 2],'omitnan');
         end
         
-        FH = findobj('Type','figure','-and','Name',['Reference for gates - ' FileName]);
+        FH = findobj('Type','figure','-and','Name',['Actual reference curve for gates - ' FileName]);
         if ~isempty(FH)
             figure(FH);
         else
-            FH=figure('NumberTitle','off','Name',['Reference for gates - ' FileName],'ToolBar','none');
+            FH=figure('NumberTitle','off','Name',['Actual reference curve for gates - ' FileName]);
         end
         
         Reference = squeeze(Reference);
         semilogy(1:numbin,Reference);
         MFH.UserData.GateCurveReference.CurveReference = Reference;
                 
-        AddToFigureListStruct(FH,MFH,'side');
+        AddToFigureListStruct(FH,MFH,'data');
         pushbh.Tag = '';
     end
 end

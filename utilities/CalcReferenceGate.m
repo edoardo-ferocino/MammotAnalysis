@@ -1,4 +1,5 @@
 function Wave = CalcReferenceGate(Roi,Irf,MFH)
+[~,FileName,~] = fileparts(MFH.UserData.DispDatFilePath.String);
 RefCurve = MFH.UserData.GateCurveReference.CurveReference;
 Factor = MFH.UserData.CompiledHeaderData.McaFactor;
 numwave = length(Roi(:,1));
@@ -17,8 +18,14 @@ else
     lastdir = 'first';
 end
 fractlast = abs(fractlast);fractfirst = abs(fractfirst);
+FH = findobj('Type','figure','-and','Name',['Gate plots - ' FileName]);
+if ~isempty(FH)
+    figure(FH);
+else
+    FH=figure('NumberTitle','off','Name',['Gate plots - ' FileName]);
+end
 nSub = numSubplots(numwave);
-subH = subplot1(nSub(1),nSub(2));
+subH = subplot1(nSub(1),nSub(2),'XTickL','all');
 for iw = 1:numwave
     Wave(iw).Roi = Roi(iw,1):Roi(iw,2);
     Wave(iw).RefCurve = RefCurve(Wave(iw).Roi); %#ok<*AGROW>
@@ -39,8 +46,8 @@ for iw = 1:numwave
     subplot1(iw);
     semilogy(subH(iw),[Wave(iw).NormRefCurve Wave(iw).NormIrfCurve Wave(iw).RangedCurve./max(Wave(iw).RangedCurve)])
     xlim([max(0,Wave(iw).FirstIndx-10) min(numel(Wave(iw).RefCurve),Wave(iw).LastIndx+10)])
-    vline(Wave(iw).FirstIndx);
-    vline(Wave(iw).LastIndx)
+    %     vline(Wave(iw).FirstIndx);
+    %     vline(Wave(iw).LastIndx)
     title(num2str(Wavelengths(iw)));
     Wave(iw).Gate = CalcGate(Wave(iw).RangedCurve,Wave(iw).FirstIndx,Wave(iw).LastIndx,numgate);
 end
@@ -50,8 +57,8 @@ MHF.UserData.GateCurveReference.Wave = Wave;
         Counts = sum(Curve);
         CountsPerGate = Counts/NumGate;
         lastbin = FirstIndx; %firstbin = FirstIndx;
-%         figure(99);
-%         semilogy(Curve)
+        %         figure(99);
+        %         semilogy(Curve)
         for ig = 1:NumGate
             partialcounts = 0; ib = lastbin; firstbin = lastbin;
             while partialcounts<=CountsPerGate && ib<=numel(Curve)
@@ -59,9 +66,12 @@ MHF.UserData.GateCurveReference.Wave = Wave;
                 ib = ib + 1;
             end
             lastbin = ib;
-%             vline(lastbin-1);
             Gate(ig).Counts = partialcounts;
             Gate(ig).Roi = [firstbin lastbin-1];
+            if ~(Gate(ig).Roi(1)>=numel(Curve))
+                vline(Gate(ig).Roi(1),'r:',num2str(ig),'percy',0.8);
+                vline(Gate(ig).Roi(2));
+            end
             Gate(ig).TemporalInterval = (Gate(ig).Roi-FirstIndx).*Factor;
             if firstbin>numel(Curve), firstbin = numel(Curve);end
             if lastbin>numel(Curve), lastbin = numel(Curve);end

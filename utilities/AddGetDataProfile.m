@@ -1,12 +1,6 @@
 function AddGetDataProfile(parentfigure,object2attach,MFH)
 [~,name,~] = fileparts(MFH.UserData.DispDatFilePath.String);
-global FigureName;
 FigureName = ['Profile Curve - ' name];
-global FigureNameHandle;
-FigureNameHandle = 'ProfileCurveHandle';
-global CallBackHandle;
-CallBackHandle = @SelectProfileOnGraph;
-global MenuName;
 MenuName = 'Get profile';
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);

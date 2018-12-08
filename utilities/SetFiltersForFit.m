@@ -6,10 +6,6 @@ global PercFract
 PercFract = 95;
 FigFilterName = ['Select filters - ' name];
 global FigFilterHandle
-
-FigFilterHandleName = 'SelectFilters';
-Obj = MFH.UserData.DispFitFilePath;
-
 FigFilterHandle = findobj('Type','figure','-and','Name',FigFilterName);
 if ~isempty(FigFilterHandle)
     figure(FigFilterHandle);
@@ -222,16 +218,10 @@ end
         end
         
         for ifigs = 1:numel(FH)
-            FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
-            AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
             FH(ifigs).UserData.InfoData.Name = {Filters.Name};
             FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
             AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),FH(ifigs).UserData.InfoData,MFH);
         end
-        if isfield(MFH.UserData,'AllDataFigs')
-            MFH.UserData.AllDataFigs = [MFH.UserData.AllDataFigs FH];
-        else
-            MFH.UserData.AllDataFigs = FH;
-        end
+        AddToFigureListStruct(FH,MFH,'data')
     end
 end
