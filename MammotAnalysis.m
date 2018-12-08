@@ -1,10 +1,8 @@
 InitScript
-MFH = FFS('Name','Main panel','NumberTitle','off'); %MFH.Units = 'normalized';
-H = guihandles(MFH);
-H.MFH = MFH;
+MFH = FFS('Name','Main panel','NumberTitle','off','Toolbar','none','menubar','none'); %MFH.Units = 'normalized';
 MFH.UserData.Name = MFH.Name;
 MFH.UserData.Wavelengths =[635 680 785 905 930 975 1060];
-addpath('./utilities');
+addpath(genpath('./utilities'));
 MFH.CloseRequestFcn = {@CloseMainFigure,MFH};
 MFH.SizeChangedFcn = {@ResizeMainFigure,MFH};
 MFH.UserData.LoadFileContainer = CreateContainer(MFH,'Title','Load files','OuterPosition',[0.02 0.85 0.2 0.15]);%,'BorderType','none');
@@ -24,8 +22,10 @@ MFH.UserData.LoadTRSSet = CreatePushButton(MFH.UserData.LoadFileContainer,'units
     'Position',MFH.UserData.LoadIrf.Position+[0 1/4 0 0],'String','Load TRS set file','Callback',{@GetFilePath,'trs',MFH});
 MFH.UserData.DispTRSSetFilePath = CreateEdit(MFH.UserData.LoadFileContainer,'Units','normalized',...
     'Position',MFH.UserData.LoadTRSSet.Position+[0.25 0 0.3 0],'HorizontalAlignment','Left','Enable','inactive');
-ch = CreateContainer(MFH,'OuterPosition',[0.02 0.65 0.2 0.15]);
-MFH.UserData.ListFigures = CreateListBox(ch,'Units','normalized','Position',[0 0 1 1],'CallBack',{@OpenSelectedFigure});
+MFH.UserData.ListFiguresContainer = CreateContainer(MFH,...
+    'OuterPosition',[0.02 0.65 0.2 0.15]);
+MFH.UserData.ListFigures = CreateListBox(MFH.UserData.ListFiguresContainer,...
+    'Units','normalized','Position',[0 0 1 1],'CallBack',{@OpenSelectedFigure});
 MFH.UserData.MainActionsContainer = CreateContainer(MFH,'Title','Main actions',...
     'OuterPosition',[0.25 0.85 0.2 0.15]);%,'BorderType','none');
 MFH.UserData.ReadFitFile = CreatePushButton(MFH.UserData.MainActionsContainer,'String','Read fit file',...
@@ -37,7 +37,7 @@ MFH.UserData.SumChannelsRawDatFile = CreatePushButton(MFH.UserData.MainActionsCo
 MFH.UserData.EnableGatesPanel = CreateCheckBox(MFH.UserData.MainActionsContainer,'String','Enable gates panel',...
     'Units','normalized','Position',MFH.UserData.PlotRawScan.Position+[0.3 0 0.2 0],'Callback',{@EnableGatePanel,MFH});     
 MFH.UserData.GateContainer = CreateContainer(MFH,'Title','Gates',...
-    'OuterPosition',[0.48 0.85 0.25 0.15],'Visible','on');%,'BorderType','none');
+    'OuterPosition',[0.48 0.85 0.25 0.15],'Visible','off');%,'BorderType','none');
 MFH.UserData.SelectReferenceArea = CreatePushButton(MFH.UserData.GateContainer,'String','Select reference area',...
     'Units','normalized','Position',[0 0 0.3 1/4],'Visible','on','Callback',{@SelectReferenceArea,MFH});
 MFH.UserData.NumGate = CreateEdit(MFH.UserData.GateContainer,'Units','normalized',...
@@ -52,4 +52,9 @@ MFH.UserData.TextFractFirst = CreateText(MFH.UserData.GateContainer,'Units','nor
     'Position',MFH.UserData.TextNumGate.Position+[0 1/4 0 0],'String','Fract first','HorizontalAlignment','Left');
 MFH.UserData.TextFractLast = CreateText(MFH.UserData.GateContainer,'Units','normalized',...
     'Position',MFH.UserData.TextFractFirst.Position+[0 1/4 0 0],'String','Fract last','HorizontalAlignment','Left');
-
+MFH.UserData.ReportContainer = CreateContainer(MFH,...
+    'Title','Create report','OuterPosition',[0.25 0.3 0.2 0.5]);%,'BorderType','none');
+MFH.UserData.Report = CreateEdit(MFH.UserData.ReportContainer,...
+    'Units','normalized','OuterPosition',[0 0 1 0.85],'HorizontalAlignment','left','Max',2,'FontSize',10);
+MFH.UserData.SaveReport = CreatePushButton(MFH.UserData.ReportContainer,'String','Save',...
+    'Units','normalized','Position',[0 0.9 0.2 0.1],'Callback',{@SaveReport,MFH});

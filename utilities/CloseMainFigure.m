@@ -15,5 +15,6 @@ if isfield(MFH.UserData,'SideFigs')
        end
    end
 end
+rmpath(genpath('./utilities'))
 delete(MFH)
 end
