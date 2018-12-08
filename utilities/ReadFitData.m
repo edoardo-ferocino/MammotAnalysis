@@ -1,4 +1,8 @@
 function ReadFitData(~,~,MFH)
+if ~isfield(MFH.UserData,'FitFilePath')
+    errordlg('Please load the Fit file','Error');
+    return
+end
 StartWait(MFH)
 FitFileName = MFH.UserData.FitFilePath;
 opts = detectImportOptions(FitFileName);

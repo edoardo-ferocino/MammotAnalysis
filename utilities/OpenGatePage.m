@@ -1,3 +1,3 @@
-function OpenGatePage(src,event)
-figure(10);
+function EnableGates(src,event,MFH)
+
 end

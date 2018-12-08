@@ -1,5 +1,13 @@
 function SumChannels(~,~,MFH)
 %% ReadFiles
+if ~isfield(MFH.UserData,'IrfFilePath')
+    errordlg('Please load the NOT SUMMED IRF file','Error');
+    return
+end
+if ~isfield(MFH.UserData,'DatFilePath')
+    errordlg('Please load the NOT SUMMED Data file','Error');
+    return
+end
 [IrfPath ,IrfFileName,~] = fileparts(MFH.UserData.IrfFilePath);
 [DatPath ,DatFileName,~] = fileparts(MFH.UserData.DatFilePath);
 IRF_FN = fullfile(IrfPath,IrfFileName);

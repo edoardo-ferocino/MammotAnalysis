@@ -58,6 +58,7 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
         output_txt = {['X: ',num2str(round(Xpos))],...
             ['Y: ',num2str(round(Ypos))],['Z: ',num2str(sum(Data(Ypos,Xpos,:))./MFH.UserData.CompiledHeaderData.McaTime)]};
         semilogy(1:numbin,squeeze(Data(Ypos,Xpos,:)));
+        ylim([10 max(Data(:))]);
         figure(AncestorFigure);
         MinimizeFFS(AncestorFigure);
     end

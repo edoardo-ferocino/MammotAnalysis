@@ -87,8 +87,8 @@ end
         AncestorFigure = ancestor(src,'figure');
         StartWait(AncestorFigure);
         realhandle = findobj(ancestor(src,'axes'),'type','image');
-        Data = realhandle.CData;
-        RoiData = Data.*src.createMask;
+        ImageData = realhandle.CData;
+        RoiData = ImageData.*src.createMask;
         RoiData(RoiData==0) = NaN;
         Roi.Median = median(RoiData(:),'omitnan');
         Roi.Mean = mean(RoiData(:),'omitnan');

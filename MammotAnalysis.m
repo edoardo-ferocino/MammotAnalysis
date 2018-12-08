@@ -3,8 +3,10 @@ MFH = FFS('Name','Main panel','NumberTitle','off'); %MFH.Units = 'normalized';
 H = guihandles(MFH);
 H.MFH = MFH;
 MFH.UserData.Name = MFH.Name;
+MFH.UserData.Wavelengths =[635 680 785 905 930 975 1060];
 addpath('./utilities');
 MFH.CloseRequestFcn = {@CloseMainFigure,MFH};
+MFH.SizeChangedFcn = {@ResizeMainFigure,MFH};
 MFH.UserData.LoadFileContainer = CreateContainer(MFH,'Title','Load files','OuterPosition',[0.02 0.85 0.2 0.15]);%,'BorderType','none');
 MFH.UserData.LoadFit = CreatePushButton(MFH.UserData.LoadFileContainer,'String','Load fit file',...
     'Units','normalized','Position',[0 0 0.2 1/4],'Callback',{@GetFilePath,'fit',MFH});
@@ -24,18 +26,30 @@ MFH.UserData.DispTRSSetFilePath = CreateEdit(MFH.UserData.LoadFileContainer,'Uni
     'Position',MFH.UserData.LoadTRSSet.Position+[0.25 0 0.3 0],'HorizontalAlignment','Left','Enable','inactive');
 ch = CreateContainer(MFH,'OuterPosition',[0.02 0.65 0.2 0.15]);
 MFH.UserData.ListFigures = CreateListBox(ch,'Units','normalized','Position',[0 0 1 1],'CallBack',{@OpenSelectedFigure});
-MFH.UserData.MainActionsContainer = CreateContainer(MFH,'Title','Main actions','OuterPosition',[0.25 0.85 0.2 0.15]);%,'BorderType','none');
+MFH.UserData.MainActionsContainer = CreateContainer(MFH,'Title','Main actions',...
+    'OuterPosition',[0.25 0.85 0.2 0.15]);%,'BorderType','none');
 MFH.UserData.ReadFitFile = CreatePushButton(MFH.UserData.MainActionsContainer,'String','Read fit file',...
     'Units','normalized','Position',[0 0 0.2 1/4],'Callback',{@ReadFitData,MFH});
 MFH.UserData.PlotRawScan = CreatePushButton(MFH.UserData.MainActionsContainer,'String','Plot raw scan',...
     'Units','normalized','Position',MFH.UserData.ReadFitFile.Position+[0 1/4 0.05 0],'Callback',{@PlotScan,MFH});
 MFH.UserData.SumChannelsRawDatFile = CreatePushButton(MFH.UserData.MainActionsContainer,'String','Sum channel raw scan',...
     'Units','normalized','Position',MFH.UserData.PlotRawScan.Position+[0 1/4 0.15 0],'Callback',{@SumChannels,MFH});
-MFH.UserData.OpenGatePage = CreatePushButton(MFH.UserData.MainActionsContainer,'String','Plot gates',...
-    'Units','normalized','Position',MFH.UserData.PlotRawScan.Position+[0.3 0 0.05 0],'Callback',{@OpenGatePage});
-
-
-
-guidata(MFH,H)
-
+MFH.UserData.EnableGatesPanel = CreateCheckBox(MFH.UserData.MainActionsContainer,'String','Enable gates panel',...
+    'Units','normalized','Position',MFH.UserData.PlotRawScan.Position+[0.3 0 0.2 0],'Callback',{@EnableGatePanel,MFH});     
+MFH.UserData.GateContainer = CreateContainer(MFH,'Title','Gates',...
+    'OuterPosition',[0.48 0.85 0.25 0.15],'Visible','on');%,'BorderType','none');
+MFH.UserData.SelectReferenceArea = CreatePushButton(MFH.UserData.GateContainer,'String','Select reference area',...
+    'Units','normalized','Position',[0 0 0.3 1/4],'Visible','on','Callback',{@SelectReferenceArea,MFH});
+MFH.UserData.NumGate = CreateEdit(MFH.UserData.GateContainer,'Units','normalized',...
+    'Position',MFH.UserData.SelectReferenceArea.Position+[0 1/4 -0.2 0],'String','10','HorizontalAlignment','Left','Callback',{@SetEditValue,'numgate'});
+MFH.UserData.FractFirst = CreateEdit(MFH.UserData.GateContainer,'Units','normalized',...
+    'Position',MFH.UserData.NumGate.Position+[0 1/4 0 0],'String','-0.1','HorizontalAlignment','Left','Callback',{@SetEditValue,'fractfirst'});
+MFH.UserData.FractLast = CreateEdit(MFH.UserData.GateContainer,'Units','normalized',...
+    'Position',MFH.UserData.FractFirst.Position+[0 1/4 0 0],'String','0.1','HorizontalAlignment','Left','Callback',{@SetEditValue,'fractlast'});
+MFH.UserData.TextNumGate = CreateText(MFH.UserData.GateContainer,'Units','normalized',...
+    'Position',MFH.UserData.NumGate.Position+[0.11 0 0.05 0],'String','Num gates','HorizontalAlignment','Left');
+MFH.UserData.TextFractFirst = CreateText(MFH.UserData.GateContainer,'Units','normalized',...
+    'Position',MFH.UserData.TextNumGate.Position+[0 1/4 0 0],'String','Fract first','HorizontalAlignment','Left');
+MFH.UserData.TextFractLast = CreateText(MFH.UserData.GateContainer,'Units','normalized',...
+    'Position',MFH.UserData.TextFractFirst.Position+[0 1/4 0 0],'String','Fract last','HorizontalAlignment','Left');
 
