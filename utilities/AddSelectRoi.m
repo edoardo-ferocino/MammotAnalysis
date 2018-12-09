@@ -13,7 +13,7 @@ end
 
 
     function SelectRoiOnGraph(~,~,shape,object2attach)
-        RoiObjs = findobj(object2attach,'Type','images.roi');
+        RoiObjs = findobj(ancestor(object2attach,'axes'),'Type','images.roi');
         ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
         AxH = object2attach.Parent;
         ShapeHandle = images.roi.(shape)(AxH);
@@ -34,7 +34,6 @@ end
         addlistener(ShapeHandle,'ROIMoved',@GetData);
     end
     function DeleteRoi(~,~,roiobj)
-        delete(roiobj.UserData.FigRoiHandle)
         delete(roiobj)
     end
     function CopyRoi(~,~,roiobj)
@@ -58,7 +57,6 @@ end
     end
     function PasteRoi(~,~,obj2attach)
         RoiObj = copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
-        RoiObj.UserData = rmfield(RoiObj.UserData,'FigRoiHandle');
         AllImages = findall(MFH.UserData.AllDataFigs,'type','images.roi');
         MaxIDPos = zeros(numel(AllImages),1);
         for iAl = 1:numel(AllImages)

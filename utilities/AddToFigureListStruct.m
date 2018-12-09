@@ -15,6 +15,7 @@ for ifigs = 1:numel(FH)
         FH(ifigs).Visible = 'off';
         FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
         AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
+        AddSendToCompareAxes(MFH.UserData.CompareAxes,FH(ifigs),MFH);
     end
     AddSaveFig(FH(ifigs))
 end

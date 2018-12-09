@@ -34,19 +34,13 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
     function output_txt=PickCurveOnGraph(src,~,ObjMenu)
         AncestorFigure = ancestor(src,'figure');
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        if (isfield(ObjMenu.UserData,FigureNameHandle))
-            FH = ObjMenu.UserData.(FigureNameHandle);
-            FH.UserData.(FigureNameHandle) = ObjMenu.UserData.(FigureNameHandle);
+        FH = findobj('Type','figure','-and','Name',FigureName);
+        if ~isempty(FH)
             figure(FH);
         else
             FH=figure('NumberTitle','off','Name',FigureName);
-            ObjMenu.UserData.(FigureNameHandle) = FH;
-            if ~isfield(MFH.UserData,'SideFigs')
-                MFH.UserData.SideFigs = FH;
-            else
-                MFH.UserData.SideFigs(end+1) = FH;
-            end
         end
+        AddToFigureListStruct(FH,MFH,'side')
         movegui(FH,'southwest')
 
         %realhandle = findobj(ancestor(src,'axes'),'type','image');

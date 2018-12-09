@@ -39,10 +39,14 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SelectProfileOnGraph,parentfigure});
         
         realhandle = findobj(ancestor(src,'axes'),'type','image');
         Data = realhandle.CData;
-        [~,numx]=size(Data);
+        [numy,numx]=size(Data);
         output_txt = {['X: ',num2str(round(Xpos))],...
             ['Y: ',num2str(round(Ypos))],['Z: ',num2str(Data(Ypos,Xpos))]};
-        plot(1:numx,Data(Ypos,:));
+        if strcmpi(MFH.UserData.ProfileOrientation,'vertical')
+            plot(1:numy,Data(:,Xpos));
+        else
+            plot(1:numx,Data(Ypos,:));
+        end
         figure(ancestor(src,'figure'));
         movegui(FH,'southwest')
         AddToFigureListStruct(FH,MFH,'side');

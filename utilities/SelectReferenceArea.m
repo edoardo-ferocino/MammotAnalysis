@@ -42,6 +42,7 @@ if NumBin == 1
     A = permute(A,[1 2 4 3]);
 end
 A=flip(A,2);
+GetActualOrientationAction(MFH,A,'A');
 Wavelengths = MFH.UserData.Wavelengths;
 
 if isfield(MFH.UserData,'TRSSetFilePath')

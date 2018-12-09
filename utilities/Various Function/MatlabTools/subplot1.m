@@ -58,7 +58,7 @@ FontS  = FontSDef;
 XScale = XScaleDef;
 YScale = YScaleDef;
 
-
+ParentH = gcf;
 MoveFoc = 0;
 if (nargin==1),
    %--- move focus to subplot # ---
@@ -87,6 +87,8 @@ elseif (nargin>2),
  	     XScale = varargin{I+1};
           case 'yscale'
  	     YScale = varargin{I+1};
+          case 'parent'
+         ParentH = varargin{I+1};
           otherwise
 	     error('Unknown keyword');
          end
@@ -166,7 +168,9 @@ switch MoveFoc
     Ptot = M.*N;
     
     Hgcf = gcf;
-    clf;
+    if ~strcmpi(ParentH.Type,'uipanel')
+        clf;
+    end
     figure(Hgcf);
     for Pi=1:1:Ptot,
        Row = ceil(Pi./N);
@@ -177,7 +181,7 @@ switch MoveFoc
 
 %       subplot(M,N,Pi);
 %       hold on;
-       H(Pi)=axes('position',[Xstart,Ystart,Xbox,Ybox]);
+       H(Pi)=axes(ParentH,'position',[Xstart,Ystart,Xbox,Ybox]);
        %set(gca,'position',[Xstart,Ystart,Xbox,Ybox]);
        set(gca,'FontSize',FontS); 
        box on;
