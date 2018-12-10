@@ -20,6 +20,7 @@ end
         FH = ancestor(obj,'figure'); OrigFigName = FH.Name;
         AXH = ancestor(obj,'axes'); OrigTitle = AXH.Title.String;
         axes(subH); subH.YDir = 'reverse';
+        subH.CLim = AXH.CLim;
         colormap pink, shading interp, axis image;
         th = title({OrigFigName,OrigTitle},'Interpreter','none');
         th.FontSize = 7;

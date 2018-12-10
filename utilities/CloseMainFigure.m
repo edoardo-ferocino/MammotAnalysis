@@ -15,6 +15,8 @@ if isfield(MFH.UserData,'SideFigs')
        end
    end
 end
-rmpath(genpath('./utilities'))
+if findobj('Type','figure','Name','Main panel')==1
+    rmpath(genpath('./utilities'))
+end
 delete(MFH)
 end

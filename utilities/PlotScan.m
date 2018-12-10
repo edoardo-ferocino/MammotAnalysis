@@ -7,6 +7,7 @@ end
 StartWait(MFH);
 
 %% Read data
+PercFract = 95;
 [~,NameFile,~] = fileparts(MFH.UserData.DispDatFilePath.String);
 
 [Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath);
@@ -30,6 +31,7 @@ else
         SETT.Roi(ir,3) = limits(ir+1);
     end
 end
+MFH.UserData.SETT = SETT;
 %% Analyze data
 AcqTime = CH.McaTime;
 AllCounts = sum(A,4);
@@ -47,7 +49,8 @@ nsub = numSubplots(NumChan);
 subH = subplot1(nsub(1),nsub(2));
 for ich = 1 : NumChan
     subplot1(ich);
-    imagesc(CountRatesImage(:,:,ich)./AcqTime);
+    PercVal = GetPercentile(CountRatesImage(:,:,ich)./AcqTime,PercFract);
+    imagesc(CountRatesImage(:,:,ich)./AcqTime,[0 PercVal]);
     colormap pink, shading interp, axis image;
     subH(ich).YDir = 'reverse';
     colorbar
@@ -74,7 +77,8 @@ for iw = 1:numel(Wavelengths)
     Wave(iw).Curves = Wave(iw).SumChanData;
     Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
     subplot1(iw);
-    imh = imagesc(Wave(iw).CountsAllChan./AcqTime);
+    PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
+    imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
     colormap pink, shading interp, axis image;
     subH(iw).YDir = 'reverse';
     colorbar
@@ -94,7 +98,8 @@ end
 
 CountRatesImageAllChan=sum(CountRatesImage,3);
 subplot1(1,1); subplot1(1);
-imh = imagesc(CountRatesImageAllChan);
+PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
+imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
 axh = gca; axh.YDir = 'reverse';
 colormap pink, shading interp, axis image;
 colorbar
@@ -103,7 +108,7 @@ AddPickCurve(FH(end),imh,SumChan,MFH);
 AddSelectRoi(FH(end),imh,MFH);
 AddGetDataProfile(FH(end),imh,MFH);
 AddDefineBorder(FH(end),imh,MFH);
-
+%% "Save" figures
 AddToFigureListStruct(FH,MFH,'data');
 %% StopWait
 StopWait(MFH)

@@ -1,10 +1,9 @@
 InitScript
-MFH = FFS('Name','Main panel','NumberTitle','off'); %MFH.Units = 'normalized';
+MFH = figure('Name','Main panel','NumberTitle','off','CreateFcn','cd(''./utilities'');run(''InstallMammotAnalysis'');','WindowState','maximized'); %MFH.Units = 'normalized';
 MFH.UserData.Name = MFH.Name;
 MFH.UserData.Wavelengths =[635 680 785 905 930 975 1060];
-addpath(genpath('./utilities'));
 MFH.CloseRequestFcn = {@CloseMainFigure,MFH};
-MFH.SizeChangedFcn = {@ResizeMainFigure,MFH};
+%MFH.SizeChangedFcn = {@ResizeMainFigure,MFH};
 MFH.UserData.LoadFileContainer = CreateContainer(MFH,'Title','Load files','OuterPosition',[0.02 0.85 0.2 0.15]);%,'BorderType','none');
 MFH.UserData.LoadFit = CreatePushButton(MFH.UserData.LoadFileContainer,'String','Load fit file',...
     'Units','normalized','Position',[0 0 0.2 1/4],'Callback',{@GetFilePath,'fit',MFH});

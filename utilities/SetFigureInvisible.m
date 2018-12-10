@@ -1,3 +1,3 @@
-function SetFigureInvisible(src,callbackdata,fh)
+function SetFigureInvisible(~,~,fh)
 fh.Visible = 'off';
 end

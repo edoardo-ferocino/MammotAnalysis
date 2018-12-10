@@ -1,1 +1,2 @@
+cd('../')
 addpath(genpath('./utilities'));

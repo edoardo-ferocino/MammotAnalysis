@@ -60,11 +60,6 @@ end
         FH.Name = newName;
         shapeh = findobj(FH,'type','images.roi');
         delete(shapeh);
-        for ifigs = 1:numel(FH)
-            FH(ifigs).Visible = 'off';
-            FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
-            AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
-        end
         AddToFigureListStruct(FH,MFH,'data')
         movegui(FH,'center')
         StopWait(FigureParent);

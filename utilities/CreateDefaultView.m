@@ -1,4 +1,4 @@
-function CreateDefaultView(src,~,MFH)
+function CreateDefaultView(src,~,~)
  X = src.XAxis.Limits(1):0.01:src.XAxis.Limits(2);
  Y = X.^2 - X +0.25;
  fill(X,Y,[1.0000    0.7882    0.7608],'EdgeColor',[1.0000    0.7882    0.7608])
