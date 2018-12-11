@@ -33,11 +33,12 @@ for ifil = 1:numel(Filters)
         cbh(ifil) = 0;
     end
 end
+CreatePushButton(FigFilterHandle,'Units','Normalized','Position',[0.92 0 0.08 0.08],'String','Run','Callback',{@SetFilter,poph,cbh});
 movegui(FigFilterHandle,'northeast')
 
 
 for ifil = 1:numel(Filters)
-    poph(ifil).Callback = {@SetFilter,poph,cbh};
+    %poph(ifil).Callback = {@SetFilter,poph,cbh};
 end
     function Checked(src,~)
         src.UserData.Value = src.Value;
@@ -103,13 +104,16 @@ end
                 end
             end
             rows = all(rows,2);
-            if sum(rows)==numel(rows)
-                ActualPage = [];ActualRows = [];
-                msh = msgbox({'This combination of filters won''t work.' 'Please select a valid filter combination'},'Warning','help');
-                movegui(msh,'center');
-                return
-            end
-            Page = AllData(rows,cols);
+%             if sum(rows)==numel(rows)
+%                 ActualPage = [];ActualRows = [];
+%                 msh = msgbox({'This combination of filters won''t work.' 'Please select a valid filter combination'},'Warning','help');
+%                 movegui(msh,'center');
+%                 return
+%             end
+            Page = AllData(:,cols); Bpage = Page.Variables;
+            Bpage(~rows,:) = 0;
+            Page.Variables = Bpage;
+            %Page = AllData(rows,cols);
             ActualPage{actpage}= Page;
             ActualRows(:,actpage) = rows;
             actpage = actpage+1;
@@ -125,17 +129,18 @@ end
         else
             FH = FFS('Name',FigureName);
         end
-        PlotVar = [];
+        
         subH=subplot1(nsub(1),nsub(2));
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
                 RealPage.(FitParams(ifit).Name) = Pages{1}(:,[ifit XColID YColID]);
                 UnstuckedRealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
                 UnstuckedRealPage.(FitParams(ifit).Name)(:,1) = [];
-                GetActualOrientationAction(MFH,UnstuckedRealPage.(FitParams(ifit).Name).Variables,'PlotVar');
                 subplot1(ifit);
-                PercVal = GetPercentile(UnstuckedRealPage.(FitParams(ifit).Name).Variables,PercFract);
-                imh = imagesc(PlotVar,[0 PercVal]);
+                PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(FitParams(ifit).Name).Variables);
+                PlotVar = ApplyBorderToData(MFH,PlotVar);
+                PercVal = GetPercentile(PlotVar,PercFract);
+                imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
                 subH(ifit).YDir = 'reverse';
                 colormap pink, shading interp, axis image;
                 title(FitParams(ifit).Name)
@@ -169,9 +174,10 @@ end
                                 unstack(RealPage.((RealName)),FitParams(ifit).Name,'X','AggregationFunction',@mean);
                             UnstuckedRealPage.(RealName)(:,1) = [];
                             subplot1(av);
-                            PercVal = GetPercentile(UnstuckedRealPage.(RealName).Variables,PercFract);
-                            GetActualOrientationAction(MFH,UnstuckedRealPage.(RealName).Variables,'PlotVar');
-                            imh = imagesc(PlotVar,[0 PercVal]);
+                            PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(RealName).Variables);
+                            PlotVar = ApplyBorderToData(MFH,PlotVar);
+                            PercVal = GetPercentile(PlotVar,PercFract);
+                            imh = imagesc(subH(av),PlotVar,[0 PercVal]);
                             colormap pink, shading interp, axis image;
                             subH(av).YDir = 'reverse';
                             title(RealName)
@@ -206,9 +212,10 @@ end
             for ifit = 1:numel(ExtraFitParams)
                 if ~any(ifit==[XColID YColID])
                     subplot1(ifit);
-                    PercVal = GetPercentile(UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,PercFract);
-                    GetActualOrientationAction(MFH,UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables,'PlotVar');
-                    imh = imagesc(PlotVar,[0 PercVal]);
+                    PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables);
+                    PlotVar = ApplyBorderToData(MFH,PlotVar);
+                    PercVal = GetPercentile(PlotVar,PercFract);
+                    imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
                     subH(ifit).YDir = 'reverse';
                     colormap pink, shading interp, axis image;
                     title(ExtraFitParams(ifit).Name)

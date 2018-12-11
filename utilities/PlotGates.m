@@ -11,12 +11,13 @@ Wavelengths = MFH.UserData.Wavelengths;
 numgate = str2double(MFH.UserData.NumGate.String);
 nSub = numSubplots(numel(Wavelengths));
 subH = subplot1(nSub(1),nSub(2));
-tData = [];
+
 for iw = 1:numel(Wavelengths)
-    tData = [[Data(iw).Gate(:).Counts] tData]; %#ok<AGROW>
+    tData = [Data(iw).Gate(:).Counts];
+    tData(tData == 0) = nan;
+    PercVal(iw) = GetPercentile(tData,PercFract);
 end
-tData(tData == 0) = nan;
-PercVal = GetPercentile(tData,PercFract);
+
 for iw = 1:numel(Wavelengths)
     subplot1(iw);
     %tData = [Data(iw).Gate(:).Counts]; tData(tData==0)=nan;
@@ -70,11 +71,11 @@ StopWait(MFH)
         if SubH.UserData.ActualVal<=SubH.UserData.MinVal
             SubH.UserData.ActualVal = SubH.UserData.MinVal;
         end
-        PlotPage(SubID,SubH.UserData.ActualVal)
+        PlotPage(SubID,SubH.UserData.ActualVal);
         StopWait(ancestor(src,'figure'));
     end
     function imh = PlotPage(iw,ig)
-        imh = imagesc(subH(iw),Data(iw).Gate(ig).Counts,[0 PercVal]);
+        imh = imagesc(subH(iw),Data(iw).Gate(ig).Counts,[0 PercVal(iw)]);
         colormap pink, shading interp, axis image;
         subH(iw).YDir = 'reverse';
         title(subH(iw),{num2str(Wavelengths(iw)) ...

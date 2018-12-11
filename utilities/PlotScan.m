@@ -19,7 +19,8 @@ if NumBin == 1
     A = permute(A,[1 2 4 3]);
 end
 A=flip(A,2);
-GetActualOrientationAction(MFH,A,'A');
+A = GetActualOrientationAction(MFH,A);
+A = ApplyBorderToData(MFH,A);
 Wavelengths = MFH.UserData.Wavelengths;
 if isfield(MFH.UserData,'TRSSetFilePath')
     SETT = TRSread(MFH.UserData.TRSSetFilePath);
@@ -44,7 +45,7 @@ if ~isempty(FH)
 else
     FH = FFS('Name',['Count rates per channel - ' NameFile]);
 end
-                    
+
 nsub = numSubplots(NumChan);
 subH = subplot1(nsub(1),nsub(2));
 for ich = 1 : NumChan

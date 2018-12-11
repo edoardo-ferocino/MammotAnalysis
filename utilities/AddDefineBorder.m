@@ -48,6 +48,7 @@ end
                     else
                         ImH.CData = ImH.CData .*~shapeh(ish).createMask;
                     end
+                    tshapeh = shapeh(ish);
                     PercVal = GetPercentile(ImH.CData,PercFract);
                     ImH.Parent.CLim = [0 PercVal];
                 end
@@ -76,6 +77,13 @@ end
             AddInfoEntry(MFH,MFH.UserData.ListFigures,FH,FH.UserData.InfoData,MFH);
         end
         msh = msgbox({'Roi applied' 'The new figure will be listed in the list box'},'Success','help');
+        answer = questdlg('Use the cropped data for analysis?','Cropped data','Yes','No','No');
+        if strcmpi(answer,'yes')
+           msh = msgbox('Please run again the analysis','Success','help');
+           MFH.UserData.DataMask = tshapeh.createMask; 
+           MFH.UserData.DataMaskDelType = Deletetype;
+           MFH.UserData.DataMaskHandle = tshapeh;
+        end
         movegui(msh,'center');
     end
     function CopyRoi(~,~,roiobj)
