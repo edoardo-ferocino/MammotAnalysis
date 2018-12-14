@@ -37,6 +37,7 @@ end
     end
     function output_txt=PickInfoOnGraph(src,~,ObjMenu)
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
+        axh = ancestor(src,'axes');
         realhandle = findobj(ancestor(src,'axes'),'type','image');
         Xrows = AllData.X == Xpos-1;
         Yrows = AllData.Y == Ypos-1;
@@ -48,7 +49,7 @@ end
         Zval = realhandle.CData(Ypos,Xpos);
         output_txt = {['X: ',num2str(round(Xpos))],...
             ['Y: ',num2str(round(Ypos))],...
-            ['Z: ',num2str(Zval)],...
+            [axh.Title.String ': ',num2str(Zval)],...
             string2plot{:}};%[ObjMenu.UserData.submh.Label, ': ',num2str(newval)]};
     end
 end

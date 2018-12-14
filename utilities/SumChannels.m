@@ -26,8 +26,9 @@ elseif ndIRF == 3
 else
     return
 end
-Wavelengths =[635 680 785 905 930 975 1060];
-
+Wavelengths = MFH.UserData.Wavelengths;
+warning('off','verbose')
+warning('off','backtrace')
 if isfield(MFH.UserData,'TRSSetFilePath')
     SETT = TRSread(MFH.UserData.TRSSetFilePath.String);
 else
@@ -114,6 +115,7 @@ end
 fid_out = fopen([Data_FN '_summed.DAT'], 'wb');
 
 if is_scan == 1
+    warning('\nConversion to long (uint32) required for file: %s', [Data_FN '_summed']);
     fwrite(fid_out, Header, 'uint8');
     for iy = 1:NumY
         for ix = 1:NumX
@@ -121,7 +123,6 @@ if is_scan == 1
             curve=Data_Shifted_Summed(iy,ix,:);
             fwrite(fid_out, curve, 'uint32');
         end
-        warning('\nConversion to long (uint32) required for file: %s', [Data_FN '_summed']);
     end
 else
     CH.LoopNum(1) = 1; CH.LoopLast(1) = 1;
@@ -134,6 +135,8 @@ end
 
 fclose(fid_out);
 msgbox({'Files Created' 'Please load the new files'},'Success','help');
+warning('off','verbose')
+warning('off','backtrace')
 StopWait(MFH)
 
 end

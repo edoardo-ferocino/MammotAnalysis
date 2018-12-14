@@ -9,6 +9,7 @@ end
 uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
 
     function SaveFig(~,~)
+        StartWait(gcf);
         PathName =uigetdircustom('Select destination');
         if PathName == 0, return, end
         FullPath = fullfile(PathName,parentfigure.Name);
@@ -16,6 +17,7 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
         save_figure(FullPath,'-png','-pdf');
         warning on
         msgbox('Figure saved','Success','Help');
+        StopWait(gcf);
     end
 
 end

@@ -11,8 +11,11 @@ PercFract = 95;
 [~,NameFile,~] = fileparts(MFH.UserData.DispDatFilePath.String);
 
 [Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath);
-[A,~,CH]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
+[A,H,CH,SUBH,~,~,Datatype]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
 MFH.UserData.CompiledHeaderData = CH;
+MFH.UserData.HeaderData = H;
+MFH.UserData.SubHeaderData = SUBH;
+MFH.UserData.Datatype = Datatype;
 [~,~,NumChan,NumBin]=size(A);
 if NumBin == 1
     NumBin = NumChan; NumChan = 1;
@@ -21,6 +24,8 @@ end
 A=flip(A,2);
 A = GetActualOrientationAction(MFH,A);
 A = ApplyBorderToData(MFH,A);
+A = ApplyShiftToData(MFH,A);
+MFH.UserData.DatData = A;
 Wavelengths = MFH.UserData.Wavelengths;
 if isfield(MFH.UserData,'TRSSetFilePath')
     SETT = TRSread(MFH.UserData.TRSSetFilePath);
@@ -109,6 +114,8 @@ AddPickCurve(FH(end),imh,SumChan,MFH);
 AddSelectRoi(FH(end),imh,MFH);
 AddGetDataProfile(FH(end),imh,MFH);
 AddDefineBorder(FH(end),imh,MFH);
+AddShiftPixels(FH(end),imh,MFH);
+AddSaveNewFile(FH(end),FH(end),MFH);
 %% "Save" figures
 AddToFigureListStruct(FH,MFH,'data');
 %% StopWait

@@ -41,18 +41,22 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
         end
         AddToFigureListStruct(FH,MFH,'side')
         movegui(FH,'southwest')
+        [~,~,numbin]=size(Data);
         if isfield(MFH.UserData,'SETT')
            Counts = sum(Data(Ypos,Xpos,:),3); 
            SETT = MFH.UserData.SETT;
-           for iw = 1:numel(MFH.UserData.Wavelengths)
-            RelCounts(iw) = sum(Data(Ypos,Xpos,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1),3)./Counts * 100;         
+           RelCounts = zeros(1,numel(MFH.UserData.Wavelengths)+1);
+           RelCounts(1) = (mean(Data(Ypos,Xpos,1:20))*numbin)./Counts*100;
+           for iw = 2:numel(MFH.UserData.Wavelengths)+1
+            RelCounts(iw) = (sum(Data(Ypos,Xpos,SETT.Roi(iw-1,2)+1:SETT.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,1:20))*(numel(SETT.Roi(iw-1,2)+1:SETT.Roi(iw-1,3)+1)))./Counts * 100;         
            end
+           
         end
         %realhandle = findobj(ancestor(src,'axes'),'type','image');
-        [~,~,numbin]=size(Data);
+        
         output_txt = {['X: ',num2str(round(Xpos))],...
-            ['Y: ',num2str(round(Ypos))],['Z: ',num2str(sum(Data(Ypos,Xpos,:))./MFH.UserData.CompiledHeaderData.McaTime)],...
-            [num2str(MFH.UserData.Wavelengths') num2str(RelCounts',':%.0f%%')]};
+            ['Y: ',num2str(round(Ypos))],['Countrate: ',num2str(sum(Data(Ypos,Xpos,:))./MFH.UserData.CompiledHeaderData.McaTime)],...
+            [char('Bkg',num2str(MFH.UserData.Wavelengths')) num2str(RelCounts',':%.0f%%')]};
         semilogy(1:numbin,squeeze(Data(Ypos,Xpos,:)));
         ylim([10 max(Data(:))]);
         figure(AncestorFigure);

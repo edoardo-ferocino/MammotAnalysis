@@ -3,7 +3,8 @@ function [ Data, varargout ] = DatRead3(FileName,varargin)
 %Can be as input a selection of the following parameters
 %DatRead3(...,'loop4',numloop4,'loop5',numloop5,'datatype','uint32','compilesub',true/false,'forcereading',true/false)
 %[Data,Header,EasyReadableHead,SubHeaders,EasyReadableSubHead,UnSqueezedHeader]=DatRead3(...)
-
+warning('off','verbose')
+warning('off','backtrace')
 NumArgOut = nargout-1;
 NumArgin = nargin-1;
 sumloop = 0; ForceReading = false;
@@ -105,12 +106,19 @@ for itry = 1:numel(datatry)
                     'If you want to insert the correct values for loop4 and loop5 launch again the function with that arguments'},'Dimension mismatch','modal')
             end
             if (ForceReading==true)&&itry==numel(datatry)
-                prompt = {'Enter datatype'};
-                title = 'Datatype';
-                dims = [1 35];
-                definput = {'ushort/uint32'};
-                answer = inputdlg(prompt,title,dims,definput);
-                datatype = answer{1}; 
+                fh = figure('NumberTitle','off','Name','Choose type','Toolbar','none','menubar','none','HandleVisibility','off','Units','normalized','Position',[0.5 0.5 0.1 0.1]);%,'Position',[0.5 0.5 0.3 0.3]);
+                movegui(fh,'center');
+                uph = uipanel(fh,'Title','Choose type','units','normalized','position',[0 0 1 1]);
+                uicontrol(uph,'style','radiobutton','String','ushort','units','normalized','position',[0 0 0.4 0.5],'Callback','assignin(''caller'',''datatype'',''ushort'')');
+                uicontrol(uph,'style','radiobutton','String','uint32','units','normalized','position',[0 0.5 0.4 0.5],'Callback','assignin(''caller'',''datatype'',''uint32'')');
+                uicontrol(uph,'style','pushbutton','String','Ok','units','normalized','position',[0.5 0 0.4 0.5],'Callback','close(fh)');
+                waitfor(fh);
+%                 prompt = {'Enter datatype'};
+%                 title = 'Datatype';
+%                 dims = [1 35];
+%                 definput = {'ushort/uint32'};
+%                 answer = inputdlg(prompt,title,dims,definput);
+%                 datatype = answer{1};
                 fclose(fid); fid=fopen(FilePath,'rb');
                 Head=fread(fid,HeadLen,'uint8');
                 SubRaw=fread(fid,SubLen,'uint8'); CompSub = FillSub(SubRaw); fread(fid,NumBin,datatype);
@@ -233,8 +241,20 @@ switch NumArgOut
             varargout{4} = squeeze(CompiledSub);
         end
         varargout{5} = Sub;
+    case 6
+        varargout{1} = Head;
+        varargout{2} = CompiledHeader;
+        varargout{3} = squeeze(Sub);
+        if isCompileSubHeader == false
+            varargout{4} = [];
+        else
+            varargout{4} = squeeze(CompiledSub);
+        end
+        varargout{5} = Sub;
+        varargout{6} = datatype;
 end
-
+warning('off','verbose')
+warning('off','backtrace')
 end
 
 function FS = FillSub(Sub)

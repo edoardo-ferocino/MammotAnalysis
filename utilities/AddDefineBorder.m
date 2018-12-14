@@ -20,11 +20,14 @@ end
         ShapeHandle.UserData.Type = 'DefineBorder';
         if isempty(RoiObjs)
             ShapeHandle.UserData.ID = 1;
+            MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID = 1;
         else
             ShapeHandle.UserData.ID = numel(RoiObjs)+1;
+            MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID = ...
+                MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID+1;
         end
         ShapeHandle.FaceAlpha = 0;
-        ColIDX = rem(ShapeHandle.UserData.ID,numel(ColorList))+1;
+        ColIDX = [rem(MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID,numel(ColorList)) 1];
         ShapeHandle.Color = ColorList{ColIDX};
         ShapeHandle.StripeColor = 'yellow';
         uimenu(ShapeHandle.UIContextMenu,'Text','Copy DefineBorder ROI','CallBack',{@CopyRoi,ShapeHandle});
@@ -77,14 +80,19 @@ end
             AddInfoEntry(MFH,MFH.UserData.ListFigures,FH,FH.UserData.InfoData,MFH);
         end
         msh = msgbox({'Roi applied' 'The new figure will be listed in the list box'},'Success','help');
+        movegui(msh,'center');
+        waitfor(msh);
         answer = questdlg('Use the cropped data for analysis?','Cropped data','Yes','No','No');
         if strcmpi(answer,'yes')
            msh = msgbox('Please run again the analysis','Success','help');
+           movegui(msh,'center');
+           waitfor(msh);
            MFH.UserData.DataMask = tshapeh.createMask; 
            MFH.UserData.DataMaskDelType = Deletetype;
            MFH.UserData.DataMaskHandle = tshapeh;
+           MFH.UserData.ApplyDataMask = true;
         end
-        movegui(msh,'center');
+        
     end
     function CopyRoi(~,~,roiobj)
         MFH.UserData.CopiedRoi = roiobj;

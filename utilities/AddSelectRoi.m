@@ -18,13 +18,16 @@ end
         AxH = object2attach.Parent;
         ShapeHandle = images.roi.(shape)(AxH);
         ShapeHandle.UserData.Type = 'SelectRoi';
-        if isempty(RoiObjs)
+        if ~isfield(MFH.UserData,ShapeHandle.UserData.Type)
             ShapeHandle.UserData.ID = 1;
+            MFH.UserData.(ShapeHandle.UserData.Type).ID = 1;
         else
-            ShapeHandle.UserData.ID = numel(RoiObjs)+1;
+            MFH.UserData.(ShapeHandle.UserData.Type).ID = ...
+                MFH.UserData.(ShapeHandle.UserData.Type).ID+1;
+            ShapeHandle.UserData.ID = MFH.UserData.(ShapeHandle.UserData.Type).ID+1;
         end
         ShapeHandle.FaceAlpha = 0;
-        ColIDX = rem(ShapeHandle.UserData.ID,numel(ColorList));
+        ColIDX = rem(MFH.UserData.(ShapeHandle.UserData.Type).ID,numel(ColorList));
         ShapeHandle.Color = ColorList{ColIDX};
         ShapeHandle.UIContextMenu.Children(...
             contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
@@ -92,11 +95,11 @@ end
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0; 
-        FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag,'ToolBar','none'));
+        FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID)),'ToolBar','none','MenuBar','none');
         if ~isempty(FH)
             figure(FH);
         else
-            FH = figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag,'ToolBar','none'));
+            FH = figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID)),'ToolBar','none','MenuBar','none');
         end
         
         FH.Color = src.Color;
