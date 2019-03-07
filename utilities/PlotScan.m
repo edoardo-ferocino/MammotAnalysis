@@ -16,7 +16,7 @@ MFH.UserData.CompiledHeaderData = CH;
 MFH.UserData.HeaderData = H;
 MFH.UserData.SubHeaderData = SUBH;
 MFH.UserData.Datatype = Datatype;
-[~,~,NumChan,NumBin]=size(A);
+[NumY,NumX,NumChan,NumBin]=size(A);
 if NumBin == 1
     NumBin = NumChan; NumChan = 1;
     A = permute(A,[1 2 4 3]);
@@ -110,12 +110,14 @@ axh = gca; axh.YDir = 'reverse';
 colormap pink, shading interp, axis image;
 colorbar
 SumChan = squeeze(sum(A,3));
+AddFillBlackLines(FH(end),imh,Wave,MFH);
 AddPickCurve(FH(end),imh,SumChan,MFH);
 AddSelectRoi(FH(end),imh,MFH);
 AddGetDataProfile(FH(end),imh,MFH);
 AddDefineBorder(FH(end),imh,MFH);
 AddShiftPixels(FH(end),imh,MFH);
 AddSaveNewFile(FH(end),FH(end),MFH);
+AddCorrectPixels(FH(end),imh,Wave,MFH);
 %% "Save" figures
 AddToFigureListStruct(FH,MFH,'data');
 %% StopWait
