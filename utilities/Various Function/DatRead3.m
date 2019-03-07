@@ -111,7 +111,7 @@ for itry = 1:numel(datatry)
                 uph = uipanel(fh,'Title','Choose type','units','normalized','position',[0 0 1 1]);
                 uicontrol(uph,'style','radiobutton','String','ushort','units','normalized','position',[0 0 0.4 0.5],'Callback','assignin(''caller'',''datatype'',''ushort'')');
                 uicontrol(uph,'style','radiobutton','String','uint32','units','normalized','position',[0 0.5 0.4 0.5],'Callback','assignin(''caller'',''datatype'',''uint32'')');
-                uicontrol(uph,'style','pushbutton','String','Ok','units','normalized','position',[0.5 0 0.4 0.5],'Callback','close(fh)');
+                uicontrol(uph,'style','pushbutton','String','Ok','units','normalized','position',[0.5 0 0.4 0.5]);
                 waitfor(fh);
 %                 prompt = {'Enter datatype'};
 %                 title = 'Datatype';
