@@ -44,6 +44,22 @@ end
         src.UserData.Value = src.Value;
     end
     function SetFilter(~,~,poph,cbh)
+        if ishandle(cbh)
+            iserror = 1;
+            for icbh = 1:numel(cbh)
+                if cbh(icbh)~=0
+                    if isfield(cbh(icbh).UserData,'Value')
+                        iserror = 0;
+                    end
+                else
+                   iserror = 0; 
+                end
+            end
+            if iserror
+               errordlg('Set the lambda filter checkbox');
+               return
+            end
+        end
         StartWait(FigFilterHandle);
         for ip = 1:numel(poph)
             Filters(ip).ActualValue = poph(ip).String{poph(ip).Value};
@@ -133,7 +149,15 @@ end
         subH=subplot1(nsub(1),nsub(2));
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
-                RealPage.(FitParams(ifit).Name) = Pages{1}(:,[ifit XColID YColID]);
+                pageID = 1;
+                for icbh = 1:numel(cbh)
+                    if cbh(icbh)~=0
+                        if isfield(cbh(icbh).UserData,'Value')
+                             pageID = poph(icbh).Value-1;
+                        end
+                    end
+                end
+                RealPage.(FitParams(ifit).Name) = Pages{pageID}(:,[ifit XColID YColID]);
                 UnstuckedRealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
                 UnstuckedRealPage.(FitParams(ifit).Name)(:,1) = [];
                 subplot1(ifit);
@@ -145,7 +169,7 @@ end
                 colormap pink, shading interp, axis image;
                 title(FitParams(ifit).Name)
                 colorbar('southoutside')
-                AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
+                AddGetTableInfo(FH(end),imh,Filters,rows(:,pageID),AllData)
                 AddSelectRoi(FH(end),imh,MFH);
                 AddDefineBorder(FH(end),imh,MFH);
             end
@@ -182,7 +206,7 @@ end
                             subH(av).YDir = 'reverse';
                             title(RealName)
                             colorbar('southoutside')
-                            AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
+                            AddGetTableInfo(FH(end),imh,Filters,rows(:,av),AllData)
                             AddSelectRoi(FH(end),imh,MFH);
                             AddDefineBorder(FH(end),imh,MFH);
                         end
