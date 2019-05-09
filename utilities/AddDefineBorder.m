@@ -27,7 +27,7 @@ end
                 MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID+1;
         end
         ShapeHandle.FaceAlpha = 0;
-        ColIDX = [rem(MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID,numel(ColorList)) 1];
+        ColIDX = rem(MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID,numel(ColorList))+1;
         ShapeHandle.Color = ColorList{ColIDX};
         ShapeHandle.StripeColor = 'yellow';
         uimenu(ShapeHandle.UIContextMenu,'Text','Copy DefineBorder ROI','CallBack',{@CopyRoi,ShapeHandle});

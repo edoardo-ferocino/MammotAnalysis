@@ -53,7 +53,12 @@ uimenu(cmh,'Text','Correct shift','Callback',@CreateShiftCorrectFigure);
             Coord = size(Data,2);
         end
         Coord = 1:Coord;
-        
+        if(~isfield(EvenH.UserData,'Val'))
+        EvenH.UserData.Val = 0;
+        end
+        if(~isfield(OddH.UserData,'Val'))
+        OddH.UserData.Val = 0;
+        end
         if iseven
             Coord = Coord(rem(Coord,2)==1);
             MFH.UserData.ShiftDimType = 'even';

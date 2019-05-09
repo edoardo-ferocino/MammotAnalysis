@@ -8,116 +8,150 @@ StartWait(MFH);
 
 %% Read data
 PercFract = 95;
-[~,NameFile,~] = fileparts(MFH.UserData.DispDatFilePath.String);
 
 [Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath);
-[A,H,CH,SUBH,~,~,Datatype]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
-MFH.UserData.CompiledHeaderData = CH;
-MFH.UserData.HeaderData = H;
-MFH.UserData.SubHeaderData = SUBH;
-MFH.UserData.Datatype = Datatype;
-[NumY,NumX,NumChan,NumBin]=size(A);
-if NumBin == 1
-    NumBin = NumChan; NumChan = 1;
-    A = permute(A,[1 2 4 3]);
+OnlinePlotCond = 1;
+if MFH.UserData.OnlinePlot.Value
+   TempFilePath = [fullfile(Path,FileName),'Online'];
 end
-A=flip(A,2);
-A = GetActualOrientationAction(MFH,A);
-A = ApplyBorderToData(MFH,A);
-A = ApplyShiftToData(MFH,A);
-MFH.UserData.DatData = A;
-Wavelengths = MFH.UserData.Wavelengths;
-if isfield(MFH.UserData,'TRSSetFilePath')
-    SETT = TRSread(MFH.UserData.TRSSetFilePath);
-else
-    SETT.Roi = zeros(numel(Wavelengths),3);
-    limits = round(linspace(0,NumBin-1,numel(Wavelengths)+1));
-    for ir = 1:numel(Wavelengths)
-        SETT.Roi(ir,2) = limits(ir);
-        SETT.Roi(ir,3) = limits(ir+1);
+while(OnlinePlotCond)
+    if MFH.UserData.OnlinePlot.Value
+        copyfile([fullfile(Path,FileName),'.DAT'],[TempFilePath,'.DAT']);
+        [A,H,CH,SUBH,~,~,DataSize]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','ushort');
+    else
+        [A,H,CH,SUBH,~,~,DataSize]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
     end
-end
-MFH.UserData.SETT = SETT;
-%% Analyze data
-AcqTime = CH.McaTime;
-AllCounts = sum(A,4);
-
-% Count rate per channel
-CountRatesImage = AllCounts./AcqTime;
-FH = findobj('Type','figure','-and','Name',['Count rates per channel - ' NameFile]);
-if ~isempty(FH)
-    figure(FH);
-else
-    FH = FFS('Name',['Count rates per channel - ' NameFile]);
-end
-
-nsub = numSubplots(NumChan);
-subH = subplot1(nsub(1),nsub(2));
-for ich = 1 : NumChan
-    subplot1(ich);
-    PercVal = GetPercentile(CountRatesImage(:,:,ich)./AcqTime,PercFract);
-    imagesc(CountRatesImage(:,:,ich)./AcqTime,[0 PercVal]);
-    colormap pink, shading interp, axis image;
-    subH(ich).YDir = 'reverse';
-    colorbar
-    title(num2str(ich));
-end
-
-% Wavelenghts count rate
-tFH = findobj('Type','figure','-and','Name',['Wavelenghts images count rate - ' NameFile]);
-if ~isempty(tFH)
-    FH(end+1) = tFH;
-    figure(FH(end));
-else
-    FH(end+1) = FFS('Name',['Wavelenghts images count rate - ' NameFile]);
-end
-
-nSub = numSubplots(numel(Wavelengths));
-subH = subplot1(nSub(1),nSub(2));
-for iw = 1:numel(Wavelengths)
-    Wave(iw).Data = A(:,:,:,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1);
-    for ich = 1:NumChan
-        Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
+    MFH.UserData.CompiledHeaderData = CH;
+    MFH.UserData.HeaderData = H;
+    MFH.UserData.SubHeaderData = SUBH;
+    MFH.UserData.Datatype = DataSize;
+    [~,~,NumChan,NumBin]=size(A);
+    if NumBin == 1
+        NumBin = NumChan; NumChan = 1;
+        A = permute(A,[1 2 4 3]);
     end
-    Wave(iw).SumChanData = squeeze(sum(Wave(iw).Data,3));
-    Wave(iw).Curves = Wave(iw).SumChanData;
-    Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
-    subplot1(iw);
-    PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
-    imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
+    A=flip(A,2);
+    A = GetActualOrientationAction(MFH,A);
+    A = ApplyBorderToData(MFH,A);
+    A = ApplyShiftToData(MFH,A);
+    MFH.UserData.DatData = A;
+    Wavelengths = MFH.UserData.Wavelengths;
+    if isfield(MFH.UserData,'TRSSetFilePath')
+        SETT = TRSread(MFH.UserData.TRSSetFilePath);
+    else
+        SETT.Roi = zeros(numel(Wavelengths),3);
+        limits = round(linspace(0,NumBin-1,numel(Wavelengths)+1));
+        for ir = 1:numel(Wavelengths)
+            SETT.Roi(ir,2) = limits(ir);
+            SETT.Roi(ir,3) = limits(ir+1);
+        end
+    end
+    MFH.UserData.SETT = SETT;
+    %% Analyze data
+    AcqTime = CH.McaTime;
+    AllCounts = sum(A,4);
+    CountRatesImage = AllCounts./AcqTime;
+    if (~MFH.UserData.OnlinePlot.Value)
+        % Count rate per channel
+        
+        FH = findobj('Type','figure','-and','Name',['Count rates per channel - ' FileName]);
+        if ~isempty(FH)
+            figure(FH);
+        else
+            FH = FFS('Name',['Count rates per channel - ' FileName]);
+        end
+        
+        nsub = numSubplots(NumChan);
+        subH = subplot1(nsub(1),nsub(2));
+        for ich = 1 : NumChan
+            subplot1(ich);
+            PercVal = GetPercentile(CountRatesImage(:,:,ich)./AcqTime,PercFract);
+            imagesc(CountRatesImage(:,:,ich)./AcqTime,[0 PercVal]);
+            colormap pink, shading interp, axis image;
+            subH(ich).YDir = 'reverse';
+            colorbar
+            title(num2str(ich));
+        end
+        
+        % Wavelenghts count rate
+        tFH = findobj('Type','figure','-and','Name',['Wavelenghts images count rate - ' FileName]);
+        if ~isempty(tFH)
+            FH(end+1) = tFH;
+            figure(FH(end));
+        else
+            FH(end+1) = FFS('Name',['Wavelenghts images count rate - ' FileName]);
+        end
+        
+        nSub = numSubplots(numel(Wavelengths));
+        subH = subplot1(nSub(1),nSub(2));
+        for iw = 1:numel(Wavelengths)
+            Wave(iw).Data = A(:,:,:,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1);
+            for ich = 1:NumChan
+                Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
+            end
+            Wave(iw).SumChanData = squeeze(sum(Wave(iw).Data,3));
+            Wave(iw).Curves = Wave(iw).SumChanData;
+            Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
+            subplot1(iw);
+            PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
+            imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
+            colormap pink, shading interp, axis image;
+            subH(iw).YDir = 'reverse';
+            colorbar
+            title(num2str(Wavelengths(iw)));
+            AddDefineBorder(FH(end),imh,MFH);
+        end
+        delete(subH(iw+1:end))
+    end
+    % Total count rate
+    if (~MFH.UserData.OnlinePlot.Value)
+        tFH = findobj('Type','figure','-and','Name',['Total count rate image - ' FileName]);
+        if ~isempty(tFH)
+            FH(end+1) = tFH;
+            figure(FH(end));
+        else
+            FH(end+1) = FFS('Name',['Total count rate image - ' FileName]);
+        end
+    else
+        FH = findobj('Type','figure','-and','Name',['Total count rate image Online - ' FileName]);
+        if ~isempty(FH)
+            figure(FH);
+        else
+            FH = FFS('Name',['Total count rate image Online - ' FileName]);
+        end
+    end
+    CountRatesImageAllChan=sum(CountRatesImage,3);
+    subplot1(1,1); subplot1(1);
+    PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
+    imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
+    axh = gca; axh.YDir = 'reverse';
     colormap pink, shading interp, axis image;
-    subH(iw).YDir = 'reverse';
     colorbar
-    title(num2str(Wavelengths(iw)));
+    SumChan = squeeze(sum(A,3));
+    AddPickCurve(FH(end),imh,SumChan,MFH);
+    AddSelectRoi(FH(end),imh,MFH);
+    AddGetDataProfile(FH(end),imh,MFH);
     AddDefineBorder(FH(end),imh,MFH);
+    AddShiftPixels(FH(end),imh,MFH);
+    AddSaveNewFile(FH(end),FH(end),MFH);
+    AddPicture(FH(end),imh,MFH);
+    %AddFillBlackLines(FH(end),imh,Wave,MFH);
+    %AddCorrectPixels(FH(end),imh,Wave,MFH);
+    if MFH.UserData.OnlinePlot.Value
+        dir_info=dir([fullfile(Path,FileName),'.DAT']); 
+        if (dir_info.bytes == (764 + prod(CH.LoopNum)*(CH.NumBoard*CH.NumDet)*(CH.SizeSubHeader+CH.McaChannNum*DataSize)))
+            OnlinePlotCond = 0;
+            delete([TempFilePath,'.DAT']);
+        else
+            StartWait(FH);
+            pause(5);
+            StopWait(FH);
+        end
+        
+    else
+        OnlinePlotCond = 0;
+    end
 end
-delete(subH(iw+1:end))
-
-% Total count rate
-tFH = findobj('Type','figure','-and','Name',['Total count rate image - ' NameFile]);
-if ~isempty(tFH)
-    FH(end+1) = tFH;
-    figure(FH(end));
-else
-    FH(end+1) = FFS('Name',['Total count rate image - ' NameFile]);
-end
-
-CountRatesImageAllChan=sum(CountRatesImage,3);
-subplot1(1,1); subplot1(1);
-PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
-imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
-axh = gca; axh.YDir = 'reverse';
-colormap pink, shading interp, axis image;
-colorbar
-SumChan = squeeze(sum(A,3));
-AddFillBlackLines(FH(end),imh,Wave,MFH);
-AddPickCurve(FH(end),imh,SumChan,MFH);
-AddSelectRoi(FH(end),imh,MFH);
-AddGetDataProfile(FH(end),imh,MFH);
-AddDefineBorder(FH(end),imh,MFH);
-AddShiftPixels(FH(end),imh,MFH);
-AddSaveNewFile(FH(end),FH(end),MFH);
-AddCorrectPixels(FH(end),imh,Wave,MFH);
 %% "Save" figures
 AddToFigureListStruct(FH,MFH,'data');
 %% StopWait
