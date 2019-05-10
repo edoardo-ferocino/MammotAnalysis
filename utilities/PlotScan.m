@@ -153,7 +153,7 @@ while(OnlinePlotCond)
     end
 end
 %% "Save" figures
-AddToFigureListStruct(FH,MFH,'data');
+AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath);
 %% StopWait
 StopWait(MFH)
 end

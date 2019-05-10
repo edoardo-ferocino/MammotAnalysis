@@ -1,4 +1,4 @@
-function AddToFigureListStruct(FH,MFH,type)
+function AddToFigureListStruct(FH,MFH,type,FHDataFilePath)
 switch lower(type)
     case 'side'
         FieldLabel = 'SideFigs';
@@ -11,6 +11,9 @@ else
     MFH.UserData.(FieldLabel) = FH;
 end
 for ifigs = 1:numel(FH)
+    if strcmpi(type,'data')
+        FH(ifigs).UserData.FHDataFilePath=FHDataFilePath;
+    end
     if strcmpi(type,'data')
         FH(ifigs).Visible = 'off';
         FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};

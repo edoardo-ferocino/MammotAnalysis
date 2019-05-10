@@ -67,8 +67,8 @@ end
             MaxIDPos(iAl) = AllImages(iAl).UserData.ID;
         end
         MaxVal = max(MaxIDPos);
-        RoiObj.UserData.ID = MaxVal+1;  
-
+        RoiObj.UserData.ID = MaxVal+1;
+        
         ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).MenuSelectedFcn{2} = RoiObj;
@@ -95,7 +95,7 @@ end
         Roi.Median = median(RoiData(:),'omitnan');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
-        Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0; 
+        Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
         FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID)),'ToolBar','none','MenuBar','none');
         if ~isempty(FH)
             figure(FH);
@@ -113,27 +113,84 @@ end
     end
     function ApplyRoiToAll(src,~,ShapeHandle)
         FigureParent = ancestor(src,'figure');
-        AxH = findobj(FigureParent.Children,'type','axes');
-        for iaxh = 1:numel(AxH)
-            ImH = findobj(AxH(iaxh).Children,'type','image');
-            ImageData = ImH.CData;
-            RoiData = ImageData.*ShapeHandle.createMask;
-            RoiData(RoiData==0) = NaN;
-            Roi.Median = median(RoiData(:),'omitnan');
-            Roi.Mean = mean(RoiData(:),'omitnan');
-            Roi.Std = std(RoiData(:),'omitnan');
-            Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
-            Header{iaxh} = AxH(iaxh).Title.String;
-            data2write(iaxh,1) = Roi;
+        UnderScoreName = '_AllRoi';
+        [Path ,FileName,~] = fileparts(FigureParent.UserData.FHDataFilePath);
+        Name = fullfile(Path,[FileName,UnderScoreName,'.xls']);
+        ifh = 1;
+        LookForName = FileName;
+        IsUnderscore=strfind(LookForName,'_');
+        if IsUnderscore
+            IsUnderscore = IsUnderscore-1;
+            LookForName=LookForName(1:IsUnderscore);
         end
-        [Path ,FileName,~] = fileparts(MFH.UserData.FitFilePath);
-        Name = fullfile(Path,[FileName,'_report.xls']);
-        status=xlswrite(Name,[[{'Oper'};fieldnames(Roi)] [Header;struct2cell(data2write)]]);
+        for inf = 1:numel(MFH.UserData.AllDataFigs)
+            if strfind(MFH.UserData.AllDataFigs(inf).Name,LookForName)
+                FH(ifh) = MFH.UserData.AllDataFigs(inf);
+                ifh=ifh+1;
+            end
+        end
+        AllData = [];
+        AllHeader = [];
+        ir=1;
+        for ifh =1:numel(FH)
+            if(contains(FH(ifh).Name,'optical prop','IgnoreCase',true)&&~contains(FH(ifh).Name,'globalview','IgnoreCase',true))
+                continue;
+            end
+            %AxH = findobj(FigureParent.Children,'type','axes');
+            AxH = findobj(FH(ifh).Children,'type','axes');
+            clear data2write Header;
+            for iaxh = 1:numel(AxH)
+                ImH = findobj(AxH(iaxh).Children,'type','image');
+                RoiObj(ir) = copyobj(ShapeHandle,AxH(iaxh),'legacy');
+                ir=ir+1;
+                ImageData = ImH.CData;
+                RoiData = ImageData.*ShapeHandle.createMask;
+                RoiData(RoiData==0) = NaN;
+                Roi.Median = median(RoiData(:),'omitnan');
+                Roi.Mean = mean(RoiData(:),'omitnan');
+                Roi.Std = std(RoiData(:),'omitnan');
+                Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
+                Header{iaxh} = AxH(iaxh).Title.String;
+                data2write(iaxh,1) = Roi;
+            end
+            AllHeader = [AllHeader Header];
+            if(ifh==1) AllData = data2write;
+            else AllData = [AllData;data2write]; end
+        end
+        if isfile(Name)
+            answer = inputdlg(['Default is: ',UnderScoreName,'. Leave blank to overwrite'],'Type different underscore');
+            if ~isempty(answer{1})
+                UnderScoreName=answer{1};
+                Name = fullfile(Path,[LookForName,UnderScoreName,'.xls']);
+            end
+        end
+        status=xlswrite(Name,[[{'FileName'}; repmat({LookForName},numel(fieldnames(Roi)),1) ] ...
+            [{'View'}; repmat(FH(1).UserData.AllData.View(1),numel(fieldnames(Roi)),1) ] ...
+            [{'Breast'}; repmat(FH(1).UserData.AllData.Breast(1),numel(fieldnames(Roi)),1) ] ...
+            [{'Session'}; repmat(num2cell(FH(1).UserData.AllData.Session(1)),numel(fieldnames(Roi)),1) ] ...
+            [{'Repetition'}; repmat(num2cell(FH(1).UserData.AllData.Repetition(1)),numel(fieldnames(Roi)),1) ] ...
+            [{'Oper'};fieldnames(Roi)] [AllHeader;struct2cell(AllData)]...
+            [{'TL X' 'TL Y' 'TR X' 'TR Y' 'BR X' 'BR Y' 'BL X' 'BL Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)]]);
         if(status)
             answer = questdlg('Open the report?','Open report','Yes','No','Yes');
-                if strcmpi(answer,'yes')
-                    winopen(Name);
-                end
+            if strcmpi(answer,'yes')
+                winopen(Name);
+            end
+        end
+        if(status)
+            answer = questdlg('Save the figure?','Save figure','Yes','No','Yes');
+            if strcmpi(answer,'yes')
+                StartWait(FigureParent);
+                PathName =uigetdircustom('Select destination');
+                if PathName == 0, return, end
+                FullPath = fullfile(PathName,FigureParent.Name);
+                warning off
+                save_figure(FullPath,'-png','-pdf');
+                warning on
+                msgbox('Figure saved','Success','Help');
+                StopWait(FigureParent);
+                delete(RoiObj);
+            end
         end
     end
 

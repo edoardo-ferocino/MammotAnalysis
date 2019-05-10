@@ -1,11 +1,14 @@
 function SetFiltersForFit(AllData,FitParams,Filters,MFH)
 [~,name,~] = fileparts(MFH.UserData.DispFitFilePath.String);
-global FigureName;
-FigureName = ['Plot fitted values - ' name];
-global PercFract
+if(strcmpi(FitParams(1).FitType,'conc'))
+    PreName = 'Spectral ';
+end
+if(strcmpi(FitParams(1).FitType,'muamus'))
+    PreName = 'Optical Prop ';
+end
+FigureName = [PreName ' - ' name];
 PercFract = 95;
 FigFilterName = ['Select filters - ' name];
-global FigFilterHandle
 FigFilterHandle = findobj('Type','figure','-and','Name',FigFilterName);
 if ~isempty(FigFilterHandle)
     figure(FigFilterHandle);
@@ -49,6 +52,7 @@ end
             for icbh = 1:numel(cbh)
                 if cbh(icbh)~=0
                     if isfield(cbh(icbh).UserData,'Value')
+                        LambdaFilter = poph(icbh);
                         iserror = 0;
                     end
                 else
@@ -139,6 +143,22 @@ end
         XColID = find(strcmpi(Pages{1}.Properties.VariableNames,'X'));
         YColID = find(strcmpi(Pages{1}.Properties.VariableNames,'Y'));
         [nsub]=numSubplots(numel(FitParams)-2);
+        for ifit = 1:numel(FitParams)
+            if ~any(ifit==[XColID YColID])
+                pageID = 1;
+                for icbh = 1:numel(cbh)
+                    if cbh(icbh)~=0
+                        if isfield(cbh(icbh).UserData,'Value')
+                             pageID = poph(icbh).Value-1;
+                             pophID = icbh;
+                        end
+                    end
+                end
+            end
+        end
+        if strcmpi(PreName,'Optical prop ')
+            FigureName = [PreName ' - ' poph(pophID).String{pageID+1} ' - ' name];
+        end
         FH = findobj('Type','figure','-and','Name',FigureName);
         if ~isempty(FH)
             figure(FH);
@@ -182,12 +202,12 @@ end
                 nactv = numel(Filters(CheckedID).ActualValue);
                 [numsub] = numSubplots(nactv);
                 for ifit = 1:numel(FitParams)-2
-                    tFH = findobj('Type','figure','-and','Name',['GlobalView: ' FitParams(ifit).Name '-' FigureName]);
+                    tFH = findobj('Type','figure','-and','Name',[PreName ' - GlobalView: ' FitParams(ifit).Name '-' name]);
                     if ~isempty(tFH)
                         FH(end+1) = tFH;
                         figure(FH(end));
                     else
-                        FH(end+1) = FFS('Name',['GlobalView: ' FitParams(ifit).Name '-' FigureName]);
+                        FH(end+1) = FFS('Name',[PreName ' - GlobalView: ' FitParams(ifit).Name '-' name]);
                     end
                     subH = subplot1(numsub(1),numsub(2));
                     for av = 1:nactv
@@ -224,12 +244,12 @@ end
                 UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
             ExtraFitParams(1).Name = 'HbTot';
             ExtraFitParams(2).Name = 'So2';
-            tFH = findobj('Type','figure','-and','Name',['Extra' FigureName]);
+            tFH = findobj('Type','figure','-and','Name',[PreName '- HbTot_So2 -' name]);
             if ~isempty(tFH)
                 FH(end+1) = tFH;
                 figure(FH(end));
             else
-                FH(end+1) = FFS('Name',['Extra' FigureName]);
+                FH(end+1) = FFS('Name',[PreName '- HbTot_So2 -' name]);
             end
             
             subH=subplot1(1,2);
@@ -254,8 +274,9 @@ end
         for ifigs = 1:numel(FH)
             FH(ifigs).UserData.InfoData.Name = {Filters.Name};
             FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
+            FH(ifigs).UserData.AllData = AllData;
             AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),FH(ifigs).UserData.InfoData,MFH);
         end
-        AddToFigureListStruct(FH,MFH,'data')
+        AddToFigureListStruct(FH,MFH,'data',MFH.UserData.FitFilePath)
     end
 end

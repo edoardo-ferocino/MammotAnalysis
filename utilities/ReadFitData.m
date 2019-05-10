@@ -47,6 +47,9 @@ for ic = 1:numel(ColumnNames)
         try
             Filters(ifil).Categories = categories(categorical(AllData.(ColumnNames{ic})));
             if ~isempty(Filters(ifil).Categories)
+                if numel(Filters(ifil).Categories)>100
+                    continue; 
+                 end
                 Filters(ifil).Categories = ['Any' Filters(ifil).Categories'];
                 Filters(ifil).Name = ColumnNames{ic};
                 Filters(ifil).ColID = ic;
