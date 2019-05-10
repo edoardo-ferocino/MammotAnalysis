@@ -47,26 +47,21 @@ while(OnlinePlotCond)
         end
     end
     MFH.UserData.SETT = SETT;
+    
     %% Analyze data
+    
     AcqTime = CH.McaTime;
     AllCounts = sum(A,4);
     CountRatesImage = AllCounts./AcqTime;
     if (~MFH.UserData.OnlinePlot.Value)
         % Count rate per channel
-        
-        FH = findobj('Type','figure','-and','Name',['Count rates per channel - ' FileName]);
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH = FFS('Name',['Count rates per channel - ' FileName]);
-        end
-        
+        FH = CreateOrFindFig(['Count rates per channel - ' FileName]);
         nsub = numSubplots(NumChan);
         subH = subplot1(nsub(1),nsub(2));
         for ich = 1 : NumChan
             subplot1(ich);
-            PercVal = GetPercentile(CountRatesImage(:,:,ich)./AcqTime,PercFract);
-            imagesc(CountRatesImage(:,:,ich)./AcqTime,[0 PercVal]);
+            PercVal = GetPercentile(CountRatesImage(:,:,ich),PercFract);
+            imagesc(CountRatesImage(:,:,ich),[0 PercVal]);
             colormap pink, shading interp, axis image;
             subH(ich).YDir = 'reverse';
             colorbar
@@ -74,13 +69,7 @@ while(OnlinePlotCond)
         end
         
         % Wavelenghts count rate
-        tFH = findobj('Type','figure','-and','Name',['Wavelenghts images count rate - ' FileName]);
-        if ~isempty(tFH)
-            FH(end+1) = tFH;
-            figure(FH(end));
-        else
-            FH(end+1) = FFS('Name',['Wavelenghts images count rate - ' FileName]);
-        end
+        FH(end+1)=CreateOrFindFig(['Wavelenghts images count rate - ' FileName]);
         
         nSub = numSubplots(numel(Wavelengths));
         subH = subplot1(nSub(1),nSub(2));
@@ -105,28 +94,18 @@ while(OnlinePlotCond)
     end
     % Total count rate
     if (~MFH.UserData.OnlinePlot.Value)
-        tFH = findobj('Type','figure','-and','Name',['Total count rate image - ' FileName]);
-        if ~isempty(tFH)
-            FH(end+1) = tFH;
-            figure(FH(end));
-        else
-            FH(end+1) = FFS('Name',['Total count rate image - ' FileName]);
-        end
+        FH(end+1) = CreateOrFindFig(['Total count rate image - ' FileName]);
     else
-        FH = findobj('Type','figure','-and','Name',['Total count rate image Online - ' FileName]);
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH = FFS('Name',['Total count rate image Online - ' FileName]);
-        end
+         FH(end+1) = CreateOrFindFig(['Total count rate image Online- ' FileName]);
     end
     CountRatesImageAllChan=sum(CountRatesImage,3);
-    subplot1(1,1); subplot1(1);
+    subH=subplot1(1,1); subplot1(1);
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
     imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
-    axh = gca; axh.YDir = 'reverse';
+    subH.YDir = 'reverse';
     colormap pink, shading interp, axis image;
     colorbar
+    
     SumChan = squeeze(sum(A,3));
     AddPickCurve(FH(end),imh,SumChan,MFH);
     AddSelectRoi(FH(end),imh,MFH);

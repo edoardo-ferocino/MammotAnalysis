@@ -33,12 +33,7 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
     function output_txt=PickCurveOnGraph(src,~,~)
         AncestorFigure = ancestor(src,'figure');
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        FH = findobj('Type','figure','-and','Name',FigureName);
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH=figure('NumberTitle','off','Name',FigureName);
-        end
+        FH=CreateOrFindFig(FigureName,'NumberTitle','off');
         AddToFigureListStruct(FH,MFH,'side')
         movegui(FH,'southwest')
         [~,~,numbin]=size(Data);
