@@ -13,9 +13,7 @@ end
 
 
     function SelectRoiOnGraph(~,~,shape,object2attach)
-        RoiObjs = findobj(ancestor(object2attach,'axes'),'Type','images.roi');
-        ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
-        AxH = object2attach.Parent;
+        AxH = ancestor(object2attach,'axes');
         ShapeHandle = images.roi.(shape)(AxH);
         ShapeHandle.UserData.Type = 'SelectRoi';
         if ~isfield(MFH.UserData,ShapeHandle.UserData.Type)
@@ -24,18 +22,18 @@ end
         else
             MFH.UserData.(ShapeHandle.UserData.Type).ID = ...
                 MFH.UserData.(ShapeHandle.UserData.Type).ID+1;
-            ShapeHandle.UserData.ID = MFH.UserData.(ShapeHandle.UserData.Type).ID+1;
+            ShapeHandle.UserData.ID = MFH.UserData.(ShapeHandle.UserData.Type).ID;
         end
         ShapeHandle.FaceAlpha = 0;
-        ColIDX = rem(MFH.UserData.(ShapeHandle.UserData.Type).ID,numel(ColorList));
-        ShapeHandle.Color = ColorList{ColIDX};
+        ShapeHandle.Color = rand(1,3);
         ShapeHandle.UIContextMenu.Children(...
-            contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
-        uimenu(ShapeHandle.UIContextMenu,'Text','Copy ROI','CallBack',{@CopyRoi,ShapeHandle});
-        uimenu(ShapeHandle.UIContextMenu,'Text','Apply ROI to all axes','CallBack',{@ApplyRoiToAll,ShapeHandle});
+            contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).Text = ...
+            ['Delete ',num2str(ShapeHandle.UserData.ID),' ',shape];
+        uimenu(ShapeHandle.UIContextMenu,'Text',['Copy ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
+        uimenu(ShapeHandle.UIContextMenu,'Text',['Apply ROI ',num2str(ShapeHandle.UserData.ID),' to all axes'],'CallBack',{@ApplyRoiToAll,ShapeHandle});
         addlistener(ShapeHandle,'DrawingFinished',@GetData);
-        draw(ShapeHandle)
         addlistener(ShapeHandle,'ROIMoved',@GetData);
+        draw(ShapeHandle)
     end
     function DeleteRoi(~,~,roiobj)
         delete(roiobj)
@@ -52,30 +50,22 @@ end
                 else
                     cntxh = obj2attach(in).UIContextMenu;
                 end
-                umh = uimenu(cntxh,'Text','Paste roi','CallBack',{@PasteRoi,obj2attach(in)});
+                umh = uimenu(cntxh,'Text',['Paste ',num2str(roiobj.UserData.ID),' roi'],'CallBack',{@PasteRoi,obj2attach(in)});
                 MFH.UserData.TempMenuH(icntxh) = umh;
                 icntxh = icntxh+1;
             end
         end
-        msgbox('Copied ROI object','Success','help');
+        msgbox(['Copied ROI ',num2str(roiobj.UserData.ID),' object'],'Success','help');
     end
     function PasteRoi(~,~,obj2attach)
-        RoiObj = copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
-        AllImages = findall(MFH.UserData.AllDataFigs,'type','images.roi');
-        MaxIDPos = zeros(numel(AllImages),1);
-        for iAl = 1:numel(AllImages)
-            MaxIDPos(iAl) = AllImages(iAl).UserData.ID;
-        end
-        MaxVal = max(MaxIDPos);
-        RoiObj.UserData.ID = MaxVal+1;
-        
-        ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
+        RoiObj = copyobj(MFH.UserData.CopiedRoi,ancestor(obj2attach,'axes'),'legacy');
+        RoiObj.UserData.ID = MFH.UserData.(RoiObj.UserData.Type).ID+1;
+        MFH.UserData.(RoiObj.UserData.Type).ID=MFH.UserData.(RoiObj.UserData.Type).ID+1;
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).MenuSelectedFcn{2} = RoiObj;
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,RoiObj};
-        ColIDX = rem(RoiObj.UserData.ID,numel(ColorList))+1;
-        RoiObj.Color = ColorList{ColIDX};
+        RoiObj.Color = rand(1,3);
         GetData(RoiObj,RoiObj);
         addlistener(RoiObj,'ROIMoved',@GetData);
         for icntxh = 1:numel(MFH.UserData.TempMenuH)
@@ -96,13 +86,7 @@ end
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
-        FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID)),'ToolBar','none','MenuBar','none');
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH = figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID)),'ToolBar','none','MenuBar','none');
-        end
-        
+        FH=CreateOrFindFig(strcat('ROI - ',num2str(src.UserData.ID)),false,'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
@@ -113,6 +97,7 @@ end
     end
     function ApplyRoiToAll(src,~,ShapeHandle)
         FigureParent = ancestor(src,'figure');
+        StartWait(FigureParent);
         UnderScoreName = '_AllRoi';
         [Path ,FileName,~] = fileparts(FigureParent.UserData.FHDataFilePath);
         Name = fullfile(Path,[FileName,UnderScoreName,'.xls']);
@@ -125,7 +110,7 @@ end
         end
         for inf = 1:numel(MFH.UserData.AllDataFigs)
             if strfind(MFH.UserData.AllDataFigs(inf).Name,LookForName)
-                FH(ifh) = MFH.UserData.AllDataFigs(inf);
+                FH(ifh) = MFH.UserData.AllDataFigs(inf); 
                 ifh=ifh+1;
             end
         end
@@ -136,7 +121,6 @@ end
             if(contains(FH(ifh).Name,'optical prop','IgnoreCase',true)&&~contains(FH(ifh).Name,'globalview','IgnoreCase',true))
                 continue;
             end
-            %AxH = findobj(FigureParent.Children,'type','axes');
             AxH = findobj(FH(ifh).Children,'type','axes');
             clear data2write Header;
             for iaxh = 1:numel(AxH)
@@ -150,27 +134,41 @@ end
                 Roi.Mean = mean(RoiData(:),'omitnan');
                 Roi.Std = std(RoiData(:),'omitnan');
                 Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
-                Header{iaxh} = AxH(iaxh).Title.String;
+                Header{iaxh} = AxH(iaxh).Title.String; %#ok<*AGROW>
                 data2write(iaxh,1) = Roi;
             end
             AllHeader = [AllHeader Header];
-            if(ifh==1) AllData = data2write;
-            else AllData = [AllData;data2write]; end
+            if(ifh==1), AllData = data2write;
+            else, AllData = [AllData;data2write]; end
         end
         if isfile(Name)
-            answer = inputdlg(['Default is: ',UnderScoreName,'. Leave blank to overwrite'],'Type different underscore');
+            answer = inputdlg('Type different underscore or leave blank to overwrite','File already exist');
+            if numel(answer)==0
+                delete(RoiObj);
+                return
+            end
             if ~isempty(answer{1})
                 UnderScoreName=answer{1};
                 Name = fullfile(Path,[LookForName,UnderScoreName,'.xls']);
             end
         end
-        status=xlswrite(Name,[[{'FileName'}; repmat({LookForName},numel(fieldnames(Roi)),1) ] ...
-            [{'View'}; repmat(FH(1).UserData.AllData.View(1),numel(fieldnames(Roi)),1) ] ...
+        if(isfield(FH(1).UserData,'AllData'))
+        fitdata = [[{'View'}; repmat(FH(1).UserData.AllData.View(1),numel(fieldnames(Roi)),1) ] ...
             [{'Breast'}; repmat(FH(1).UserData.AllData.Breast(1),numel(fieldnames(Roi)),1) ] ...
             [{'Session'}; repmat(num2cell(FH(1).UserData.AllData.Session(1)),numel(fieldnames(Roi)),1) ] ...
-            [{'Repetition'}; repmat(num2cell(FH(1).UserData.AllData.Repetition(1)),numel(fieldnames(Roi)),1) ] ...
+            [{'Repetition'}; repmat(num2cell(FH(1).UserData.AllData.Repetition(1)),numel(fieldnames(Roi)),1)] ];
+        else
+            fitdata = [];
+        end
+        if isfield(ShapeHandle,'Vertices')
+           vertdata =  [{'TL X' 'TL Y' 'TR X' 'TR Y' 'BR X' 'BR Y' 'BL X' 'BL Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)];
+        else
+            vertdata = [];
+        end
+        status=xlswrite(Name,[[{'FileName'}; repmat({LookForName},numel(fieldnames(Roi)),1) ] ...
+            fitdata...
             [{'Oper'};fieldnames(Roi)] [AllHeader;struct2cell(AllData)]...
-            [{'TL X' 'TL Y' 'TR X' 'TR Y' 'BR X' 'BR Y' 'BL X' 'BL Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)]]);
+            vertdata]);
         if(status)
             answer = questdlg('Open the report?','Open report','Yes','No','Yes');
             if strcmpi(answer,'yes')
@@ -182,17 +180,15 @@ end
             if strcmpi(answer,'yes')
                 StartWait(FigureParent);
                 PathName =uigetdircustom('Select destination');
-                if PathName == 0, return, end
+                if PathName == 0, delete(RoiObj);return, end
                 FullPath = fullfile(PathName,FigureParent.Name);
                 warning off
                 save_figure(FullPath,'-png','-pdf');
                 warning on
                 msgbox('Figure saved','Success','Help');
                 StopWait(FigureParent);
-                delete(RoiObj);
             end
         end
+        delete(RoiObj);
     end
-
-
 end

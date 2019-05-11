@@ -13,8 +13,6 @@ end
 for ifigs = 1:numel(FH)
     if strcmpi(type,'data')
         FH(ifigs).UserData.FHDataFilePath=FHDataFilePath;
-    end
-    if strcmpi(type,'data')
         FH(ifigs).Visible = 'off';
         FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
         AddElementToList(MFH.UserData.ListFigures,FH(ifigs));

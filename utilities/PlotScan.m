@@ -55,7 +55,7 @@ while(OnlinePlotCond)
     CountRatesImage = AllCounts./AcqTime;
     if (~MFH.UserData.OnlinePlot.Value)
         % Count rate per channel
-        FH = CreateOrFindFig(['Count rates per channel - ' FileName]);
+        FH = CreateOrFindFig(['Count rates per channel - ' FileName],true);
         nsub = numSubplots(NumChan);
         subH = subplot1(nsub(1),nsub(2));
         for ich = 1 : NumChan
@@ -69,7 +69,7 @@ while(OnlinePlotCond)
         end
         
         % Wavelenghts count rate
-        FH(end+1)=CreateOrFindFig(['Wavelenghts images count rate - ' FileName]);
+        FH(end+1)=CreateOrFindFig(['Wavelenghts images count rate - ' FileName],true);
         
         nSub = numSubplots(numel(Wavelengths));
         subH = subplot1(nSub(1),nSub(2));
@@ -94,14 +94,15 @@ while(OnlinePlotCond)
     end
     % Total count rate
     if (~MFH.UserData.OnlinePlot.Value)
-        FH(end+1) = CreateOrFindFig(['Total count rate image - ' FileName]);
+        FH(end+1) = CreateOrFindFig(['Total count rate image - ' FileName],true);
     else
-         FH(end+1) = CreateOrFindFig(['Total count rate image Online- ' FileName]);
+         FH(end+1) = CreateOrFindFig(['Total count rate image Online- ' FileName],true);
     end
     CountRatesImageAllChan=sum(CountRatesImage,3);
     subH=subplot1(1,1); subplot1(1);
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
     imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
+    title('Total CountRate');
     subH.YDir = 'reverse';
     colormap pink, shading interp, axis image;
     colorbar

@@ -1,7 +1,11 @@
-function FH=CreateOrFindFig(Name,varargin)
+function FH=CreateOrFindFig(Name,isFFS,varargin)
 FH = findobj('Type','figure','-and','Name',Name);
 if ~isempty(FH)
     figure(FH);
 else
-    FH = FFS('Name',Name,varargin{:});
+    if(isFFS)
+        FH = FFS('Name',Name,varargin{:});
+    else
+        FH = figure('Name',Name,varargin{:});
+    end
 end

@@ -33,7 +33,7 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
     function output_txt=PickCurveOnGraph(src,~,~)
         AncestorFigure = ancestor(src,'figure');
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        FH=CreateOrFindFig(FigureName,'NumberTitle','off');
+        FH=CreateOrFindFig(FigureName,false,'NumberTitle','off');
         AddToFigureListStruct(FH,MFH,'side')
         movegui(FH,'southwest')
         [~,~,numbin]=size(Data);
@@ -45,9 +45,7 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
            for iw = 2:numel(MFH.UserData.Wavelengths)+1
             RelCounts(iw) = (sum(Data(Ypos,Xpos,SETT.Roi(iw-1,2)+1:SETT.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,1:20))*(numel(SETT.Roi(iw-1,2)+1:SETT.Roi(iw-1,3)+1)))./Counts * 100;         
            end
-           
         end
-        %realhandle = findobj(ancestor(src,'axes'),'type','image');
         
         output_txt = {['X: ',num2str(round(Xpos))],...
             ['Y: ',num2str(round(Ypos))],['Countrate: ',num2str(sum(Data(Ypos,Xpos,:))./MFH.UserData.CompiledHeaderData.McaTime)],...

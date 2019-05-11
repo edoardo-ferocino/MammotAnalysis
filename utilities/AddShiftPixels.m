@@ -8,12 +8,7 @@ end
 uimenu(cmh,'Text','Correct shift','Callback',@CreateShiftCorrectFigure);
 
     function CreateShiftCorrectFigure(~,~)
-        FH = findobj('Type','figure','-and','Name','Correct shift tool');
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH=figure('NumberTitle','off','Toolbar','none','Menubar','none','Name','Correct shift tool','Units','Normalized','Position',[0.5 0.5 0.2 0.2]);
-        end
+        FH=CreateOrFindFig('Correct shift tool',false,'Toolbar','none','Menubar','none','Units','Normalized','Position',[0.5 0.5 0.2 0.2]);
         ch = CreateContainer(FH,'Units','Normalized','Position',[0 0 1 1]);
         CreateRadioButton(ch,'String','Shift even rows','units','normalized','position',[0 0 0.4 0.5],'Tag','even'...
             ,'Callback','obj = findobj(ancestor(gcbo,''uipanel''),''Tag'',''odd'');obj.Value = 0;');

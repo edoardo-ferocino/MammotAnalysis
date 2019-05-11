@@ -15,7 +15,7 @@ end
     function DefineBorder(~,~,shape,object2attach)
         RoiObjs = findobj(object2attach,'Type','images.roi');
         ColorList ={'red'};
-        AxH = object2attach.Parent;
+        AxH = ancestor(object2attach,'axes');
         ShapeHandle = images.roi.(shape)(AxH);
         ShapeHandle.UserData.Type = 'DefineBorder';
         if isempty(RoiObjs)
@@ -30,8 +30,8 @@ end
         ColIDX = rem(MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID,numel(ColorList))+1;
         ShapeHandle.Color = ColorList{ColIDX};
         ShapeHandle.StripeColor = 'yellow';
-        uimenu(ShapeHandle.UIContextMenu,'Text','Copy DefineBorder ROI','CallBack',{@CopyRoi,ShapeHandle});
-        submH = uimenu(ShapeHandle.UIContextMenu,'Text','Apply DefineBorder ROI');
+        uimenu(ShapeHandle.UIContextMenu,'Text',['Copy DefineBorder ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
+        submH = uimenu(ShapeHandle.UIContextMenu,'Text',['Apply DefineBorder ROI ',num2str(ShapeHandle.UserData.ID)]);
         uimenu(submH,'Text','Delete external','CallBack',{@ApplyRoi,ShapeHandle,'external'});
         uimenu(submH,'Text','Delete internal','CallBack',{@ApplyRoi,ShapeHandle,'internal'});
         draw(ShapeHandle)
@@ -64,7 +64,7 @@ end
         FH.Name = newName;
         shapeh = findobj(FH,'type','images.roi');
         delete(shapeh);
-        AddToFigureListStruct(FH,MFH,'data')
+        AddToFigureListStruct(FH,MFH,'data',FH.UserData.FHDataFilePath)
         movegui(FH,'center')
         StopWait(FigureParent);
         StopWait(FH);
@@ -92,7 +92,6 @@ end
            MFH.UserData.DataMaskHandle = tshapeh;
            MFH.UserData.ApplyDataMask = true;
         end
-        
     end
     function CopyRoi(~,~,roiobj)
         MFH.UserData.CopiedRoi = roiobj;
@@ -106,29 +105,23 @@ end
                 else
                     cntxh = obj2attach(in).UIContextMenu;
                 end
-                umh = uimenu(cntxh,'Text','Paste roi','CallBack',{@PasteRoi,obj2attach(in)});
+                umh = uimenu(cntxh,'Text',['Paste ',num2str(roiobj.UserData.ID),' roi'],'CallBack',{@PasteRoi,obj2attach(in)});
                 MFH.UserData.TempMenuH(icntxh) = umh;
                 icntxh = icntxh+1;
             end
         end
-        msgbox('Copied ROI object','Success','help');
+        msgbox(['Copied ROI ',num2str(roiobj.UserData.ID),' object'],'Success','help');
     end
     function PasteRoi(~,~,obj2attach)
-        RoiObj = copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
-        AllImages = findall(MFH.UserData.AllDataFigs,'type','images.roi');
-        MaxIDPos = zeros(numel(AllImages),1);
-        for iAl = 1:numel(AllImages)
-            MaxIDPos(iAl) = AllImages(iAl).UserData.ID;
-        end
-        MaxVal = max(MaxIDPos);
-        RoiObj.UserData.ID = MaxVal+1;
-        
-        ColorList ={'red'};
-        RoiObj.StripeColor = 'yellow';
+        RoiObj = copyobj(MFH.UserData.CopiedRoi,ancestor(obj2attach,'axes'),'legacy');
+        RoiObj.UserData.ID = MFH.UserData.(RoiObj.UserData.Type).ID+1;
+        MFH.UserData.(RoiObj.UserData.Type).ID=MFH.UserData.(RoiObj.UserData.Type).ID+1;
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).MenuSelectedFcn{2} = RoiObj;
-        ColIDX = rem(RoiObj.UserData.ID,numel(ColorList))+1;
-        RoiObj.Color = ColorList{ColIDX};
+        RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,RoiObj};
+        RoiObj.Color = 'red';
+        RoiObj.StripeColor = 'yellow';
         for icntxh = 1:numel(MFH.UserData.TempMenuH)
             MFH.UserData.TempMenuH(icntxh).delete;
             delete(MFH.UserData.TempMenuH(icntxh));
