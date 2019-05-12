@@ -8,38 +8,37 @@ end
 uimenu(cmh,'Text','Correct shift','Callback',@CreateShiftCorrectFigure);
 
     function CreateShiftCorrectFigure(~,~)
-        FH=CreateOrFindFig('Correct shift tool',false,'Toolbar','none','Menubar','none','Units','Normalized','Position',[0.5 0.5 0.2 0.2]);
-        ch = CreateContainer(FH,'Units','Normalized','Position',[0 0 1 1]);
-        CreateRadioButton(ch,'String','Shift even rows','units','normalized','position',[0 0 0.4 0.5],'Tag','even'...
-            ,'Callback','obj = findobj(ancestor(gcbo,''uipanel''),''Tag'',''odd'');obj.Value = 0;');
-        CreateRadioButton(ch,'String','Shift odd rows','units','normalized','position',[0 0.5 0.4 0.5],'Tag','odd'...
-            ,'Callback','obj = findobj(ancestor(gcbo,''uipanel''),''Tag'',''even'');obj.Value = 0;');
+        AxH=ancestor(object2attach,'axes');
+        Tag = [parentfigure.Name,'-',AxH.Title.String];
+        FH=CreateOrFindFig('Correct shift tool',false,'NumberTitle','off','Toolbar','none','Menubar','none','Units','Normalized','Position',[0.5 0.5 0.2 0.2],'Tag','n');
+        ch = CreateContainer(FH,'Units','Normalized','Position',[0 0 1 1],'Visible','on');
+        bg = uibuttongroup(FH,'Visible','on','Position',[0 0 0.3 1]);
+        CreateRadioButton(bg,'String','Shift even rows','units','normalized','position',[0 0 1 0.5],'Tag','even');
+        CreateRadioButton(bg,'String','Shift odd rows','units','normalized','position',[0 0.5 1 0.5],'Tag','odd');
         %CreateRadioButton(ch,'String','Dir pos','units','normalized','position',[0.4 0 0.4 0.5],'Tag','dirpos');
         %CreateRadioButton(ch,'String','Dir neg','units','normalized','position',[0.4 0.5 0.4 0.5],'Tag','dirneg');
         CreateEdit(ch,'units','normalized','position',[0.4 0.2 0.1 0.1],'Tag','quantity');
         CreateText(ch,'String','Quantity','units','normalized','position',[0.35 0.3 0.2 0.1]);
         CreateEdit(ch,'units','normalized','position',[0.8 0.2 0.1 0.1],'Tag','absoluteshift');
         CreateText(ch,'String','Absolute shift','units','normalized','position',[0.75 0.4 0.2 0.15]);
-        CreatePushButton(ch,'units','normalized','String','Apply','Position',[0.4 0.8 0.1 0.2],'Callback',{@ApplyShiftCorrection,ch});
+        CreatePushButton(ch,'units','normalized','String','Apply','Position',[0.4 0.8 0.1 0.2],'Callback',{@ApplyShiftCorrection,ch,bg});
         CreatePushButton(ch,'units','normalized','String','Apply to data','Position',[0.7 0.8 0.3 0.2],'Callback',{@ApplyToData});
         CreatePushButton(ch,'units','normalized','String','Restore','Position',[0.7 0.6 0.3 0.2],'Callback',{@Restore});
+        CreateText(ch,'String',Tag,'units','normalized','position',[0.3 0 0.7 0.15]);
+        AddToFigureListStruct(FH,MFH,'side');
     end
-    function ApplyShiftCorrection(~,~,ch)
-        EvenH = findobj(ch,'Tag','even');
-        OddH = findobj(ch,'Tag','odd');
+    function ApplyShiftCorrection(~,~,ch,bg)
         QuantH = findobj(ch,'Tag','quantity');
-        
-        if EvenH.Value
+        EvenH = findobj(bg,'Tag','even');
+        OddH = findobj(bg,'Tag','odd');
+        if(contains(bg.SelectedObject.String,'even'))
             iseven = true;
         else
             iseven = false;
         end
-        if ~isfield(MFH.UserData,'ShiftOriginalData')
-            MFH.UserData.ShiftOriginalData = object2attach.CData;
-            MFH.UserData.ShiftDataObject = object2attach;
-            OddH.UserData.Val = 0;
-            EvenH.UserData.Val = 0;
-            
+        if ~isfield(object2attach.UserData,'ShiftOriginalData')
+            object2attach.UserData.ShiftOriginalData = object2attach.CData;
+            object2attach.UserData.ShiftDataObject = object2attach;
         end
         Data = object2attach.CData;
         if strcmpi(MFH.UserData.ProfileOrientation,'horizontal')
@@ -77,7 +76,6 @@ uimenu(cmh,'Text','Correct shift','Callback',@CreateShiftCorrectFigure);
         AbsShift.String = num2str(EvenH.UserData.Val-OddH.UserData.Val);%num2str(str2double(AbsShift.String)+str2double(QuantH.String));
         object2attach.CData = Data;
         MFH.UserData.ShiftDimVal = str2double(AbsShift.String);
-        
     end
     function ApplyToData(src,~)
         close(ancestor(src,'figure'));
@@ -116,8 +114,8 @@ uimenu(cmh,'Text','Correct shift','Callback',@CreateShiftCorrectFigure);
         end
     end
     function Restore(~,~)
-        MFH.UserData.ShiftDataObject.CData = MFH.UserData.ShiftOriginalData;
-        MFH.UserData = rmfield(MFH.UserData,'ShiftDataObject');
-        MFH.UserData = rmfield(MFH.UserData,'ShiftOriginalData');
+        object2attach.UserData.ShiftDataObject.CData = object2attach.UserData.ShiftOriginalData;
+        object2attach.UserData = rmfield(object2attach.UserData,'ShiftDataObject');
+        object2attach.UserData = rmfield(object2attach.UserData,'ShiftOriginalData');
     end
 end

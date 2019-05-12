@@ -32,8 +32,8 @@ end
         uimenu(ShapeHandle.UIContextMenu,'Text',['Copy ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
         uimenu(ShapeHandle.UIContextMenu,'Text',['Apply ROI ',num2str(ShapeHandle.UserData.ID),' to all axes'],'CallBack',{@ApplyRoiToAll,ShapeHandle});
         addlistener(ShapeHandle,'DrawingFinished',@GetData);
-        addlistener(ShapeHandle,'ROIMoved',@GetData);
         draw(ShapeHandle)
+        addlistener(ShapeHandle,'ROIMoved',@GetData);
     end
     function DeleteRoi(~,~,roiobj)
         delete(roiobj)
@@ -75,7 +75,7 @@ end
         MFH.UserData = rmfield(MFH.UserData,'TempMenuH');
         MFH.UserData = rmfield(MFH.UserData,'CopiedRoi');
     end
-    function GetData(src,~)
+    function GetData(src,event)
         AncestorFigure = ancestor(src,'figure');
         StartWait(AncestorFigure);
         realhandle = findobj(ancestor(src,'axes'),'type','image');

@@ -16,7 +16,18 @@ for ifigs = 1:numel(FH)
         FH(ifigs).Visible = 'off';
         FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
         AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
-        AddSendToCompareAxes(MFH.UserData.CompareAxes,FH(ifigs),MFH);
+        ImH = findobj(FH(ifigs),'type','image');
+        for imh = 1:numel(ImH)
+            AddSelectRoi(FH(ifigs),ImH(imh),MFH);
+            AddGetDataProfile(FH(ifigs),ImH(imh),MFH);
+            AddDefineBorder(FH(ifigs),ImH(imh),MFH);
+            AddShiftPixels(FH(ifigs),ImH(imh),MFH);
+            %AddPicture(FH(ifigs),ImH(imh),MFH)
+            AddSendToCompareAxes(FH(ifigs),ImH(imh),MFH);
+            %AddFillBlackLines(FH(end),imh,Wave,MFH);
+            %AddCorrectPixels(FH(end),imh,Wave,MFH);
+        end
+        AddSaveNewFile(FH(ifigs),FH(ifigs),MFH);
     end
     AddSaveFig(FH(ifigs))
 end

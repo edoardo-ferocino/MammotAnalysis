@@ -62,11 +62,10 @@ while(OnlinePlotCond)
             subplot1(ich);
             PercVal = GetPercentile(CountRatesImage(:,:,ich),PercFract);
             imagesc(CountRatesImage(:,:,ich),[0 PercVal]);
-            colormap pink, shading interp, axis image;
-            subH(ich).YDir = 'reverse';
-            colorbar
             title(num2str(ich));
+            SetAxesAppeareance(subH(ich));
         end
+        
         
         % Wavelenghts count rate
         FH(end+1)=CreateOrFindFig(['Wavelenghts images count rate - ' FileName],true);
@@ -83,12 +82,9 @@ while(OnlinePlotCond)
             Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
             subplot1(iw);
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
-            imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
-            colormap pink, shading interp, axis image;
-            subH(iw).YDir = 'reverse';
-            colorbar
+            imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
             title(num2str(Wavelengths(iw)));
-            AddDefineBorder(FH(end),imh,MFH);
+            SetAxesAppeareance(subH(iw));
         end
         delete(subH(iw+1:end))
     end
@@ -103,20 +99,10 @@ while(OnlinePlotCond)
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
     imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
     title('Total CountRate');
-    subH.YDir = 'reverse';
-    colormap pink, shading interp, axis image;
-    colorbar
+    SetAxesAppeareance(subH)
     
     SumChan = squeeze(sum(A,3));
     AddPickCurve(FH(end),imh,SumChan,MFH);
-    AddSelectRoi(FH(end),imh,MFH);
-    AddGetDataProfile(FH(end),imh,MFH);
-    AddDefineBorder(FH(end),imh,MFH);
-    AddShiftPixels(FH(end),imh,MFH);
-    AddSaveNewFile(FH(end),FH(end),MFH);
-    AddPicture(FH(end),imh,MFH);
-    %AddFillBlackLines(FH(end),imh,Wave,MFH);
-    %AddCorrectPixels(FH(end),imh,Wave,MFH);
     if MFH.UserData.OnlinePlot.Value
         dir_info=dir([fullfile(Path,FileName),'.DAT']); 
         if (dir_info.bytes == (764 + prod(CH.LoopNum)*(CH.NumBoard*CH.NumDet)*(CH.SizeSubHeader+CH.McaChannNum*DataSize)))
@@ -127,7 +113,6 @@ while(OnlinePlotCond)
             pause(5);
             StopWait(FH);
         end
-        
     else
         OnlinePlotCond = 0;
     end

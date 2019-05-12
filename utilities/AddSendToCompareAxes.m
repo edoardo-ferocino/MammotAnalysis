@@ -1,20 +1,18 @@
-function AddSendToCompareAxes(subH,parentfigure,MFH)
+function AddSendToCompareAxes(parentfigure,object2attach,MFH)
 MenuName = 'Send to axes';
-object2attach = findobj(parentfigure,'Type','image');
-for obj = 1:numel(object2attach)
-    if isempty(object2attach(obj).UIContextMenu)
-        cmh = uicontextmenu(parentfigure);
-        object2attach(obj).UIContextMenu = cmh;
-    else
-        cmh = object2attach(obj).UIContextMenu;
-    end
-    mmh = uimenu(cmh,'Label',MenuName);
-    pos_string = {'Top left' 'Top right' 'Bottom left' 'Bottom right'};
-    for is = 1:numel(subH)
-        uimenu(mmh,'Label',pos_string{is},'CallBack',{@SendToCompareAxes,subH(is),object2attach(obj)});
-    end
-    
+if isempty(object2attach.UIContextMenu)
+    cmh = uicontextmenu(parentfigure);
+    object2attach.UIContextMenu = cmh;
+else
+    cmh = object2attach.UIContextMenu;
 end
+mmh = uimenu(cmh,'Label',MenuName);
+pos_string = {'Top left' 'Top right' 'Bottom left' 'Bottom right'};
+for is = 1:numel(pos_string)
+    uimenu(mmh,'Label',pos_string{is},'CallBack',{@SendToCompareAxes,MFH.UserData.CompareAxes(is),object2attach});
+end
+
+
     function SendToCompareAxes(~,~,subH,obj)
         copied_obj = copyobj(obj,subH,'legacy');
         FH = ancestor(obj,'figure'); OrigFigName = FH.Name;
@@ -25,6 +23,5 @@ end
         th = title({OrigFigName,OrigTitle},'Interpreter','none');
         th.FontSize = 7;
         AddSelectRoi(MFH,copied_obj,MFH)
-        %copiedobj.UIContextMenu = obj.UIContextMenu;
     end
 end

@@ -9,19 +9,14 @@ end
 FigureName = [PreName ' - ' name];
 PercFract = 95;
 FigFilterName = ['Select filters - ' name];
-FigFilterHandle = findobj('Type','figure','-and','Name',FigFilterName);
-if ~isempty(FigFilterHandle)
-    figure(FigFilterHandle);
-else
-    FigFilterHandle=figure('Name',FigFilterName,'Toolbar','None','MenuBar','none');
-end
+FigFilterHandle = CreateOrFindFig(FigFilterName,false,'NumberTitle','off','Toolbar','None','MenuBar','none');
 AddToFigureListStruct(FigFilterHandle,MFH,'side');
 
+addcheckbox = false;
 if strcmpi(Filters(1).FitType,'muamus')
     addcheckbox = true;
-else
-    addcheckbox = false;
 end
+
 for ifil = 1:numel(Filters)
     ch = CreateContainer(FigFilterHandle,'Units','pixels','Position',[0 FigFilterHandle.Position(4)/numel(Filters)*(ifil-1) FigFilterHandle.Position(3) FigFilterHandle.Position(4)/numel(Filters)],'BorderType','none');
     poph(ifil) = CreatePopUpMenu(ch,'Units','Normalized','String',Filters(ifil).Categories,...
@@ -39,27 +34,12 @@ end
 CreatePushButton(FigFilterHandle,'Units','Normalized','Position',[0.92 0 0.08 0.08],'String','Run','Callback',{@SetFilter,poph,cbh});
 movegui(FigFilterHandle,'northeast')
 
-
-for ifil = 1:numel(Filters)
-    %poph(ifil).Callback = {@SetFilter,poph,cbh};
-end
     function Checked(src,~)
         src.UserData.Value = src.Value;
     end
     function SetFilter(~,~,poph,cbh)
         if ishandle(cbh)
-            iserror = 1;
-            for icbh = 1:numel(cbh)
-                if cbh(icbh)~=0
-                    if isfield(cbh(icbh).UserData,'Value')
-                        LambdaFilter = poph(icbh);
-                        iserror = 0;
-                    end
-                else
-                   iserror = 0; 
-                end
-            end
-            if iserror
+            if ~sum([cbh.Value])
                errordlg('Set the lambda filter checkbox');
                return
             end
@@ -67,7 +47,7 @@ end
         StartWait(FigFilterHandle);
         for ip = 1:numel(poph)
             Filters(ip).ActualValue = poph(ip).String{poph(ip).Value};
-            Filters(ip).Checked = 0;
+            Filters(ip).CheckedLambdaFilter = 0;
             if ~strcmpi(Filters(ip).ActualValue,'Any')
                 if strcmpi(Filters(ip).Type,'double')
                     Filters(ip).ActualValue = str2double(Filters(ip).ActualValue);
@@ -76,12 +56,12 @@ end
                     Filters(ip).ActualValue = Filters(ip).ActualValue;
                 end
             end
-            if ~isnumeric(cbh(ip))
+            if ishandle(cbh(ip))
                 if cbh(ip).Value
                     if strcmpi(Filters(ip).Type,'double')
                         Filters(ip).ActualValue = str2double(poph(ip).String(2:end));
                     end
-                    Filters(ip).Checked = 1;
+                    Filters(ip).CheckedLambdaFilter = 1;
                 end
             end
             FigFilterHandle.UserData.Filters(ip) = Filters(ip);
@@ -100,15 +80,15 @@ end
     end
     function [ActualPage,ActualRows] = CreateActualPage()
         cols = sort([FitParams.ColID]);
-        actpage = 1; nactv = 1;
-        if find([Filters.Checked])
-            nactv = numel(Filters(find([Filters.Checked])).ActualValue); %#ok<FNDSB>
+        nactv = 1;
+        if sum([Filters.CheckedLambdaFilter])
+            nactv = numel(Filters(logical([Filters.CheckedLambdaFilter])).ActualValue); 
         end
         for av = 1:nactv
             ip = 1; rows = zeros(size(AllData(:,1).Variables,1),1);
             for ifilt = 1:numel(Filters)
                 if ~strcmpi(Filters(ifilt).ActualValue,'Any')
-                    if Filters(ifilt).Checked
+                    if Filters(ifilt).CheckedLambdaFilter
                         rows(:,ip)= AllData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue(av);
                     else
                         if strcmpi(Filters(ifilt).Type,'char')
@@ -130,52 +110,29 @@ end
 %                 movegui(msh,'center');
 %                 return
 %             end
-            Page = AllData(:,cols); Bpage = Page.Variables;
-            Bpage(~rows,:) = 0;
-            Page.Variables = Bpage;
-            %Page = AllData(rows,cols);
-            ActualPage{actpage}= Page;
-            ActualRows(:,actpage) = rows;
-            actpage = actpage+1;
+            Page = AllData(:,cols); BPage = Page.Variables;
+            BPage(~rows,:) = 0;
+            Page.Variables = BPage;
+            ActualPage{av}= Page;
+            ActualRows(:,av) = rows;
         end
     end
     function PlotPages(Pages,rows)
         XColID = find(strcmpi(Pages{1}.Properties.VariableNames,'X'));
         YColID = find(strcmpi(Pages{1}.Properties.VariableNames,'Y'));
         [nsub]=numSubplots(numel(FitParams)-2);
-        for ifit = 1:numel(FitParams)
-            if ~any(ifit==[XColID YColID])
-                pageID = 1;
-                for icbh = 1:numel(cbh)
-                    if cbh(icbh)~=0
-                        if isfield(cbh(icbh).UserData,'Value')
-                             pageID = poph(icbh).Value-1;
-                             pophID = icbh;
-                        end
-                    end
-                end
-            end
+
+        if(strcmpi(FitParams(1).FitType,'muamus'))
+            FigureName = [PreName ' - ' poph(logical([cbh.Value])).String{poph(logical([cbh.Value])).Value} ' - ' name];
         end
-        if strcmpi(PreName,'Optical prop ')
-            FigureName = [PreName ' - ' poph(pophID).String{pageID+1} ' - ' name];
-        end
-        FH = findobj('Type','figure','-and','Name',FigureName);
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH = FFS('Name',FigureName);
-        end
-        
+
+        FH = CreateOrFindFig(FigureName,true);
         subH=subplot1(nsub(1),nsub(2));
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
                 pageID = 1;
-                for icbh = 1:numel(cbh)
-                    if cbh(icbh)~=0
-                        if isfield(cbh(icbh).UserData,'Value')
-                             pageID = poph(icbh).Value-1;
-                        end
-                    end
+                if(strcmpi(FitParams(1).FitType,'muamus'))
+                   pageID = poph(logical([cbh.Value])).Value-1; 
                 end
                 RealPage.(FitParams(ifit).Name) = Pages{pageID}(:,[ifit XColID YColID]);
                 UnstuckedRealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
@@ -185,30 +142,20 @@ end
                 PlotVar = ApplyBorderToData(MFH,PlotVar);
                 PercVal = GetPercentile(PlotVar,PercFract);
                 imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
-                subH(ifit).YDir = 'reverse';
-                colormap pink, shading interp, axis image;
+                SetAxesAppeareance(subH(ifit),'southoutside')
                 title(FitParams(ifit).Name)
-                colorbar('southoutside')
                 AddGetTableInfo(FH(end),imh,Filters,rows(:,pageID),AllData)
-                AddSelectRoi(FH(end),imh,MFH);
-                AddDefineBorder(FH(end),imh,MFH);
             end
         end
         delete(subH(numel(FitParams)-2+1:end))
         
         if strcmpi(FitParams(1).FitType,'muamus')
-            CheckedID = find([Filters.Checked]);
+            CheckedID = find([Filters.CheckedLambdaFilter]);
             if CheckedID
                 nactv = numel(Filters(CheckedID).ActualValue);
                 [numsub] = numSubplots(nactv);
                 for ifit = 1:numel(FitParams)-2
-                    tFH = findobj('Type','figure','-and','Name',[PreName ' - GlobalView: ' FitParams(ifit).Name '-' name]);
-                    if ~isempty(tFH)
-                        FH(end+1) = tFH;
-                        figure(FH(end));
-                    else
-                        FH(end+1) = FFS('Name',[PreName ' - GlobalView: ' FitParams(ifit).Name '-' name]);
-                    end
+                    FH(end+1) = CreateOrFindFig([PreName ' - GlobalView: ' FitParams(ifit).Name '-' name],true);
                     subH = subplot1(numsub(1),numsub(2));
                     for av = 1:nactv
                         if ~any(ifit==[XColID YColID])
@@ -222,13 +169,9 @@ end
                             PlotVar = ApplyBorderToData(MFH,PlotVar);
                             PercVal = GetPercentile(PlotVar,PercFract);
                             imh = imagesc(subH(av),PlotVar,[0 PercVal]);
-                            colormap pink, shading interp, axis image;
-                            subH(av).YDir = 'reverse';
+                            SetAxesAppeareance(subH(av),'southoutside');
                             title(RealName)
-                            colorbar('southoutside')
                             AddGetTableInfo(FH(end),imh,Filters,rows(:,av),AllData)
-                            AddSelectRoi(FH(end),imh,MFH);
-                            AddDefineBorder(FH(end),imh,MFH);
                         end
                     end
                     delete(subH(nactv+1:end))
@@ -242,31 +185,21 @@ end
             UnstuckedRealPage.So2 = UnstuckedRealPage.Hb;
             UnstuckedRealPage.So2.Variables = ...
                 UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
-            ExtraFitParams(1).Name = 'HbTot';
-            ExtraFitParams(2).Name = 'So2';
-            tFH = findobj('Type','figure','-and','Name',[PreName '- HbTot_So2 -' name]);
-            if ~isempty(tFH)
-                FH(end+1) = tFH;
-                figure(FH(end));
-            else
-                FH(end+1) = FFS('Name',[PreName '- HbTot_So2 -' name]);
-            end
+            ExtraConcParams(1).Name = 'HbTot';
+            ExtraConcParams(2).Name = 'So2';
+            FH(end+1)=CreateOrFindFig([PreName '- HbTot_So2 -' name]);
             
             subH=subplot1(1,2);
-            for ifit = 1:numel(ExtraFitParams)
+            for ifit = 1:numel(ExtraConcParams)
                 if ~any(ifit==[XColID YColID])
                     subplot1(ifit);
-                    PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(ExtraFitParams(ifit).Name).Variables);
+                    PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(ExtraConcParams(ifit).Name).Variables);
                     PlotVar = ApplyBorderToData(MFH,PlotVar);
                     PercVal = GetPercentile(PlotVar,PercFract);
                     imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
-                    subH(ifit).YDir = 'reverse';
-                    colormap pink, shading interp, axis image;
-                    title(ExtraFitParams(ifit).Name)
-                    colorbar('southoutside')
+                    SetAxesAppeareance(subH(ifit),'southoutside')
+                    title(ExtraConcParams(ifit).Name)
                     AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
-                    AddSelectRoi(FH(end),imh,MFH);
-                    AddDefineBorder(FH(end),imh,MFH);
                 end
             end
         end

@@ -20,6 +20,7 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
             src.Checked = 'off';
         end
         dch = datacursormode(figh);
+        dch.removeAllDataCursors;
         if strcmpi(src.Checked,'off')
             dch.DisplayStyle = 'datatip';
             dch.UpdateFcn = [];

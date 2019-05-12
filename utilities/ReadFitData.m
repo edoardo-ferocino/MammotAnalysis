@@ -47,7 +47,7 @@ for ic = 1:numel(ColumnNames)
         try
             Filters(ifil).Categories = categories(categorical(AllData.(ColumnNames{ic})));
             if ~isempty(Filters(ifil).Categories)
-                if numel(Filters(ifil).Categories)>100
+                if numel(Filters(ifil).Categories)>100&&~strcmpi(ColumnNames{ic},'codeactualloop')
                     continue; 
                  end
                 Filters(ifil).Categories = ['Any' Filters(ifil).Categories'];

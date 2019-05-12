@@ -40,22 +40,16 @@ end
         FigureParent = ancestor(src,'figure');
         StartWait(FigureParent);
         FH = copyobj(FigureParent,groot,'legacy');
-        AxH = findobj(FH.Children,'type','axes');
+        AxH = findobj(FH,'type','axes');
         for iaxh = 1:numel(AxH)
-            ImH = findobj(AxH(iaxh).Children,'type','image');
-            shapeh = findobj(ShapeHandle.Parent.Children,'type','images.roi');
-            for ish = 1:numel(shapeh)
-                if strcmpi(shapeh(ish).UserData.Type,'DefineBorder')
-                    if strcmpi(Deletetype,'external')
-                        ImH.CData = ImH.CData .*shapeh(ish).createMask;
-                    else
-                        ImH.CData = ImH.CData .*~shapeh(ish).createMask;
-                    end
-                    tshapeh = shapeh(ish);
-                    PercVal = GetPercentile(ImH.CData,PercFract);
-                    ImH.Parent.CLim = [0 PercVal];
-                end
+            ImH = findobj(AxH(iaxh),'type','image');
+            if strcmpi(Deletetype,'external')
+                ImH.CData = ImH.CData .*ShapeHandle.createMask;
+            else
+                ImH.CData = ImH.CData .*~ShapeHandle.createMask;
             end
+            PercVal = GetPercentile(ImH.CData,PercFract);
+            ImH.Parent.CLim = [0 PercVal];
         end
         newName = FH.Name;
         while ~isempty(findobj('name',newName,'type','figure'))
@@ -73,8 +67,6 @@ end
             if isfield(MFH.UserData,'rows')
                 AddGetTableInfo(FH,imh(ih),MFH.UserData.Filters,MFH.UserData.rows,MFH.UserData.AllData)
             end
-            AddSelectRoi(FH,imh(ih),MFH);
-            AddDefineBorder(FH,imh(ih),MFH);
         end
         if isfield(FH.UserData,'InfoData')
             AddInfoEntry(MFH,MFH.UserData.ListFigures,FH,FH.UserData.InfoData,MFH);

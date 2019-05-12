@@ -11,8 +11,8 @@ end
 menuh = uimenu(cmh,'Text',MenuName);
 
 for info = 1:numel(PickInfoNames)
-   submh = uimenu(menuh,'Text',PickInfoNames{info},'CallBack',{CallBackHandle,parentfigure,menuh});
-   submh.UserData.submh = submh;
+   submh=uimenu(menuh,'Text',PickInfoNames{info},'CallBack',{CallBackHandle,parentfigure,menuh});
+   submh.Checked = 'off';
 end
 
 
@@ -24,7 +24,8 @@ end
             src.Checked = 'off';
         end
         dch = datacursormode(figh);
-        if strcmpi(src.Checked,'off')
+        dch.removeAllDataCursors;
+        if ~any(strcmpi({menuh.Children.Checked},'on'))
             dch.DisplayStyle = 'datatip';
             dch.UpdateFcn = [];
             return
@@ -43,8 +44,13 @@ end
         Yrows = AllData.Y == Ypos-1;
         newrows = all([rows Xrows Yrows],2);
         for iobj = 1:numel(ObjMenu)
-            newval = mean(AllData(newrows,ObjMenu(iobj).UserData.submh.Text).Variables);
-            string2plot{iobj} = [ObjMenu(iobj).UserData.submh.Text, ': ',num2str(newval)];
+            newval = AllData(newrows,ObjMenu(iobj).Text).Variables;
+            if iscell(newval)
+                newval = newval{:};
+            else
+                newval = num2str(mean(newval));
+            end
+            string2plot{iobj} = [ObjMenu(iobj).Text, ': ',num2str(newval)];
         end
         Zval = realhandle.CData(Ypos,Xpos);
         output_txt = {['X: ',num2str(round(Xpos))],...
