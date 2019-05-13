@@ -1,6 +1,5 @@
 function AddPickCurve(parentfigure,object2attach,Data,MFH)
-[~,FileName,~] = fileparts(MFH.UserData.DispDatFilePath.String);
-FigureName = ['Pick Curve - ' FileName];
+FigureName = ['Pick Curve - ' parentfigure.Name];
 CallBackHandle = @PickCurve;
 MenuName = 'Pick Curve';
 if isempty(object2attach.UIContextMenu)

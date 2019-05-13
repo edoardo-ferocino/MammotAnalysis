@@ -27,7 +27,7 @@ if iscell(FName)
     Nome = FName{ih};
 else, Nome = FName;
 end
- savefig(fig_handle(ih),Nome)
+savefig(fig_handle(ih),Nome)
  %export_fig(FName{ih},'-painters','-eps','-pdf','-jpg');
  switch ifor-1
      case 0

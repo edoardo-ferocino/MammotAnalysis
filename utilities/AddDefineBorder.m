@@ -32,57 +32,80 @@ end
         ShapeHandle.StripeColor = 'yellow';
         uimenu(ShapeHandle.UIContextMenu,'Text',['Copy DefineBorder ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
         submH = uimenu(ShapeHandle.UIContextMenu,'Text',['Apply DefineBorder ROI ',num2str(ShapeHandle.UserData.ID)]);
-        uimenu(submH,'Text','Delete external','CallBack',{@ApplyRoi,ShapeHandle,'external'});
-        uimenu(submH,'Text','Delete internal','CallBack',{@ApplyRoi,ShapeHandle,'internal'});
+        uimenu(submH,'Text','Delete external','CallBack',{@CreateLinkDataFigure,ShapeHandle,'external'});
+        uimenu(submH,'Text','Delete internal','CallBack',{@CreateLinkDataFigure,ShapeHandle,'internal'});
         draw(ShapeHandle)
     end
-    function ApplyRoi(src,~,ShapeHandle,Deletetype)
-        FigureParent = ancestor(src,'figure');
-        StartWait(FigureParent);
-        FH = copyobj(FigureParent,groot,'legacy');
-        AxH = findobj(FH,'type','axes');
-        for iaxh = 1:numel(AxH)
-            ImH = findobj(AxH(iaxh),'type','image');
-            if strcmpi(Deletetype,'external')
-                ImH.CData = ImH.CData .*ShapeHandle.createMask;
-            else
-                ImH.CData = ImH.CData .*~ShapeHandle.createMask;
+  function CreateLinkDataFigure(~,~,ShapeHandle,DeleteType)
+        FH = CreateOrFindFig('Link Figures',false,'NumberTitle','off','Toolbar','None','MenuBar','none');
+        clf(FH);
+        actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
+        numfig = numel(actualnameslist);
+        contains(MFH.UserData.ListFigures.String,'Select filters');
+        for ifigs = 1:numfig
+            CH(ifigs) = CreateContainer(FH,'BorderType','none','Units','Normalized','Position',[0 (1/numfig)*(ifigs-1) 1 1/numfig]);%,'BorderType','none');
+            CreateEdit(CH(ifigs),'String',actualnameslist{ifigs},'HorizontalAlignment','Left',...
+                'Units','Normalized','OuterPosition',[0 0 0.7 1]);
+            CBH(ifigs) = CreateCheckBox(CH(ifigs),'String','Link','Units','Normalized','Position',[0.7 0 0.1 1]);
+        end
+        %         EH=CreateEdit(FH,'String','Linked Name(Type)','HorizontalAlignment','Left',...
+        %                 'Units','Normalized','Position',[0.80 0.08 0.20 0.08]);
+        CreatePushButton(FH,'Units','Normalized','Position',[0.90 0 0.10 0.08],'String','Link&Run','Callback',{@ApplyRoi,ShapeHandle,DeleteType,CBH});
+        AddToFigureListStruct(FH,MFH,'side');
+    end
+    function ApplyRoi(src,~,ShapeHandle,DeleteType,CheckBoxHandle)
+        StartWait(ancestor(src,'figure'));
+        actualfhlist = MFH.UserData.AllDataFigs(~contains(MFH.UserData.ListFigures.String,'Select filters'));
+        FHList=actualfhlist(logical([CheckBoxHandle.Value]));
+        for ifigs=1:numel(FHList)
+            FigureParent = FHList(ifigs);
+            StartWait(FigureParent);
+            FH = copyobj(FigureParent,groot,'legacy');
+            AxH = findobj(FH,'type','axes');
+            for iaxh = 1:numel(AxH)
+                ImH = findobj(AxH(iaxh),'type','image');
+                if strcmpi(DeleteType,'external')
+                    ImH.CData = ImH.CData .*ShapeHandle.createMask;
+                else
+                    ImH.CData = ImH.CData .*~ShapeHandle.createMask;
+                end
+                PercVal = GetPercentile(ImH.CData,PercFract);
+                ImH.Parent.CLim = [0 PercVal];
             end
-            PercVal = GetPercentile(ImH.CData,PercFract);
-            ImH.Parent.CLim = [0 PercVal];
-        end
-        newName = FH.Name;
-        while ~isempty(findobj('name',newName,'type','figure'))
-           newName = [newName '-Cropped'];  %#ok<AGROW>
-        end
-        FH.Name = newName;
-        shapeh = findobj(FH,'type','images.roi');
-        delete(shapeh);
-        AddToFigureListStruct(FH,MFH,'data',FH.UserData.FHDataFilePath)
-        movegui(FH,'center')
-        StopWait(FigureParent);
-        StopWait(FH);
-        imh = findobj(FH,'type','image');
-        for ih = 1:numel(imh)
-            if isfield(MFH.UserData,'rows')
-                AddGetTableInfo(FH,imh(ih),MFH.UserData.Filters,MFH.UserData.rows,MFH.UserData.AllData)
+            newName = FH.Name;
+            while ~isempty(findobj('name',newName,'type','figure'))
+                newName = [newName '-Cropped'];  %#ok<AGROW>
+            end
+            FH.Name = newName;
+            shapeh = findobj(FH,'type','images.roi');
+            delete(shapeh);
+            AddToFigureListStruct(FH,MFH,'data',FH.UserData.DataFilePath)
+            movegui(FH,'center')
+            StopWait(FigureParent);
+            StopWait(FH);
+            imh = findobj(FH,'type','image');
+            for ih = 1:numel(imh)
+                if isfield(FH.UserData,'rows')
+                    AddGetTableInfo(FH,imh(ih),FH.UserData.Filters,FH.UserData.rows,FH.UserData.FitData)
+                end
+            end
+            if isfield(FH.UserData,'InfoData')
+                AddInfoEntry(MFH,MFH.UserData.ListFigures,FH,MFH);
             end
         end
-        if isfield(FH.UserData,'InfoData')
-            AddInfoEntry(MFH,MFH.UserData.ListFigures,FH,FH.UserData.InfoData,MFH);
-        end
+        StopWait(ancestor(src,'figure'));
         msh = msgbox({'Roi applied' 'The new figure will be listed in the list box'},'Success','help');
         movegui(msh,'center');
         waitfor(msh);
         answer = questdlg('Use the cropped data for analysis?','Cropped data','Yes','No','No');
         if strcmpi(answer,'yes')
-           msh = msgbox('Please run again the analysis','Success','help');
-           movegui(msh,'center');
-           waitfor(msh);
-           MFH.UserData.DataMask = tshapeh.createMask; 
-           MFH.UserData.DataMaskDelType = Deletetype;
-           MFH.UserData.DataMaskHandle = tshapeh;
-           MFH.UserData.ApplyDataMask = true;
+            msh = msgbox('Please run again the analysis','Success','help');
+            movegui(msh,'center');
+            waitfor(msh);
+            MFH.UserData.DataMask = tshapeh.createMask;
+            MFH.UserData.DataMaskDelType = DeleteType;
+            MFH.UserData.DataMaskHandle = tshapeh;
+            MFH.UserData.ApplyDataMask = true;
         end
     end
     function CopyRoi(~,~,roiobj)

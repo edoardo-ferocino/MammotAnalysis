@@ -220,7 +220,7 @@ if ~all(ismandatoryarg([6 7])) && SkipSub==0
             %uicontrol(uph,'style','pushbutton','String','Ok','units','normalized','position',[0.5 0 0.4 0.5]);
             waitfor(fh);
             
-            fclose(fid); 
+            fclose(fid);
             fid=fopen(FilePath,'rb');
             fread(fid,HeadLen,'uint8');
             SubRaw=fread(fid,SubLen,'uint8'); CompSub = FillSub(SubRaw); fread(fid,nBin,datatype);
@@ -239,9 +239,9 @@ if ~all(ismandatoryarg([6 7])) && SkipSub==0
             end
         end
     end
-        
     
- 
+    
+    
 end
 fclose(fid);
 NumLoop=CompiledHeader.LoopNum;
@@ -350,6 +350,18 @@ switch NumArgOut
         end
         varargout{5} = Sub;
         varargout{6} = datasize;
+    case 7
+        varargout{1} = Head;
+        varargout{2} = CompiledHeader;
+        varargout{3} = squeeze(Sub);
+        if isCompileSubHeader == false
+            varargout{4} = [];
+        else
+            varargout{4} = squeeze(CompiledSub);
+        end
+        varargout{5} = Sub;
+        varargout{6} = datasize;
+        varargout{7} = datatype;
 end
 
 end

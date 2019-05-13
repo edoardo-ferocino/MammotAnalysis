@@ -1,5 +1,5 @@
-function SetFiltersForFit(AllData,FitParams,Filters,MFH)
-[~,name,~] = fileparts(MFH.UserData.DispFitFilePath.String);
+function SetFiltersForFit(FitData,FitParams,Filters,MFH,FitFilePath)
+[~,name,~]=fileparts(FitFilePath);
 if(strcmpi(FitParams(1).FitType,'conc'))
     PreName = 'Spectral ';
 end
@@ -10,7 +10,6 @@ FigureName = [PreName ' - ' name];
 PercFract = 95;
 FigFilterName = ['Select filters - ' name];
 FigFilterHandle = CreateOrFindFig(FigFilterName,false,'NumberTitle','off','Toolbar','None','MenuBar','none');
-AddToFigureListStruct(FigFilterHandle,MFH,'side');
 
 addcheckbox = false;
 if strcmpi(Filters(1).FitType,'muamus')
@@ -20,8 +19,7 @@ end
 for ifil = 1:numel(Filters)
     ch = CreateContainer(FigFilterHandle,'Units','pixels','Position',[0 FigFilterHandle.Position(4)/numel(Filters)*(ifil-1) FigFilterHandle.Position(3) FigFilterHandle.Position(4)/numel(Filters)],'BorderType','none');
     poph(ifil) = CreatePopUpMenu(ch,'Units','Normalized','String',Filters(ifil).Categories,...
-        'Position',[0 0 0.3 0.8],'Value',1);
-    poph(ifil).UserData.IDFilter = ifil; %#ok<*AGROW>
+        'Position',[0 0 0.3 0.8],'Value',1); %#ok<*AGROW>
     CreateEdit(ch,'Units','Normalized','Position',...
         [0.4 0.3 0.3 0.5],'String',Filters(ifil).Name,'HorizontalAlignment','left');
     if addcheckbox
@@ -33,12 +31,16 @@ for ifil = 1:numel(Filters)
 end
 CreatePushButton(FigFilterHandle,'Units','Normalized','Position',[0.92 0 0.08 0.08],'String','Run','Callback',{@SetFilter,poph,cbh});
 movegui(FigFilterHandle,'northeast')
-
+FigFilterHandle.UserData.FitData = FitData;
+FigFilterHandle.UserData.FitParams = FitParams;
+FigFilterHandle.UserData.FitParams = Filters;
+FigFilterHandle.UserData.FitFilePath = FitFilePath;
+AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
     function Checked(src,~)
         src.UserData.Value = src.Value;
     end
     function SetFilter(~,~,poph,cbh)
-        if ishandle(cbh)
+        if ~isnumeric(cbh)
             if ~sum([cbh.Value])
                errordlg('Set the lambda filter checkbox');
                return
@@ -56,7 +58,7 @@ movegui(FigFilterHandle,'northeast')
                     Filters(ip).ActualValue = Filters(ip).ActualValue;
                 end
             end
-            if ishandle(cbh(ip))
+            if ~isnumeric(cbh(ip))
                 if cbh(ip).Value
                     if strcmpi(Filters(ip).Type,'double')
                         Filters(ip).ActualValue = str2double(poph(ip).String(2:end));
@@ -66,15 +68,11 @@ movegui(FigFilterHandle,'northeast')
             end
             FigFilterHandle.UserData.Filters(ip) = Filters(ip);
         end
-        MFH.UserData.Filters = Filters;
-        MFH.UserData.FitParams = FitParams;
         [Pages,rows] = CreateActualPage();
         if isempty(Pages)
             StopWait(FigFilterHandle);
             return
         end
-        MFH.UserData.rows = rows;
-        MFH.UserData.AllData = AllData;
         PlotPages(Pages,rows);
         StopWait(FigFilterHandle);
     end
@@ -85,21 +83,21 @@ movegui(FigFilterHandle,'northeast')
             nactv = numel(Filters(logical([Filters.CheckedLambdaFilter])).ActualValue); 
         end
         for av = 1:nactv
-            ip = 1; rows = zeros(size(AllData(:,1).Variables,1),1);
+            ip = 1; rows = zeros(size(FitData(:,1).Variables,1),1);
             for ifilt = 1:numel(Filters)
                 if ~strcmpi(Filters(ifilt).ActualValue,'Any')
                     if Filters(ifilt).CheckedLambdaFilter
-                        rows(:,ip)= AllData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue(av);
+                        rows(:,ip)= FitData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue(av);
                     else
                         if strcmpi(Filters(ifilt).Type,'char')
-                            rows(:,ip) = strcmpi(AllData.(Filters(ifilt).Name),Filters(ifilt).ActualValue);
+                            rows(:,ip) = strcmpi(FitData.(Filters(ifilt).Name),Filters(ifilt).ActualValue);
                         else
-                            rows(:,ip)= AllData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue;
+                            rows(:,ip)= FitData.(Filters(ifilt).Name) == Filters(ifilt).ActualValue;
                         end
                     end
                     ip = ip +1;
                 else
-                    rows(:,ip) = ones(numel(AllData(:,1)),1);
+                    rows(:,ip) = ones(numel(FitData(:,1)),1);
                     ip = ip +1;
                 end
             end
@@ -110,7 +108,7 @@ movegui(FigFilterHandle,'northeast')
 %                 movegui(msh,'center');
 %                 return
 %             end
-            Page = AllData(:,cols); BPage = Page.Variables;
+            Page = FitData(:,cols); BPage = Page.Variables;
             BPage(~rows,:) = 0;
             Page.Variables = BPage;
             ActualPage{av}= Page;
@@ -144,7 +142,7 @@ movegui(FigFilterHandle,'northeast')
                 imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
                 SetAxesAppeareance(subH(ifit),'southoutside')
                 title(FitParams(ifit).Name)
-                AddGetTableInfo(FH(end),imh,Filters,rows(:,pageID),AllData)
+                AddGetTableInfo(FH(end),imh,Filters,rows(:,pageID),FitData)
             end
         end
         delete(subH(numel(FitParams)-2+1:end))
@@ -171,7 +169,7 @@ movegui(FigFilterHandle,'northeast')
                             imh = imagesc(subH(av),PlotVar,[0 PercVal]);
                             SetAxesAppeareance(subH(av),'southoutside');
                             title(RealName)
-                            AddGetTableInfo(FH(end),imh,Filters,rows(:,av),AllData)
+                            AddGetTableInfo(FH(end),imh,Filters,rows(:,av),FitData)
                         end
                     end
                     delete(subH(nactv+1:end))
@@ -187,7 +185,7 @@ movegui(FigFilterHandle,'northeast')
                 UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
             ExtraConcParams(1).Name = 'HbTot';
             ExtraConcParams(2).Name = 'So2';
-            FH(end+1)=CreateOrFindFig([PreName '- HbTot_So2 -' name]);
+            FH(end+1)=CreateOrFindFig([PreName '- HbTot_So2 -' name],true);
             
             subH=subplot1(1,2);
             for ifit = 1:numel(ExtraConcParams)
@@ -199,7 +197,7 @@ movegui(FigFilterHandle,'northeast')
                     imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
                     SetAxesAppeareance(subH(ifit),'southoutside')
                     title(ExtraConcParams(ifit).Name)
-                    AddGetTableInfo(FH(end),imh,Filters,rows,AllData)
+                    AddGetTableInfo(FH(end),imh,Filters,rows,FitData)
                 end
             end
         end
@@ -207,9 +205,12 @@ movegui(FigFilterHandle,'northeast')
         for ifigs = 1:numel(FH)
             FH(ifigs).UserData.InfoData.Name = {Filters.Name};
             FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
-            FH(ifigs).UserData.AllData = AllData;
-            AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),FH(ifigs).UserData.InfoData,MFH);
+            FH(ifigs).UserData.FitData = FitData;
+            FH(ifigs).UserData.Filters = Filters;
+            FH(ifigs).UserData.row = rows;
+            FH(ifigs).UserData.FitFilePath = FigFilterHandle.UserData.FitFilePath;
+            AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),MFH);
         end
-        AddToFigureListStruct(FH,MFH,'data',MFH.UserData.FitFilePath)
+        AddToFigureListStruct(FH,MFH,'data',FigFilterHandle.UserData.FitFilePath)
     end
 end

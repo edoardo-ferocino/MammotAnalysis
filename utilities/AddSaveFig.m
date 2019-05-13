@@ -9,15 +9,20 @@ end
 uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
 
     function SaveFig(~,~)
-        StartWait(gcf);
+        StartWait(parentfigure);
         PathName =uigetdircustom('Select destination');
-        if PathName == 0, return, end
+        if PathName == 0, StopWait(gcf); return, end
         FullPath = fullfile(PathName,parentfigure.Name);
         warning off
+%         figh = copyfig(parentfigure); 
+%         figh.reset;
+%         figure(figh);
+%         SetAxesAppeareance(findobj(figh,'type','axes'));
         save_figure(FullPath,'-png','-pdf');
         warning on
         msgbox('Figure saved','Success','Help');
-        StopWait(gcf);
+        %delete(figh);
+        StopWait(parentfigure);
     end
 
 end

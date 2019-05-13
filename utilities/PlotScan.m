@@ -9,7 +9,8 @@ StartWait(MFH);
 %% Read data
 PercFract = 95;
 
-[Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath);
+for infile = 1:MFH.UserData.DatFileNumel
+[Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath{infile});
 OnlinePlotCond = 1;
 if MFH.UserData.OnlinePlot.Value
    TempFilePath = [fullfile(Path,FileName),'Online'];
@@ -17,14 +18,10 @@ end
 while(OnlinePlotCond)
     if MFH.UserData.OnlinePlot.Value
         copyfile([fullfile(Path,FileName),'.DAT'],[TempFilePath,'.DAT']);
-        [A,H,CH,SUBH,~,~,DataSize]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','ushort');
+        [A,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','ushort');
     else
-        [A,H,CH,SUBH,~,~,DataSize]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
+        [A,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
     end
-    MFH.UserData.CompiledHeaderData = CH;
-    MFH.UserData.HeaderData = H;
-    MFH.UserData.SubHeaderData = SUBH;
-    MFH.UserData.Datatype = DataSize;
     [~,~,NumChan,NumBin]=size(A);
     if NumBin == 1
         NumBin = NumChan; NumChan = 1;
@@ -34,7 +31,6 @@ while(OnlinePlotCond)
     A = GetActualOrientationAction(MFH,A);
     A = ApplyBorderToData(MFH,A);
     A = ApplyShiftToData(MFH,A);
-    MFH.UserData.DatData = A;
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
         SETT = TRSread(MFH.UserData.TRSSetFilePath);
@@ -118,8 +114,17 @@ while(OnlinePlotCond)
     end
 end
 %% "Save" figures
-AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath);
+for ifigs = 1:numel(FH)
+    FH(ifigs).UserData.DatData = A;
+    FH(ifigs).UserData.CompiledHeaderData = CH;
+    FH(ifigs).UserData.HeaderData = H;
+    FH(ifigs).UserData.SubHeaderData = SUBH;
+    FH(ifigs).UserData.DataType = DataType;
+    FH(ifigs).UserData.DataSize = DataSize;
+    FH(ifigs).UserData.DatFilePath=MFH.UserData.DatFilePath{infile};
+end
+AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath{infile});
+end
 %% StopWait
 StopWait(MFH)
 end
-

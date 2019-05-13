@@ -1,4 +1,4 @@
-function AddSaveNewFile(parentfigure,object2attach,MFH)
+function AddSaveNewFile(parentfigure,object2attach,~)
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);
     object2attach.UIContextMenu = cmh;
@@ -10,19 +10,18 @@ uimenu(cmh,'Text','Save data to new file','Callback',{@SaveToNewFile});
 
     function SaveToNewFile(~,~)
         StartWait(gcf);
-        [~ ,FileName,~] = fileparts(MFH.UserData.DatFilePath);
+        [~,FileName,~] = fileparts(parentfigure.UserData.DatFilePath);
         [FileName,PathName,FilterIdx] = uiputfilecustom([FileName '.DAT'],'Select destination folder');
         if FilterIdx == 0, return; end
-        A = MFH.UserData.DatData;
+        A = parentfigure.UserData.DatData;
         [NumY,NumX,NumChan,~]=size(A);
         A=flip(A,2);
-        H = MFH.UserData.HeaderData;
-        SUBH = MFH.UserData.SubHeaderData;
-        
+        H = parentfigure.UserData.HeaderData;
+        SUBH = parentfigure.UserData.SubHeaderData;
         if NumChan == 1
-            SUBH = permute(SUBH,[1 2 4 3]);
+           SUBH = permute(SUBH,[1 2 4 3]);
         end
-        Datatype = MFH.UserData.Datatype;
+        Datatype = parentfigure.UserData.Datatype;
         
         fid_out = fopen(fullfile(PathName,FileName), 'wb');
         fwrite(fid_out, H, 'uint8');

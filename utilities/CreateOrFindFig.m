@@ -5,7 +5,9 @@ if ~isempty(FH)
 else
     if(isFFS)
         FH = FFS('Name',Name,varargin{:});
+        FH.UserData.isFFS = true;
     else
         FH = figure('Name',Name,varargin{:});
+        FH.UserData.isFFS = false;
     end
 end

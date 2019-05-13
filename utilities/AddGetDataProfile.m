@@ -1,5 +1,5 @@
 function AddGetDataProfile(parentfigure,object2attach,MFH)
-[~,name,~] = fileparts(MFH.UserData.DispDatFilePath.String);
+[~,name,~] = fileparts(parentfigure.UserData.DataFilePath);
 FigureName = ['Profile Curve - ' name];
 MenuName = 'Get profile';
 if isempty(object2attach.UIContextMenu)

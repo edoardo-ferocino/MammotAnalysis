@@ -1,24 +1,23 @@
-function GetFilePath(src,~,type,MFH)
+function GetFilePath(~,~,type,MFH)
 [FileName,PathName,FilterIndex]=uigetfilecustom('*.txt;*.dat;*.fit;*.trs');
 if FilterIndex == 0, return, end
+if ~iscell(FileName)
+    FileName = cellstr(FileName);
+end
 FullPath = fullfile(PathName,FileName);
 switch type
     case 'fit'
-        MFH.UserData.FitFilePath = FullPath;
-        src.UserData.FitFilePath = FullPath;
-        MFH.UserData.DispFitFilePath.String = FileName;
+        DataType = 'Fit';
     case 'dat'
-        MFH.UserData.DatFilePath = FullPath;
-        src.UserData.DatFilePath = FullPath;
-        MFH.UserData.DispDatFilePath.String = FileName;
+        DataType = 'Dat';
     case 'irf'
-        MFH.UserData.IrfFilePath = FullPath;
-        src.UserData.IrfFilePath = FullPath;
-        MFH.UserData.DispIrfFilePath.String = FileName;
+        DataType = 'Irf';
     case 'trs'
-        MFH.UserData.TRSSetFilePath = FullPath;
-        src.UserData.TRSSetFilePath = FullPath;
-        MFH.UserData.DispTRSSetFilePath.String = FileName;
+        DataType = 'TRSSet';
 end
+
+MFH.UserData.([DataType,'FilePath']) = FullPath;
+MFH.UserData.([DataType,'FileNumel']) = numel(FullPath);
+MFH.UserData.(['Disp',DataType,'FilePath']).String = strjoin(FileName,',');
 end
 
