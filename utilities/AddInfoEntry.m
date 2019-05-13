@@ -9,7 +9,7 @@ infomenuh = findobj(cmh,'Text','Info Data');
 if isempty(infomenuh)
    infomenuh = uimenu(cmh,'Text','Info Data');
 end
-infodata = figentry.InfoData;
+infodata = figentry.UserData.InfoData;
 uimenu(infomenuh,'Text',figentry.Name,'Callback',{@GetInfoData,infodata});
 
     function GetInfoData(~,~,infodata)
