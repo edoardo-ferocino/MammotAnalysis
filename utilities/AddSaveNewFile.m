@@ -21,7 +21,7 @@ uimenu(cmh,'Text','Save data to new file','Callback',{@SaveToNewFile});
         if NumChan == 1
            SUBH = permute(SUBH,[1 2 4 3]);
         end
-        Datatype = parentfigure.UserData.Datatype;
+        Datatype = parentfigure.UserData.DataType;
         
         fid_out = fopen(fullfile(PathName,FileName), 'wb');
         fwrite(fid_out, H, 'uint8');

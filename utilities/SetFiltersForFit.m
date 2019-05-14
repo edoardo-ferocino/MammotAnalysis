@@ -139,10 +139,10 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(FitParams(ifit).Name).Variables);
                 PlotVar = ApplyBorderToData(MFH,PlotVar);
                 PercVal = GetPercentile(PlotVar,PercFract);
-                imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
+                imagesc(subH(ifit),PlotVar,[0 PercVal]);
                 SetAxesAppeareance(subH(ifit),'southoutside')
                 title(FitParams(ifit).Name)
-                AddGetTableInfo(FH(end),imh,Filters,rows(:,pageID),FitData)
+                FH(end).UserData.rows = rows(:,pageID);
             end
         end
         delete(subH(numel(FitParams)-2+1:end))
@@ -166,10 +166,10 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                             PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(RealName).Variables);
                             PlotVar = ApplyBorderToData(MFH,PlotVar);
                             PercVal = GetPercentile(PlotVar,PercFract);
-                            imh = imagesc(subH(av),PlotVar,[0 PercVal]);
+                            imagesc(subH(av),PlotVar,[0 PercVal]);
                             SetAxesAppeareance(subH(av),'southoutside');
                             title(RealName)
-                            AddGetTableInfo(FH(end),imh,Filters,rows(:,av),FitData)
+                            FH(end).UserData.rows = rows(:,av);
                         end
                     end
                     delete(subH(nactv+1:end))
@@ -194,10 +194,10 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                     PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(ExtraConcParams(ifit).Name).Variables);
                     PlotVar = ApplyBorderToData(MFH,PlotVar);
                     PercVal = GetPercentile(PlotVar,PercFract);
-                    imh = imagesc(subH(ifit),PlotVar,[0 PercVal]);
+                    imagesc(subH(ifit),PlotVar,[0 PercVal]);
                     SetAxesAppeareance(subH(ifit),'southoutside')
                     title(ExtraConcParams(ifit).Name)
-                    AddGetTableInfo(FH(end),imh,Filters,rows,FitData)
+                    FH(end).UserData.rows =rows;
                 end
             end
         end
@@ -207,9 +207,8 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
             FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
             FH(ifigs).UserData.FitData = FitData;
             FH(ifigs).UserData.Filters = Filters;
-            FH(ifigs).UserData.row = rows;
+            %FH(ifigs).UserData.row = rows;
             FH(ifigs).UserData.FitFilePath = FigFilterHandle.UserData.FitFilePath;
-            AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),MFH);
         end
         AddToFigureListStruct(FH,MFH,'data',FigFilterHandle.UserData.FitFilePath)
     end

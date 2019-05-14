@@ -29,8 +29,6 @@ while(OnlinePlotCond)
     end
     A=flip(A,2);
     A = GetActualOrientationAction(MFH,A);
-    A = ApplyBorderToData(MFH,A);
-    A = ApplyShiftToData(MFH,A);
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
         SETT = TRSread(MFH.UserData.TRSSetFilePath);
@@ -97,8 +95,6 @@ while(OnlinePlotCond)
     title('Total CountRate');
     SetAxesAppeareance(subH)
     
-    SumChan = squeeze(sum(A,3));
-    AddPickCurve(FH(end),imh,SumChan,MFH);
     if MFH.UserData.OnlinePlot.Value
         dir_info=dir([fullfile(Path,FileName),'.DAT']); 
         if (dir_info.bytes == (764 + prod(CH.LoopNum)*(CH.NumBoard*CH.NumDet)*(CH.SizeSubHeader+CH.McaChannNum*DataSize)))

@@ -100,7 +100,6 @@ end
         clf(FH);
         actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         numfig = numel(actualnameslist);
-        contains(MFH.UserData.ListFigures.String,'Select filters');
         for ifigs = 1:numfig
             CH(ifigs) = CreateContainer(FH,'BorderType','none','Units','Normalized','Position',[0 (1/numfig)*(ifigs-1) 1 1/numfig]);%,'BorderType','none');
             CreateEdit(CH(ifigs),'String',actualnameslist{ifigs},'HorizontalAlignment','Left',...

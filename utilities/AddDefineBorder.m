@@ -36,12 +36,11 @@ end
         uimenu(submH,'Text','Delete internal','CallBack',{@CreateLinkDataFigure,ShapeHandle,'internal'});
         draw(ShapeHandle)
     end
-  function CreateLinkDataFigure(~,~,ShapeHandle,DeleteType)
+    function CreateLinkDataFigure(~,~,ShapeHandle,DeleteType)
         FH = CreateOrFindFig('Link Figures',false,'NumberTitle','off','Toolbar','None','MenuBar','none');
         clf(FH);
         actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         numfig = numel(actualnameslist);
-        contains(MFH.UserData.ListFigures.String,'Select filters');
         for ifigs = 1:numfig
             CH(ifigs) = CreateContainer(FH,'BorderType','none','Units','Normalized','Position',[0 (1/numfig)*(ifigs-1) 1 1/numfig]);%,'BorderType','none');
             CreateEdit(CH(ifigs),'String',actualnameslist{ifigs},'HorizontalAlignment','Left',...
@@ -66,8 +65,16 @@ end
                 ImH = findobj(AxH(iaxh),'type','image');
                 if strcmpi(DeleteType,'external')
                     ImH.CData = ImH.CData .*ShapeHandle.createMask;
+                    if(isfield(FH.UserData,'DatData'))
+                        Size=size(FH.UserData.DatData);
+                        FH.UserData.DatData = FH.UserData.DatData.*repmat(ShapeHandle.createMask,[1 1 Size(3) Size(4)]);
+                    end
                 else
                     ImH.CData = ImH.CData .*~ShapeHandle.createMask;
+                    if(isfield(FH.UserData,'DatData'))
+                        Size=size(FH.UserData.DatData);
+                        FH.UserData.DatData = FH.UserData.DatData.*~repmat(ShapeHandle.createMask,[1 1 Size(3) Size(4)]);
+                    end
                 end
                 PercVal = GetPercentile(ImH.CData,PercFract);
                 ImH.Parent.CLim = [0 PercVal];
@@ -83,30 +90,11 @@ end
             movegui(FH,'center')
             StopWait(FigureParent);
             StopWait(FH);
-            imh = findobj(FH,'type','image');
-            for ih = 1:numel(imh)
-                if isfield(FH.UserData,'rows')
-                    AddGetTableInfo(FH,imh(ih),FH.UserData.Filters,FH.UserData.rows,FH.UserData.FitData)
-                end
-            end
-            if isfield(FH.UserData,'InfoData')
-                AddInfoEntry(MFH,MFH.UserData.ListFigures,FH,MFH);
-            end
         end
         StopWait(ancestor(src,'figure'));
         msh = msgbox({'Roi applied' 'The new figure will be listed in the list box'},'Success','help');
         movegui(msh,'center');
         waitfor(msh);
-        answer = questdlg('Use the cropped data for analysis?','Cropped data','Yes','No','No');
-        if strcmpi(answer,'yes')
-            msh = msgbox('Please run again the analysis','Success','help');
-            movegui(msh,'center');
-            waitfor(msh);
-            MFH.UserData.DataMask = tshapeh.createMask;
-            MFH.UserData.DataMaskDelType = DeleteType;
-            MFH.UserData.DataMaskHandle = tshapeh;
-            MFH.UserData.ApplyDataMask = true;
-        end
     end
     function CopyRoi(~,~,roiobj)
         MFH.UserData.CopiedRoi = roiobj;

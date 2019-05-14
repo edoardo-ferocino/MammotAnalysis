@@ -1,4 +1,5 @@
 function AddInfoEntry(parentfigure,object2attach,figentry,MFH)
+if ~isfield(figentry.UserData,'InfoData'),return,end
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);
     object2attach.UIContextMenu = cmh;
