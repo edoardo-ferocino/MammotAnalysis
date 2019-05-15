@@ -212,7 +212,7 @@ end
                 if PathName == 0, delete(RoiObj);return, end
                 FullPath = fullfile(PathName,FigureParent.Name);
                 warning off
-                save_figure(FullPath,'-png','-pdf');
+                save_figure(FullPath,FigureParent,'-png','-pdf');
                 warning on
                 msgbox('Figure saved','Success','Help');
             end
