@@ -15,6 +15,8 @@ uimenu(infomenuh,'Text',figentry.Name,'Callback',{@GetInfoData,infodata});
 
     function GetInfoData(~,~,infodata)
         FH=CreateOrFindFig(['Info: ' figentry.Name],false,'NumberTitle','off','MenuBar','none','ToolBar','none');
+        if isstring(infodata.Name), infodata.Name = {infodata.Name{:}};  end
+        if isstring(infodata.Value), infodata.Value = {infodata.Value{:}};  end
         if isrow(infodata.Name), infodata.Name = infodata.Name'; end
         if isrow(infodata.Value), infodata.Value = infodata.Value'; end
         tbh = uitable(FH,'ColumnName',{figentry.Name},'RowName',infodata.Name,'Data',infodata.Value,'ColumnFormat',{'char'});

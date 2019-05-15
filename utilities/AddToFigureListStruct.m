@@ -33,6 +33,7 @@ for ifigs = 1:numel(FH)
             AddGetDataProfile(FH(ifigs),ImH(imh),MFH);
             AddDefineBorder(FH(ifigs),ImH(imh),MFH);
             AddShiftPixels(FH(ifigs),ImH(imh),MFH);
+            AddSetColorbar(FH(ifigs),ImH(imh),MFH);
             %AddPicture(FH(ifigs),ImH(imh),MFH)
             AddSendToCompareAxes(FH(ifigs),ImH(imh),MFH);
             %AddFillBlackLines(FH(end),imh,Wave,MFH);

@@ -18,9 +18,23 @@ ColumnNames = FitData.Properties.VariableNames;
 CompNames = {'Hb' 'HbO2' 'Lipid' 'H20' 'Collagen' 'A' 'B'};
 MuaMusNames = {'mua','mus'};
 LocationNames = {'X','Y'};
-
+Labels = {'Repetition' 'View' 'Breast' 'Session'};
+Content = [ ["rep" "repetition" "-" "-"];...
+            ["OB" "CC" "CL" "-"];...
+            ["SX" "DX" "L" "R"];...
+            ["ses" "session" "-" "-"]];
 for ic = 1:numel(ColumnNames)
     match = find(strcmpi(OriginalColNames,ColumnNames{ic}));
+    Cats = categories(categorical(FitData.(ColumnNames{ic})))';
+    if strcmpi(VarTypes{ic},'char')
+        for ilabs = 1:numel(Labels)
+            for icats = 1:numel(Cats)
+                if any(strcmpi(Cats(icats),Content(ilabs,:)))
+                    FitData.Properties.VariableNames(ic) = Labels(ilabs);
+                end
+            end
+        end
+    end
     if match
         FitData.Properties.VariableNames{ic} = RealColNames{match};
     end

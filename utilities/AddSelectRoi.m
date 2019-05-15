@@ -28,15 +28,19 @@ end
         ShapeHandle.Color = rand(1,3);
         ShapeHandle.UIContextMenu.Children(...
             contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).Text = ...
-            ['Delete ',num2str(ShapeHandle.UserData.ID),' ',shape];
+            ['Delete ROI ',num2str(ShapeHandle.UserData.ID)];
+        ShapeHandle.UIContextMenu.Children(...
+            contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
         uimenu(ShapeHandle.UIContextMenu,'Text',['Copy ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
         uimenu(ShapeHandle.UIContextMenu,'Text',['Apply ROI ',num2str(ShapeHandle.UserData.ID),' to all axes'],'CallBack',{@CreateLinkDataFigure,ShapeHandle});
         addlistener(ShapeHandle,'DrawingFinished',@GetData);
         draw(ShapeHandle)
         addlistener(ShapeHandle,'ROIMoved',@GetData);
     end
-    function DeleteRoi(~,~,roiobj)
-        delete(roiobj)
+    function DeleteRoi(~,~,RoiObj)
+        FH=findobj(groot,'type','figure','Name',strcat('ROI - ',num2str(RoiObj.UserData.ID)));
+        delete(RoiObj)
+        delete(FH);
     end
     function CopyRoi(~,~,roiobj)
         MFH.UserData.CopiedRoi = roiobj;
@@ -64,7 +68,11 @@ end
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).MenuSelectedFcn{2} = RoiObj;
         RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).Text = ['Copy ROI ',num2str(RoiObj.UserData.ID)];
+        RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,RoiObj};
+        RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).Text = ['Delete ROI ',num2str(RoiObj.UserData.ID)];
         RoiObj.Color = rand(1,3);
         GetData(RoiObj,RoiObj);
         addlistener(RoiObj,'ROIMoved',@GetData);
@@ -107,7 +115,7 @@ end
             CBH(ifigs) = CreateCheckBox(CH(ifigs),'String','Link','Units','Normalized','Position',[0.7 0 0.1 1]);
         end
         EH=CreateEdit(FH,'String','Linked Name(Type)','HorizontalAlignment','Left',...
-                'Units','Normalized','Position',[0.80 0.08 0.20 0.08]);
+            'Units','Normalized','Position',[0.80 0.08 0.20 0.08]);
         CreatePushButton(FH,'Units','Normalized','Position',[0.90 0 0.10 0.08],'String','Link&Run','Callback',{@ApplyRoiToAll,ShapeHandle,CBH,EH});
         AddToFigureListStruct(FH,MFH,'side');
     end
@@ -159,15 +167,30 @@ end
             end
         end
         if(isfield(FH(1).UserData,'FitData'))
-        fitdata = [[{'View'}; repmat(FH(1).UserData.FitData.View(1),numel(fieldnames(Roi)),1) ] ...
-            [{'Breast'}; repmat(FH(1).UserData.FitData.Breast(1),numel(fieldnames(Roi)),1) ] ...
-            [{'Session'}; repmat(num2cell(FH(1).UserData.FitData.Session(1)),numel(fieldnames(Roi)),1) ] ...
-            [{'Repetition'}; repmat(num2cell(FH(1).UserData.FitData.Repetition(1)),numel(fieldnames(Roi)),1)] ];
+            Labels = {'Repetition' 'View' 'Breast' 'Session'};
+            for ilabs = 1:numel(Labels)
+                ActVal=FH(1).UserData.Filters(strcmpi({FH(1).UserData.Filters.Name},Labels{ilabs})).ActualValue;
+                if strcmpi(ActVal,'any')
+                    ActVal =  FH(1).UserData.FitData.(Labels{ilabs})(1);
+                    if isnumeric(ActVal)
+                        ActVal = {num2str(ActVal)};
+                    end
+                end
+                if ilabs == 1
+                    fitdata = [Labels(ilabs); repmat(ActVal,numel(fieldnames(Roi)),1)];
+                else
+                    fitdata = [fitdata [Labels(ilabs); repmat(ActVal,numel(fieldnames(Roi)),1)]];
+                end
+            end
+%             fitdata = [[{'View'}; repmat(FH(1).UserData.FitData.View(1),numel(fieldnames(Roi)),1) ] ...
+%                 [{'Breast'}; repmat(FH(1).UserData.FitData.Breast(1),numel(fieldnames(Roi)),1) ] ...
+%                 [{'Session'}; repmat(num2cell(FH(1).UserData.FitData.Session(1)),numel(fieldnames(Roi)),1) ] ...
+%                 [{'Repetition'}; repmat(num2cell(FH(1).UserData.FitData.Repetition(1)),numel(fieldnames(Roi)),1)] ];
         else
             fitdata = [];
         end
         if isprop(ShapeHandle,'Vertices')
-           vertdata =  [{'TL X' 'TL Y' 'TR X' 'TR Y' 'BR X' 'BR Y' 'BL X' 'BL Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)];
+            vertdata =  [{'TL X' 'TL Y' 'TR X' 'TR Y' 'BR X' 'BR Y' 'BL X' 'BL Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)];
         else
             vertdata = [];
         end

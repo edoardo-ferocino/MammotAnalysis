@@ -81,6 +81,19 @@ while(OnlinePlotCond)
             SetAxesAppeareance(subH(iw));
         end
         delete(subH(iw+1:end))
+        
+        
+        % Actual counts bkg free
+        FH(end+1) = CreateOrFindFig(['Actual counts bkg free - ' FileName],true);
+        Bkg = mean(A(:,:,:,1:20),4);
+        ActCounts = A - Bkg;
+        ActCountsAllChan=sum(ActCounts,3);
+        ActCountsAllChanImage = sum(ActCountsAllChan,4);
+        subH=subplot1(1,1); subplot1(1);
+        PercVal = GetPercentile(ActCountsAllChanImage,PercFract);
+        imagesc(ActCountsAllChanImage,[0 PercVal]);
+        title('Actual counts');
+        SetAxesAppeareance(subH)
     end
     % Total count rate
     if (~MFH.UserData.OnlinePlot.Value)
@@ -91,7 +104,7 @@ while(OnlinePlotCond)
     CountRatesImageAllChan=sum(CountRatesImage,3);
     subH=subplot1(1,1); subplot1(1);
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
-    imh = imagesc(CountRatesImageAllChan,[0 PercVal]);
+    imagesc(CountRatesImageAllChan,[0 PercVal]);
     title('Total CountRate');
     SetAxesAppeareance(subH)
     
@@ -118,6 +131,8 @@ for ifigs = 1:numel(FH)
     FH(ifigs).UserData.DataType = DataType;
     FH(ifigs).UserData.DataSize = DataSize;
     FH(ifigs).UserData.DatFilePath=MFH.UserData.DatFilePath{infile};
+    FH(ifigs).UserData.InfoData.Name = CH.LabelName;
+    FH(ifigs).UserData.InfoData.Value = CH.LabelContent;
 end
 AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath{infile});
 end
