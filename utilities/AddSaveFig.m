@@ -14,23 +14,26 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
         if PathName == 0, StopWait(gcf); return, end
         FullPath = fullfile(PathName,parentfigure.Name);
         warning off
-        figh = copyfig(parentfigure); 
-        figh.reset;
-        figure(figh);
-        SetAxesAppeareance(findobj(figh,'type','axes'));
-%         axh= findobj(parentfigure,'type','axes');
-%         for iaxh = 1:numel(axh)
-%            OrigTitle{iaxh}=axh(iaxh).Title;
-%            axh(iaxh).Title = [];
-%         end
-        save_figure(FullPath,figh,'-png','-pdf');    
-%         for iaxh = 1:numel(axh)
-%            axh(iaxh).Title=OrigTitle{iaxh};
-%         end
-        delete(figh);
+        save_figure(FullPath,parentfigure,'-png','-pdf');
+        %         figh = copyfig(parentfigure);
+        %         figh.reset;
+        %         figure(figh);
+        %         SetAxesAppeareance(findobj(figh,'type','axes'));
+        %         delete(findobj(figh,'type','colorbar'));
+        %         axh= findobj(figh,'type','axes');
+        %         for iaxh = 1:numel(axh)
+        %             TempName = [FullPath '-' axh(iaxh).Title.String];
+        %             axh(iaxh).Title = [];
+        %             FFS(99+iaxh); subh=subplot1(1,1); subplot1(1);
+        %             imagesc(subh,axh(iaxh).Children.CData,[0 GetPercentile(axh(iaxh).Children.CData,95)]);
+        %             subh.YDir = 'reverse';
+        %             axis image; colormap pink, shading interp;
+        %             save_figure(TempName,FFS(99+iaxh),'-png','-pdf');
+        %             delete(FFS(99+iaxh));
+        %         end
+        %       delete(figh);
         warning on
         msgbox('Figure saved','Success','Help');
-        %delete(figh);
         StopWait(parentfigure);
     end
 

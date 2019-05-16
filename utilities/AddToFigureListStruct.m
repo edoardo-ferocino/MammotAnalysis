@@ -18,15 +18,15 @@ for ifigs = 1:numel(FH)
         FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
         AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
         AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),MFH);
-        if isfield(FH(ifigs).UserData,'DatData')
-            SumChan = squeeze(sum(FH(ifigs).UserData.DatData,3));
+        if isfield(FH(ifigs).UserData,'VisualDatData')
+            SumChan = squeeze(sum(FH(ifigs).UserData.VisualDatData,3));
         end
         ImH = findobj(FH(ifigs),'type','image');
         for imh = 1:numel(ImH)
             if isfield(FH(ifigs).UserData,'Filters')
                 AddGetTableInfo(FH(ifigs),ImH(imh),FH(ifigs).UserData.Filters,FH(ifigs).UserData.rows,FH(ifigs).UserData.FitData);
             end
-            if isfield(FH(ifigs).UserData,'DatData')
+            if isfield(FH(ifigs).UserData,'VisualDatData')
                 AddPickCurve(FH(ifigs),ImH(imh),SumChan,MFH);
             end
             AddSelectRoi(FH(ifigs),ImH(imh),MFH);

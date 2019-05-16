@@ -13,9 +13,9 @@ uimenu(cmh,'Text','Save data to new file','Callback',{@SaveToNewFile});
         [~,FileName,~] = fileparts(parentfigure.UserData.DatFilePath);
         [FileName,PathName,FilterIdx] = uiputfilecustom([FileName '.DAT'],'Select destination folder');
         if FilterIdx == 0, return; end
-        A = parentfigure.UserData.DatData;
-        [NumY,NumX,NumChan,~]=size(A);
-        A=flip(A,2);
+        Data = parentfigure.UserData.ActualDatData;
+        [NumY,NumX,NumChan,~]=size(Data);
+        Data=flip(Data,2);
         H = parentfigure.UserData.HeaderData;
         SUBH = parentfigure.UserData.SubHeaderData;
         if NumChan == 1
@@ -29,7 +29,7 @@ uimenu(cmh,'Text','Save data to new file','Callback',{@SaveToNewFile});
             for ix = 1:NumX
                 for ich = 1:NumChan
                     fwrite(fid_out, SUBH(iy,ix,ich,:), 'uint8');
-                    curve=squeeze(A(iy,ix,ich,:));
+                    curve=squeeze(Data(iy,ix,ich,:));
                     fwrite(fid_out, curve, Datatype);
                 end
             end

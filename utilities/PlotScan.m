@@ -18,17 +18,19 @@ end
 while(OnlinePlotCond)
     if MFH.UserData.OnlinePlot.Value
         copyfile([fullfile(Path,FileName),'.DAT'],[TempFilePath,'.DAT']);
-        [A,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','ushort');
+        [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','ushort');
     else
-        [A,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
+        [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
     end
-    [~,~,NumChan,NumBin]=size(A);
+    [~,~,NumChan,NumBin]=size(RawData);
     if NumBin == 1
         NumBin = NumChan; NumChan = 1;
-        A = permute(A,[1 2 4 3]);
+        RawData = permute(RawData,[1 2 4 3]);
     end
-    A=flip(A,2);
-    A = GetActualOrientationAction(MFH,A);
+    RawData=flip(RawData,2);
+    isVisual = sum(RawData,[2 3 4]) ~= 0;
+    RawVisualData = RawData(isVisual,:,:,:);
+    RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
         SETT = TRSread(MFH.UserData.TRSSetFilePath);
@@ -45,7 +47,7 @@ while(OnlinePlotCond)
     %% Analyze data
     
     AcqTime = CH.McaTime;
-    AllCounts = sum(A,4);
+    AllCounts = sum(RawVisualData,4);
     CountRatesImage = AllCounts./AcqTime;
     if (~MFH.UserData.OnlinePlot.Value)
         % Count rate per channel
@@ -67,7 +69,7 @@ while(OnlinePlotCond)
         nSub = numSubplots(numel(Wavelengths));
         subH = subplot1(nSub(1),nSub(2));
         for iw = 1:numel(Wavelengths)
-            Wave(iw).Data = A(:,:,:,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1);
+            Wave(iw).Data = RawVisualData(:,:,:,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1);
             for ich = 1:NumChan
                 Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
             end
@@ -85,8 +87,8 @@ while(OnlinePlotCond)
         
         % Actual counts bkg free
         FH(end+1) = CreateOrFindFig(['Actual counts bkg free - ' FileName],true);
-        Bkg = mean(A(:,:,:,1:20),4);
-        ActCounts = A - Bkg;
+        Bkg = mean(RawVisualData(:,:,:,1:20),4);
+        ActCounts = RawVisualData - Bkg;
         ActCountsAllChan=sum(ActCounts,3);
         ActCountsAllChanImage = sum(ActCountsAllChan,4);
         subH=subplot1(1,1); subplot1(1);
@@ -124,7 +126,9 @@ while(OnlinePlotCond)
 end
 %% "Save" figures
 for ifigs = 1:numel(FH)
-    FH(ifigs).UserData.DatData = A;
+    FH(ifigs).UserData.VisualDatData = RawVisualData;
+    FH(ifigs).UserData.ActualDatData = RawData;
+    FH(ifigs).UserData.Numel2Pad = size(RawData,1)-size(RawVisualData,1);
     FH(ifigs).UserData.CompiledHeaderData = CH;
     FH(ifigs).UserData.HeaderData = H;
     FH(ifigs).UserData.SubHeaderData = SUBH;

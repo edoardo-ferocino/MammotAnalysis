@@ -65,15 +65,17 @@ end
                 ImH = findobj(AxH(iaxh),'type','image');
                 if strcmpi(DeleteType,'external')
                     ImH.CData = ImH.CData .*ShapeHandle.createMask;
-                    if(isfield(FH.UserData,'DatData'))
-                        Size=size(FH.UserData.DatData);
-                        FH.UserData.DatData = FH.UserData.DatData.*repmat(ShapeHandle.createMask,[1 1 Size(3) Size(4)]);
+                    if(isfield(FH.UserData,'ActualDatData'))
+                        Size=size(FH.UserData.ActualDatData);
+                        FH.UserData.ActualDatData = FH.UserData.ActualDatData.*...
+                            padarray(repmat(ShapeHandle.createMask,[1 1 Size(3) Size(4)]),FH.UserData.Numel2Pad,'post');
                     end
                 else
                     ImH.CData = ImH.CData .*~ShapeHandle.createMask;
-                    if(isfield(FH.UserData,'DatData'))
-                        Size=size(FH.UserData.DatData);
-                        FH.UserData.DatData = FH.UserData.DatData.*~repmat(ShapeHandle.createMask,[1 1 Size(3) Size(4)]);
+                    if(isfield(FH.UserData,'ActualDatData'))
+                        Size=size(FH.UserData.ActualDatData);
+                        FH.UserData.ActualDatData = FH.UserData.ActualDatData.*...
+                            padarray(~repmat(ShapeHandle.createMask,[1 1 Size(3) Size(4)]),FH.UserData.Numel2Pad,'post');
                     end
                 end
                 PercVal = GetPercentile(ImH.CData,PercFract);

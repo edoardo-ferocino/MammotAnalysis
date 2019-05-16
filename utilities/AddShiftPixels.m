@@ -136,13 +136,15 @@ uimenu(cmh,'Text','Correct shift','Callback',{@CreateShiftCorrectFigure,false});
                 end
                 ImH(imh).CData = Data;
             end
-            if(isfield(FH.UserData,'DatData'))
-                Size=size(FH.UserData.DatData);
-                FH.UserData.DatData(CoordEven,:) =...
-                    circshift(FH.UserData.DatData(CoordEven,:),EvenVal,2);
-                FH.UserData.DatData(CoordOdd,:) =...
-                    circshift(FH.UserData.DatData(CoordOdd,:),OddVal,2);
-                FH.UserData.DatData=reshape(FH.UserData.DatData,Size);
+            if(isfield(FH.UserData,'ActualsDatData'))
+                Size=size(FH.UserData.ActualsDatData);
+                PaddedCoordEven = padarray(CoordEven,FH.UserData.Numel2Pad,'post');
+                PaddedCoordOdd = padarray(CoordOdd,FH.UserData.Numel2Pad,'post');
+                FH.UserData.ActualsDatData(PaddedCoordEven,:) =...
+                    circshift(FH.UserData.ActualsDatData(PaddedCoordEven,:),EvenVal,2);
+                FH.UserData.ActualsDatData(PaddedCoordOdd,:) =...
+                    circshift(FH.UserData.ActualsDatData(PaddedCoordOdd,:),OddVal,2);
+                FH.UserData.ActualsDatData=reshape(FH.UserData.ActualsDatData,Size);
             end
             StopWait(FigureParent);
             StopWait(FH);
