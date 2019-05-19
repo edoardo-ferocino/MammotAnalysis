@@ -14,8 +14,7 @@ uimenu(cmh,'Text','Correct shift','Callback',{@CreateShiftCorrectFigure,false});
             if isnew
                 clf(findobj(groot,'Tag',Tag'))
             end
-            FH=CreateOrFindFig('Correct shift tool',false,'NumberTitle','off','Toolbar','none','Menubar','none','Units','Normalized','Tag',Tag);
-            FH.Position=[0.5 0.5 0.2 0.2];
+            FH=CreateOrFindFig('Correct shift tool','NumberTitle','off','Toolbar','none','Menubar','none','Units','Normalized','Tag',Tag,'Position',[0.5 0.5 0.2 0.2]);
             ch = CreateContainer(FH,'Units','Normalized','Position',[0 0 1 1],'Visible','on');
             bg = uibuttongroup(FH,'Visible','on','Position',[0 0 0.3 1],'Tag','EvenOrOdd');
             CreateRadioButton(bg,'String','Shift even rows','units','normalized','position',[0 0 1 0.5],'Tag','even');
@@ -29,16 +28,17 @@ uimenu(cmh,'Text','Correct shift','Callback',{@CreateShiftCorrectFigure,false});
             CreatePushButton(ch,'units','normalized','String','Restore','Position',[0.7 0.6 0.3 0.2],'Callback',{@Restore});
             CreateText(ch,'String',Tag,'units','normalized','position',[0.3 0 0.7 0.15]);
         else
-            FH=CreateOrFindFig('Correct shift tool',false,'NumberTitle','off','Toolbar','none','Menubar','none','Units','Normalized','Tag',Tag);
-            FH.Position=[0.5 0.5 0.2 0.2];
+            FH=CreateOrFindFig('Correct shift tool','NumberTitle','off','Toolbar','none','Menubar','none','Units','Normalized','Tag',Tag,'Position',[0.5 0.5 0.2 0.2]);
         end
         object2attach.UserData.ShiftToolH = FH;
         FH.CloseRequestFcn = {@SetFigureInvisible,FH};
+        FH.UserData.FigCategory = 'ShiftTool';
         AddToFigureListStruct(FH,MFH,'side');
     end
     function CreateLinkDataFigure(~,~)
-        FH = CreateOrFindFig('Link Figures',false,'NumberTitle','off','Toolbar','None','MenuBar','none');
+        FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
         clf(FH);
+        FH.UserData.FigCategory = 'LinkFigures';
         actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         numfig = numel(actualnameslist);
         for ifigs = 1:numfig

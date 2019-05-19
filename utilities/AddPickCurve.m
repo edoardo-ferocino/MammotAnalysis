@@ -33,13 +33,13 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
     function output_txt=PickCurveOnGraph(src,~,~)
         AncestorFigure = ancestor(src,'figure');
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        FH=CreateOrFindFig(FigureName,false,'NumberTitle','off');
-        AddToFigureListStruct(FH,MFH,'side')
+        FH=CreateOrFindFig(FigureName,'NumberTitle','off');
+        FH.UserData.FigCategory = 'PickCurve';
         movegui(FH,'southwest')
         [~,~,numbin]=size(Data);
-        if isfield(MFH.UserData,'SETT')
+        if isfield(parentfigure.UserData,'TrsSet')
            Counts = sum(Data(Ypos,Xpos,:),3); 
-           SETT = MFH.UserData.SETT;
+           SETT = parentfigure.UserData.TrsSet;
            RelCounts = zeros(1,numel(MFH.UserData.Wavelengths)+1);
            RelCounts(1) = (mean(Data(Ypos,Xpos,1:20))*numbin)./Counts*100;
            for iw = 2:numel(MFH.UserData.Wavelengths)+1
@@ -52,6 +52,7 @@ uimenu(cmh,'Text',MenuName,'CallBack',{CallBackHandle,parentfigure});
             [char('Bkg',num2str(MFH.UserData.Wavelengths')) num2str(RelCounts',':%.0f%%')]};
         semilogy(1:numbin,squeeze(Data(Ypos,Xpos,:)));
         ylim([10 max(Data(:))]);
+        AddToFigureListStruct(FH,MFH,'side')
         figure(AncestorFigure);
         MinimizeFFS(AncestorFigure);
     end

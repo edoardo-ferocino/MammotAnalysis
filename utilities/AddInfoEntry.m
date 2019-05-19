@@ -14,7 +14,7 @@ infodata = figentry.UserData.InfoData;
 uimenu(infomenuh,'Text',figentry.Name,'Callback',{@GetInfoData,infodata});
 
     function GetInfoData(~,~,infodata)
-        FH=CreateOrFindFig(['Info: ' figentry.Name],false,'NumberTitle','off','MenuBar','none','ToolBar','none');
+        FH=CreateOrFindFig(['Info: ' figentry.Name],'NumberTitle','off','MenuBar','none','ToolBar','none');
         if isstring(infodata.Name), infodata.Name = {infodata.Name{:}};  end
         if isstring(infodata.Value), infodata.Value = {infodata.Value{:}};  end
         if isrow(infodata.Name), infodata.Name = infodata.Name'; end
@@ -22,6 +22,7 @@ uimenu(infomenuh,'Text',figentry.Name,'Callback',{@GetInfoData,infodata});
         tbh = uitable(FH,'ColumnName',{figentry.Name},'RowName',infodata.Name,'Data',infodata.Value,'ColumnFormat',{'char'});
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
+        FH.UserData.FigCategory = 'Info';
         movegui(FH,'southeast')
         AddToFigureListStruct(FH,MFH,'side');
     end

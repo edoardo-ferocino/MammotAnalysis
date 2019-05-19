@@ -30,7 +30,8 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SelectProfileOnGraph,parentfigure});
     end
     function output_txt=ProfileOnGraph(src,~,~)
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        FH=CreateOrFindFig(FigureName,false,'NumberTitle','off');
+        FH=CreateOrFindFig(FigureName,'NumberTitle','off');
+        FH.UserData.FigCategory = 'Profile';
         realhandle = findobj(ancestor(src,'axes'),'type','image');
         Data = realhandle.CData;
         [numy,numx]=size(Data);

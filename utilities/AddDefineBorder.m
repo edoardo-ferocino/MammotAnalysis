@@ -14,7 +14,6 @@ end
 
     function DefineBorder(~,~,shape,object2attach)
         RoiObjs = findobj(object2attach,'Type','images.roi');
-        ColorList ={'red'};
         AxH = ancestor(object2attach,'axes');
         ShapeHandle = images.roi.(shape)(AxH);
         ShapeHandle.UserData.Type = 'DefineBorder';
@@ -27,8 +26,7 @@ end
                 MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID+1;
         end
         ShapeHandle.FaceAlpha = 0;
-        ColIDX = rem(MFH.UserData.Roi.(ShapeHandle.UserData.Type).ID,numel(ColorList))+1;
-        ShapeHandle.Color = ColorList{ColIDX};
+        ShapeHandle.Color = 'red';
         ShapeHandle.StripeColor = 'yellow';
         uimenu(ShapeHandle.UIContextMenu,'Text',['Copy DefineBorder ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
         submH = uimenu(ShapeHandle.UIContextMenu,'Text',['Apply DefineBorder ROI ',num2str(ShapeHandle.UserData.ID)]);
@@ -37,8 +35,9 @@ end
         draw(ShapeHandle)
     end
     function CreateLinkDataFigure(~,~,ShapeHandle,DeleteType)
-        FH = CreateOrFindFig('Link Figures',false,'NumberTitle','off','Toolbar','None','MenuBar','none');
+        FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
         clf(FH);
+        FH.UserData.FigCategory = 'LinkFigures';
         actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         numfig = numel(actualnameslist);
         for ifigs = 1:numfig

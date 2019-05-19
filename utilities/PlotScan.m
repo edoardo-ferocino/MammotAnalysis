@@ -18,7 +18,7 @@ end
 while(OnlinePlotCond)
     if MFH.UserData.OnlinePlot.Value
         copyfile([fullfile(Path,FileName),'.DAT'],[TempFilePath,'.DAT']);
-        [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','ushort');
+        [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true,'Datatype','uint32');
     else
         [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
     end
@@ -33,16 +33,16 @@ while(OnlinePlotCond)
     RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
-        SETT = TRSread(MFH.UserData.TRSSetFilePath);
+        TrsSet = TRSread(MFH.UserData.TRSSetFilePath);
     else
-        SETT.Roi = zeros(numel(Wavelengths),3);
+        TrsSet.Roi = zeros(numel(Wavelengths),3);
         limits = round(linspace(0,NumBin-1,numel(Wavelengths)+1));
         for ir = 1:numel(Wavelengths)
-            SETT.Roi(ir,2) = limits(ir);
-            SETT.Roi(ir,3) = limits(ir+1);
+            TrsSet.Roi(ir,2) = limits(ir);
+            TrsSet.Roi(ir,3) = limits(ir+1);
         end
     end
-    MFH.UserData.SETT = SETT;
+    
     
     %% Analyze data
     
@@ -51,7 +51,8 @@ while(OnlinePlotCond)
     CountRatesImage = AllCounts./AcqTime;
     if (~MFH.UserData.OnlinePlot.Value)
         % Count rate per channel
-        FH = CreateOrFindFig(['Count rates per channel - ' FileName],true);
+        FH = CreateOrFindFig(['Count rates per channel - ' FileName],'WindowState','maximized');
+        FH.UserData.FigCategory = 'Channels';
         nsub = numSubplots(NumChan);
         subH = subplot1(nsub(1),nsub(2));
         for ich = 1 : NumChan
@@ -64,12 +65,12 @@ while(OnlinePlotCond)
         
         
         % Wavelenghts count rate
-        FH(end+1)=CreateOrFindFig(['Wavelenghts images count rate - ' FileName],true);
-        
+        FH(end+1)=CreateOrFindFig(['Wavelenghts images count rate - ' FileName],'WindowState','maximized');
+        FH(end).UserData.FigCategory = 'Wavelenghts';
         nSub = numSubplots(numel(Wavelengths));
         subH = subplot1(nSub(1),nSub(2));
         for iw = 1:numel(Wavelengths)
-            Wave(iw).Data = RawVisualData(:,:,:,SETT.Roi(iw,2)+1:SETT.Roi(iw,3)+1);
+            Wave(iw).Data = RawVisualData(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
             for ich = 1:NumChan
                 Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
             end
@@ -86,7 +87,8 @@ while(OnlinePlotCond)
         
         
         % Actual counts bkg free
-        FH(end+1) = CreateOrFindFig(['Actual counts bkg free - ' FileName],true);
+        FH(end+1) = CreateOrFindFig(['Actual counts bkg free - ' FileName],'WindowState','maximized');
+        FH(end).UserData.FigCategory= 'Counts';
         Bkg = mean(RawVisualData(:,:,:,1:20),4);
         ActCounts = RawVisualData - Bkg;
         ActCountsAllChan=sum(ActCounts,3);
@@ -99,10 +101,11 @@ while(OnlinePlotCond)
     end
     % Total count rate
     if (~MFH.UserData.OnlinePlot.Value)
-        FH(end+1) = CreateOrFindFig(['Total count rate image - ' FileName],true);
+        FH(end+1) = CreateOrFindFig(['Total count rate image - ' FileName],'WindowState','maximized');
     else
-         FH(end+1) = CreateOrFindFig(['Total count rate image Online- ' FileName],true);
+         FH = CreateOrFindFig(['Total count rate image Online- ' FileName],'WindowState','maximized');
     end
+    FH(end).UserData.FigCategory = 'Counts';
     CountRatesImageAllChan=sum(CountRatesImage,3);
     subH=subplot1(1,1); subplot1(1);
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
@@ -137,6 +140,7 @@ for ifigs = 1:numel(FH)
     FH(ifigs).UserData.DatFilePath=MFH.UserData.DatFilePath{infile};
     FH(ifigs).UserData.InfoData.Name = CH.LabelName;
     FH(ifigs).UserData.InfoData.Value = CH.LabelContent;
+    FH(ifigs).UserData.TrsSet = TrsSet;
 end
 AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath{infile});
 end

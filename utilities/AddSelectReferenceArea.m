@@ -1,24 +1,22 @@
 function AddSelectReferenceArea(parentfigure,object2attach,Data,MFH)
-[~,FileName,~] = fileparts(MFH.UserData.DispDatFilePath.String);
-FigureName = ['Reference Curve - ' FileName];
+[~,FileName]=fileparts(parentfigure.UserData.DatFilePath);
+ReferenceCurveFigureName = ['Reference Curve - ' FileName];
 if isempty(object2attach.UIContextMenu)
     cmh = uicontextmenu(parentfigure);
     object2attach.UIContextMenu = cmh;
 else
     cmh = object2attach.UIContextMenu;
 end
-mmh = uimenu(cmh,'Text','Select reference area');
+mmh = uimenu(cmh,'Text','Select reference area for gates');
 uimenu(mmh,'Text','Spot','Callback',{@ReferenceSpot,parentfigure});
 areamh = uimenu(mmh,'Text','Area');
 Shapes = {'Rectangle' 'Freehand' 'Circle'};
 for is = 1:numel(Shapes)
     uimenu(areamh,'Text',Shapes{is},'CallBack',{@ReferenceArea,Shapes{is},object2attach});
 end
-pushbh = CreatePushButton(parentfigure,'String','Apply reference','Callback',{@ApplyReference},...
-    'Units','normalized','Position',[0 0 0.2 0.05]);
-pushbh.Tag = '0';
-waitfor(pushbh,'Tag');
-
+preunits = parentfigure.Units; parentfigure.Units = 'normalized';
+CreatePushButton(parentfigure,'units','normalized','String','Apply reference','Position',[0 0 0.05 0.05],'CallBack',{@CalcReferenceGate,parentfigure,MFH});
+parentfigure.Units = preunits;
 
     function ReferenceSpot(src,~,figh)
         if strcmpi(src.Checked,'off')
@@ -28,6 +26,7 @@ waitfor(pushbh,'Tag');
             src.Checked = 'off';
         end
         dch = datacursormode(figh);
+        dch.removeAllDataCursors;
         if strcmpi(src.Checked,'off')
             dch.DisplayStyle = 'datatip';
             dch.UpdateFcn = [];
@@ -41,100 +40,69 @@ waitfor(pushbh,'Tag');
     function output_txt=PickReferenceCurveOnGraph(src,~,~)
         AncestorFigure = ancestor(src,'figure');
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        
-        FH = findobj('Type','figure','-and','Name',FigureName);
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH=figure('NumberTitle','off','Name',FigureName);
+        FH=CreateOrFindFig(ReferenceCurveFigureName,'NumberTitle','off');
+        FH.UserData.FigCategory = 'ReferencePickCurve';
+        FH.Color = 'blue';
+        movegui(FH,'northwest')
+        [~,~,numbin]=size(Data);
+        if isfield(parentfigure.UserData,'TrsSet')
+            Counts = sum(Data(Ypos,Xpos,:),3);
+            TrsSet = parentfigure.UserData.TrsSet;
+            RelCounts = zeros(1,numel(MFH.UserData.Wavelengths)+1);
+            RelCounts(1) = (mean(Data(Ypos,Xpos,1:20))*numbin)./Counts*100;
+            for iw = 2:numel(MFH.UserData.Wavelengths)+1
+                RelCounts(iw) = (sum(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,1:20))*(numel(TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1)))./Counts * 100;
+            end
         end
         
-        movegui(FH,'northwest')
-        
-        %realhandle = findobj(ancestor(src,'axes'),'type','image');
-        [~,~,numbin]=size(Data);
         output_txt = {['X: ',num2str(round(Xpos))],...
-            ['Y: ',num2str(round(Ypos))],['Z: ',num2str(sum(Data(Ypos,Xpos,:))./MFH.UserData.CompiledHeaderData.McaTime)]};
+            ['Y: ',num2str(round(Ypos))],['Countrate: ',num2str(sum(Data(Ypos,Xpos,:))./parentfigure.UserData.CompiledHeaderData.McaTime)],...
+            [char('Bkg',num2str(MFH.UserData.Wavelengths')) num2str(RelCounts',':%.0f%%')]};
         semilogy(1:numbin,squeeze(Data(Ypos,Xpos,:)));
         ylim([10 max(Data(:))]);
+        AddToFigureListStruct(FH,MFH,'side')
         figure(AncestorFigure);
         MinimizeFFS(AncestorFigure);
-        AddToFigureListStruct(FH,MFH,'side');
-        MFH.UserData.GateCurveReference.Type = 'Spot';
-        MFH.UserData.GateCurveReference.Position = [Ypos Xpos];
+        
+        parentfigure.UserData.Gate.CurveReference.Type = 'Spot';
+        parentfigure.UserData.Gate.CurveReference.Position = [Ypos Xpos];
+        parentfigure.UserData.Gate.CurveReference.Curve = squeeze(Data(Ypos,Xpos,:));
     end
 
     function ReferenceArea(~,~,shape,object2attach)
-        RoiObjs = findobj(object2attach,'Type','images.roi');
-        ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
-        AxH = object2attach.Parent;
+        AxH = ancestor(object2attach,'axes');
         ShapeHandle = images.roi.(shape)(AxH);
         ShapeHandle.UserData.Type = 'SelectRoi';
-        if isempty(RoiObjs)
+        if ~isfield(MFH.UserData,ShapeHandle.UserData.Type)
             ShapeHandle.UserData.ID = 1;
+            MFH.UserData.(ShapeHandle.UserData.Type).ID = 1;
         else
-            ShapeHandle.UserData.ID = numel(RoiObjs)+1;
+            MFH.UserData.(ShapeHandle.UserData.Type).ID = ...
+                MFH.UserData.(ShapeHandle.UserData.Type).ID+1;
+            ShapeHandle.UserData.ID = MFH.UserData.(ShapeHandle.UserData.Type).ID;
         end
         ShapeHandle.FaceAlpha = 0;
-        ColIDX = rem(ShapeHandle.UserData.ID,numel(ColorList));
-        ShapeHandle.Color = ColorList{ColIDX};
+        ShapeHandle.Color = 'blue';
+        ShapeHandle.StripeColor = 'green';
+        ShapeHandle.UIContextMenu.Children(...
+            contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).Text = ...
+            ['Delete Reference ROI ',num2str(ShapeHandle.UserData.ID)];
         ShapeHandle.UIContextMenu.Children(...
             contains(lower({ShapeHandle.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,ShapeHandle};
+        %uimenu(ShapeHandle.UIContextMenu,'Text',['Copy Reference ROI ',num2str(ShapeHandle.UserData.ID)],'CallBack',{@CopyRoi,ShapeHandle});
+        %uimenu(ShapeHandle.UIContextMenu,'Text',['Apply Reference ROI ',num2str(ShapeHandle.UserData.ID),' to all axes'],'CallBack',{@CreateLinkDataFigure,ShapeHandle});
         addlistener(ShapeHandle,'DrawingFinished',@GetData);
         draw(ShapeHandle)
         addlistener(ShapeHandle,'ROIMoved',@GetData);
     end
-    function DeleteRoi(~,~,roiobj)
-        delete(roiobj.UserData.FigRoiHandle)
-        delete(roiobj)
+    function DeleteRoi(~,~,RoiObj)
+        FH=findobj(groot,'type','figure','Name',strcat('Reference ROI - ',num2str(RoiObj.UserData.ID)));
+        delete(RoiObj)
+        delete(FH);
+        FH=findobj(groot,'type','figure','Name',ReferenceCurveFigureName);
+        delete(FH);
     end
-%     function CopyRoi(~,~,roiobj)
-%         MFH.UserData.CopiedRoi = roiobj;
-%         icntxh = 1;
-%         for ifigs = 1:numel(MFH.UserData.AllDataFigs)
-%             obj2attach = findobj(MFH.UserData.AllDataFigs(ifigs),'Type','image');
-%             for in = 1:numel(obj2attach)
-%                 if isempty(obj2attach(in).UIContextMenu)
-%                     cntxh = uicontextmenu(MFH.UserData.AllDataFigs(ifigs));
-%                     obj2attach(in).UIContextMenu = cntxh;
-%                 else
-%                     cntxh = obj2attach(in).UIContextMenu;
-%                 end
-%                 umh = uimenu(cntxh,'Text','Paste roi','CallBack',{@PasteRoi,obj2attach(in)});
-%                 MFH.UserData.TempMenuH(icntxh) = umh;
-%                 icntxh = icntxh+1;
-%             end
-%         end
-%         msgbox('Copied ROI object','Success','help');
-%     end
-%     function PasteRoi(~,~,obj2attach)
-%         RoiObj = copyobj(MFH.UserData.CopiedRoi,obj2attach.Parent,'legacy');
-%         RoiObj.UserData = rmfield(RoiObj.UserData,'FigRoiHandle');
-%         AllImages = findall(MFH.UserData.AllDataFigs,'type','images.roi');
-%         MaxIDPos = zeros(numel(AllImages),1);
-%         for iAl = 1:numel(AllImages)
-%             MaxIDPos(iAl) = AllImages(iAl).UserData.ID;
-%         end
-%         MaxVal = max(MaxIDPos);
-%         RoiObj.UserData.ID = MaxVal+1;
-%
-%         ColorList ={'yellow' 'magenta' 'cyan' 'red' 'green' 'blue' 'white' 'black'};
-%         RoiObj.UIContextMenu.Children(...
-%             contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).MenuSelectedFcn{2} = RoiObj;
-%         RoiObj.UIContextMenu.Children(...
-%             contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,RoiObj};
-%         ColIDX = rem(RoiObj.UserData.ID,numel(ColorList))+1;
-%         RoiObj.Color = ColorList{ColIDX};
-%         GetData(RoiObj,RoiObj);
-%         addlistener(RoiObj,'ROIMoved',@GetData);
-%         for icntxh = 1:numel(MFH.UserData.TempMenuH)
-%             MFH.UserData.TempMenuH(icntxh).delete;
-%             delete(MFH.UserData.TempMenuH(icntxh));
-%         end
-%         MFH.UserData = rmfield(MFH.UserData,'TempMenuH');
-%         MFH.UserData = rmfield(MFH.UserData,'CopiedRoi');
-%     end
-    function GetData(src,~)
+    function GetData(src,event)
         AncestorFigure = ancestor(src,'figure');
         StartWait(AncestorFigure);
         realhandle = findobj(ancestor(src,'axes'),'type','image');
@@ -145,66 +113,33 @@ waitfor(pushbh,'Tag');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
-        FH = findobj('Type','figure','-and','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag));
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH = figure('NumberTitle','off','Name',strcat('ROI',num2str(src.UserData.ID),' - ',src.Tag));
-        end
-        
+        FH=CreateOrFindFig(strcat('Reference ROI - ',num2str(src.UserData.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
+        FH.UserData.FigCategory = 'ReferenceROI';
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
-        movegui(FH,'northwest')
-        
-        tFH = findobj('Type','figure','-and','Name',FigureName);
-        if ~isempty(tFH)
-            FH(end+1) = tFH;
-            figure(FH(end));
-        else
-            FH(end+1)=figure('NumberTitle','off','Name',FigureName);
+        movegui(FH,'southwest')
+        if ~strcmpi(event.EventName,'roimoved')
+            AddToFigureListStruct(FH,MFH,'side');
         end
+        StopWait(AncestorFigure);
         
-        dummyReference = Data;
-        dummyReference(~repmat(src.createMask,[1 1 size(Data,3)])) = nan;
-        dummyReference = mean(dummyReference,[1 2],'omitnan');
-        dummyReference = squeeze(dummyReference);
-        semilogy(1:size(Data,3),dummyReference);
+        FH=CreateOrFindFig(ReferenceCurveFigureName,'NumberTitle','off');
+        FH.Color = src.Color;
+        FH.UserData.FigCategory = 'ReferencePickCurve';
+        ReferenceCurve = Data;
+        ReferenceCurve(~repmat(src.createMask,[1 1 size(Data,3)])) = nan;
+        ReferenceCurve = mean(ReferenceCurve,[1 2],'omitnan');
+        ReferenceCurve = squeeze(ReferenceCurve);
+        semilogy(1:size(Data,3),ReferenceCurve);
         ylim([10 max(Data(:))]);
+        movegui(FH,'northwest');
         
         AddToFigureListStruct(FH,MFH,'side');
         StopWait(AncestorFigure);
-        MFH.UserData.GateCurveReference.Type = 'Area';
-        MFH.UserData.GateCurveReference.Position = src.createMask;
-    end
-    function ApplyReference(~,~)
-        if ~isfield(MFH.UserData,'GateCurveReference')
-            msgbox('Please, select a ROI for the reference measure','Warning','help');
-            return
-        end
-        numbin = size(Data,3);
-        if strcmpi(MFH.UserData.GateCurveReference.Type,'Spot')
-            Reference = Data(MFH.UserData.GateCurveReference.Position(1),...
-                MFH.UserData.GateCurveReference.Position(2),:);
-        else
-            Reference = Data;
-            Reference(~repmat(MFH.UserData.GateCurveReference.Position,[1 1 numbin])) = nan;
-            Reference = mean(Reference,[1 2],'omitnan');
-        end
-        
-        FH = findobj('Type','figure','-and','Name',['Actual reference curve for gates - ' FileName]);
-        if ~isempty(FH)
-            figure(FH);
-        else
-            FH=figure('NumberTitle','off','Name',['Actual reference curve for gates - ' FileName]);
-        end
-        
-        Reference = squeeze(Reference);
-        semilogy(1:numbin,Reference);
-        MFH.UserData.GateCurveReference.CurveReference = Reference;
-                
-        AddToFigureListStruct(FH,MFH,'side');
-        pushbh.Tag = '';
+        parentfigure.UserData.Gate.CurveReference.Type = 'Area';
+        parentfigure.UserData.Gate.CurveReference.Position = src.createMask;
+        parentfigure.UserData.Gate.CurveReference.Curve = ReferenceCurve;
     end
 end

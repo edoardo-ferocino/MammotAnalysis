@@ -9,8 +9,8 @@ end
 FigureName = [PreName ' - ' name];
 PercFract = 95;
 FigFilterName = ['Select filters - ' name];
-FigFilterHandle = CreateOrFindFig(FigFilterName,false,'NumberTitle','off','Toolbar','None','MenuBar','none');
-
+FigFilterHandle = CreateOrFindFig(FigFilterName,'NumberTitle','off','Toolbar','None','MenuBar','none');
+FigFilterHandle.UserData.FigCategory = 'Filters';
 addcheckbox = false;
 if strcmpi(Filters(1).FitType,'muamus')
     addcheckbox = true;
@@ -124,7 +124,10 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
             FigureName = [PreName ' - ' poph(logical([cbh.Value])).String{poph(logical([cbh.Value])).Value} ' - ' name];
         end
 
-        FH = CreateOrFindFig(FigureName,true);
+        FH = CreateOrFindFig(FigureName,'WindowState','maximized');
+        if(strcmpi(FitParams(1).FitType,'muamus'))
+            FH.UserData.FigCategory = 'MuaMus-Single wave';
+        end
         subH=subplot1(nsub(1),nsub(2));
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
@@ -153,7 +156,8 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 nactv = numel(Filters(CheckedID).ActualValue);
                 [numsub] = numSubplots(nactv);
                 for ifit = 1:numel(FitParams)-2
-                    FH(end+1) = CreateOrFindFig([PreName ' - GlobalView: ' FitParams(ifit).Name '-' name],true);
+                    FH(end+1) = CreateOrFindFig([PreName ' - GlobalView: ' FitParams(ifit).Name '-' name],'WindowState','maximized');
+                    FH(end).UserData.FigCategory = 'MuaMus';
                     subH = subplot1(numsub(1),numsub(2));
                     for av = 1:nactv
                         if ~any(ifit==[XColID YColID])
@@ -185,8 +189,8 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 UnstuckedRealPage.HbO2.Variables./UnstuckedRealPage.HbTot.Variables;
             ExtraConcParams(1).Name = 'HbTot';
             ExtraConcParams(2).Name = 'So2';
-            FH(end+1)=CreateOrFindFig([PreName '- HbTot_So2 -' name],true);
-            
+            FH(end+1)=CreateOrFindFig([PreName '- HbTot_So2 -' name],'WindowState','maximized');
+            FH(end).UserData.FigCategory = 'Spectral';
             subH=subplot1(1,2);
             for ifit = 1:numel(ExtraConcParams)
                 if ~any(ifit==[XColID YColID])

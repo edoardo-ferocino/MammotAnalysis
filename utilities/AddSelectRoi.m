@@ -83,7 +83,7 @@ end
         MFH.UserData = rmfield(MFH.UserData,'TempMenuH');
         MFH.UserData = rmfield(MFH.UserData,'CopiedRoi');
     end
-    function GetData(src,~)
+    function GetData(src,event)
         AncestorFigure = ancestor(src,'figure');
         StartWait(AncestorFigure);
         realhandle = findobj(ancestor(src,'axes'),'type','image');
@@ -94,18 +94,22 @@ end
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
-        FH=CreateOrFindFig(strcat('ROI - ',num2str(src.UserData.ID)),false,'NumberTitle','off','ToolBar','none','MenuBar','none');
+        FH=CreateOrFindFig(strcat('ROI - ',num2str(src.UserData.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
+        FH.UserData.FigCategory = 'ROI';
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
         movegui(FH,'southwest')
-        AddToFigureListStruct(FH,MFH,'side');
+        if ~strcmpi(event.EventName,'roimoved')
+            AddToFigureListStruct(FH,MFH,'side');
+        end
         StopWait(AncestorFigure);
     end
     function CreateLinkDataFigure(~,~,ShapeHandle)
-        FH = CreateOrFindFig('Link Figures',false,'NumberTitle','off','Toolbar','None','MenuBar','none');
+        FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
         clf(FH);
+        FH.UserData.FigCategory = 'LinkFigures';
         actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         numfig = numel(actualnameslist);
         for ifigs = 1:numfig

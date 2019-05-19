@@ -11,8 +11,9 @@ uimenu(mmh,'Text','Restore this colorbar','CallBack',{@RestoreThisColorbar});
 uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
 
     function CreateLinkDataFigure(~,~)
-        FH = CreateOrFindFig('Link Figures',false,'NumberTitle','off','Toolbar','None','MenuBar','none');
+        FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
         clf(FH);
+        FH.UserData.FigCategory = 'LinkFigures';
         actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         numfig = numel(actualnameslist);
         for ifigs = 1:numfig
@@ -101,8 +102,9 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
     function ChangeThisColorbar(~,~)
         AxH=ancestor(object2attach,'axes');
         Tag = [parentfigure.Name,'-',AxH.Title.String];
-        FH=CreateOrFindFig(['CB-',AxH.Title.String],false,'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
+        FH=CreateOrFindFig(['CB-',AxH.Title.String],'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
         FH.Position = AxH.Position + [AxH.Position(3)/3 0 -0.1*AxH.Position(3) -0.8*AxH.Position(4)];
+        FH.UserData.FigCategory = 'ChangeColorbar';
         CreateEdit(FH,'units','normalized','String','High','String',num2str(AxH.CLim(2)),'Callback',{@SetColorBar,AxH,'high'},'Position',[0 0.5 0.3 0.5]);
         CreateEdit(FH,'units','normalized','String','Low','String',num2str(AxH.CLim(1)),'Callback',{@SetColorBar,AxH,'low'},'Position',[0 0 0.3 0.5]);
         CreateText(FH,'units','normalized','String','High','Position',[0.3 0.3 0.3 0.5]);

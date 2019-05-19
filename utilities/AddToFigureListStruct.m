@@ -18,7 +18,7 @@ for ifigs = 1:numel(FH)
         FH(ifigs).CloseRequestFcn = {@SetFigureInvisible,FH(ifigs)};
         AddElementToList(MFH.UserData.ListFigures,FH(ifigs));
         AddInfoEntry(MFH,MFH.UserData.ListFigures,FH(ifigs),MFH);
-        if isfield(FH(ifigs).UserData,'VisualDatData')
+        if isfield(FH(ifigs).UserData,'VisualDatData')||strcmpi(FH(ifigs).UserData.FigCategory,'ReferenceArea')
             SumChan = squeeze(sum(FH(ifigs).UserData.VisualDatData,3));
         end
         ImH = findobj(FH(ifigs),'type','image');
@@ -28,6 +28,12 @@ for ifigs = 1:numel(FH)
             end
             if isfield(FH(ifigs).UserData,'VisualDatData')
                 AddPickCurve(FH(ifigs),ImH(imh),SumChan,MFH);
+            end
+            if strcmpi(FH(ifigs).UserData.FigCategory,'ReferenceArea')
+                AddSelectReferenceArea(FH(ifigs),ImH(imh),SumChan,MFH)
+            end
+            if strcmpi(FH(ifigs).UserData.FigCategory,'GatesImage')
+                AddShowGatedCurve(FH(ifigs),ImH(imh),MFH)
             end
             AddSelectRoi(FH(ifigs),ImH(imh),MFH);
             AddGetDataProfile(FH(ifigs),ImH(imh),MFH);
@@ -40,6 +46,14 @@ for ifigs = 1:numel(FH)
             %AddCorrectPixels(FH(end),imh,Wave,MFH);
         end
         AddSaveNewFile(FH(ifigs),FH(ifigs),MFH);
+        AddNodeToTree(MFH,FH(ifigs));
+        preunits = FH(ifigs).Units; FH(ifigs).Units = 'normalized';
+        CreatePushButton(FH(ifigs),'units','normalized','String','Figure list','Position',[0.95 0 0.05 0.05],'CallBack','FH=CreateOrFindFig(''Figure list'',''uifigure'',true);');
+        CreatePushButton(FH(ifigs),'units','normalized','String','Main Panel','Position',[0.95 0.05 0.05 0.05],'CallBack','CreateOrFindFig(''Main panel'');');
+        FH(ifigs).Units = preunits;
+    end
+    if contains(FH(ifigs).UserData.FigCategory,'roi','IgnoreCase',true)||contains(FH(ifigs).UserData.FigCategory,'referenceroi','IgnoreCase',true)
+        AddNodeToTree(MFH,FH(ifigs));
     end
     AddSaveFig(FH(ifigs))
 end
