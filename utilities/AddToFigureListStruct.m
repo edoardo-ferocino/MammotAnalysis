@@ -12,6 +12,9 @@ else
 end
 
 for ifigs = 1:numel(FH)
+    if ~isfield(FH(ifigs).UserData,'FigCategory')
+      FH(ifigs).UserData.FigCategory = 'NoCategory';  
+    end
     if strcmpi(type,'data')
         FH(ifigs).UserData.DataFilePath=FHDataFilePath;
         FH(ifigs).Visible = 'off';
@@ -35,6 +38,9 @@ for ifigs = 1:numel(FH)
             if strcmpi(FH(ifigs).UserData.FigCategory,'GatesImage')
                 AddShowGatedCurve(FH(ifigs),ImH(imh),MFH)
             end
+            if strcmpi(FH(ifigs).UserData.FigCategory,'Spectral')||strcmpi(FH(ifigs).UserData.FigCategory,'MuaMus')||strcmpi(FH(ifigs).UserData.FigCategory,'2-step fit')
+                AddPlotSpectra(FH(ifigs),ImH(imh),MFH);
+            end
             AddSelectRoi(FH(ifigs),ImH(imh),MFH);
             AddGetDataProfile(FH(ifigs),ImH(imh),MFH);
             AddDefineBorder(FH(ifigs),ImH(imh),MFH);
@@ -48,7 +54,7 @@ for ifigs = 1:numel(FH)
         AddSaveNewFile(FH(ifigs),FH(ifigs),MFH);
         AddNodeToTree(MFH,FH(ifigs));
         preunits = FH(ifigs).Units; FH(ifigs).Units = 'normalized';
-        CreatePushButton(FH(ifigs),'units','normalized','String','Figure list','Position',[0.95 0 0.05 0.05],'CallBack','FH=CreateOrFindFig(''Figure list'',''uifigure'',true);');
+        CreatePushButton(FH(ifigs),'units','normalized','String','Figure list','Position',[0.95 0 0.05 0.05],'CallBack','CreateOrFindFig(''Figure list'',''uifigure'',true);');
         CreatePushButton(FH(ifigs),'units','normalized','String','Main Panel','Position',[0.95 0.05 0.05 0.05],'CallBack','CreateOrFindFig(''Main panel'');');
         FH(ifigs).Units = preunits;
     end
@@ -56,5 +62,9 @@ for ifigs = 1:numel(FH)
         AddNodeToTree(MFH,FH(ifigs));
     end
     AddSaveFig(FH(ifigs))
+    warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
+    javaFrame = get(FH(ifigs),'JavaFrame');
+    javaFrame.setFigureIcon(javax.swing.ImageIcon(fullfile(pwd,'utilities','Logo.PNG')));
+    warning('on','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
 end
 end

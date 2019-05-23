@@ -1,5 +1,5 @@
 function GetFilePath(~,~,type,MFH)
-[FileName,PathName,FilterIndex]=uigetfilecustom('*.txt;*.dat;*.fit;*.trs');
+[FileName,PathName,FilterIndex]=uigetfilecustom('*.txt;*.dat;*.fit;*.trs;*.spe');
 if FilterIndex == 0, return, end
 if ~iscell(FileName)
     FileName = cellstr(FileName);
@@ -14,6 +14,8 @@ switch type
         DataType = 'Irf';
     case 'trs'
         DataType = 'TRSSet';
+    case 'spectra'
+        DataType = 'Spectra';
 end
 
 MFH.UserData.([DataType,'FilePath']) = FullPath;

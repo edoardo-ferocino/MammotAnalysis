@@ -29,7 +29,7 @@ for ifil = 1:numel(Filters)
         cbh(ifil) = 0;
     end
 end
-CreatePushButton(FigFilterHandle,'Units','Normalized','Position',[0.92 0 0.08 0.08],'String','Run','Callback',{@SetFilter,poph,cbh});
+CreatePushButton(FigFilterHandle,'Units','Normalized','Position',[0.92 0.92 0.08 0.08],'String','Run','Callback',{@SetFilter,poph,cbh});
 movegui(FigFilterHandle,'northeast')
 FigFilterHandle.UserData.FitData = FitData;
 FigFilterHandle.UserData.FitParams = FitParams;
@@ -42,8 +42,14 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
     function SetFilter(~,~,poph,cbh)
         if ~isnumeric(cbh)
             if ~sum([cbh.Value])
-               errordlg('Set the lambda filter checkbox');
-               return
+                errordlg('Set the lambda filter checkbox');
+                return
+            else
+                pageID = poph(logical([cbh.Value])).Value-1;
+                if pageID==0
+                    errordlg('Select one wavelenght');
+                    return
+                end
             end
         end
         StartWait(FigFilterHandle);
@@ -80,7 +86,7 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
         cols = sort([FitParams.ColID]);
         nactv = 1;
         if sum([Filters.CheckedLambdaFilter])
-            nactv = numel(Filters(logical([Filters.CheckedLambdaFilter])).ActualValue); 
+            nactv = numel(Filters(logical([Filters.CheckedLambdaFilter])).ActualValue);
         end
         for av = 1:nactv
             ip = 1; rows = zeros(size(FitData(:,1).Variables,1),1);
@@ -102,12 +108,12 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 end
             end
             rows = all(rows,2);
-%             if sum(rows)==numel(rows)
-%                 ActualPage = [];ActualRows = [];
-%                 msh = msgbox({'This combination of filters won''t work.' 'Please select a valid filter combination'},'Warning','help');
-%                 movegui(msh,'center');
-%                 return
-%             end
+            %             if sum(rows)==numel(rows)
+            %                 ActualPage = [];ActualRows = [];
+            %                 msh = msgbox({'This combination of filters won''t work.' 'Please select a valid filter combination'},'Warning','help');
+            %                 movegui(msh,'center');
+            %                 return
+            %             end
             Page = FitData(:,cols); BPage = Page.Variables;
             BPage(~rows,:) = 0;
             Page.Variables = BPage;
@@ -116,24 +122,27 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
         end
     end
     function PlotPages(Pages,rows)
+        warning('off','MATLAB:table:ModifiedVarnames');
         XColID = find(strcmpi(Pages{1}.Properties.VariableNames,'X'));
         YColID = find(strcmpi(Pages{1}.Properties.VariableNames,'Y'));
         [nsub]=numSubplots(numel(FitParams)-2);
-
+        
         if(strcmpi(FitParams(1).FitType,'muamus'))
             FigureName = [PreName ' - ' poph(logical([cbh.Value])).String{poph(logical([cbh.Value])).Value} ' - ' name];
         end
-
+        
         FH = CreateOrFindFig(FigureName,'WindowState','maximized');
         if(strcmpi(FitParams(1).FitType,'muamus'))
-            FH.UserData.FigCategory = 'MuaMus-Single wave';
+            FH.UserData.FigCategory = 'MuaMus - Single wave';
+        else
+            FH.UserData.FigCategory = 'Spectral';
         end
         subH=subplot1(nsub(1),nsub(2));
         for ifit = 1:numel(FitParams)
             if ~any(ifit==[XColID YColID])
                 pageID = 1;
                 if(strcmpi(FitParams(1).FitType,'muamus'))
-                   pageID = poph(logical([cbh.Value])).Value-1; 
+                    pageID = poph(logical([cbh.Value])).Value-1;
                 end
                 RealPage.(FitParams(ifit).Name) = Pages{pageID}(:,[ifit XColID YColID]);
                 UnstuckedRealPage.(FitParams(ifit).Name) = unstack(RealPage.(FitParams(ifit).Name),FitParams(ifit).Name,'X','AggregationFunction',@mean);
@@ -146,6 +155,7 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 SetAxesAppeareance(subH(ifit),'southoutside')
                 title(FitParams(ifit).Name)
                 FH(end).UserData.rows = rows(:,pageID);
+                subH(ifit).UserData.(FitParams(ifit).Name) = VisualPlotVar;
             end
         end
         delete(subH(numel(FitParams)-2+1:end))
@@ -174,6 +184,8 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                             SetAxesAppeareance(subH(av),'southoutside');
                             title(RealName)
                             FH(end).UserData.rows = rows(:,av);
+                            subH(av).UserData.(RealName) = VisualPlotVar;
+                            subH(av).UserData.WaveID = av;
                         end
                     end
                     delete(subH(nactv+1:end))
@@ -203,6 +215,7 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                     SetAxesAppeareance(subH(ifit),'southoutside')
                     title(ExtraConcParams(ifit).Name)
                     FH(end).UserData.rows =rows;
+                    subH(ifit).UserData.(ExtraConcParams(ifit).Name) = VisualPlotVar;
                 end
             end
         end
@@ -213,7 +226,14 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
             FH(ifigs).UserData.FitData = FitData;
             FH(ifigs).UserData.Filters = Filters;
             FH(ifigs).UserData.FitFilePath = FigFilterHandle.UserData.FitFilePath;
+            if strcmpi(Filters(1).FitType,'muamus')
+                if isempty(findobj(FH(ifigs),'type','pushbutton','string','2-step fit'))
+                    CreatePushButton(FH(ifigs),'String','2-step fit','Units','Normalized',...
+                        'Position',[0 0 0.05 0.05],'CallBack',{@Perform2StepFit,FH(ifigs),MFH});
+                end
+            end
         end
         AddToFigureListStruct(FH,MFH,'data',FigFilterHandle.UserData.FitFilePath)
+        warning('on','MATLAB:table:ModifiedVarnames');
     end
 end

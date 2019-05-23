@@ -9,9 +9,10 @@ if ~isfield(MFH.UserData,'DatFilePath')
 end
 %% StartWait
 StartWait(MFH);
-PercFract = 95;
 %% Load data
 for infile = 1:MFH.UserData.DatFileNumel
+    clearvars('-except','MFH','infile');
+    PercFract = 95;
     [DatPath ,DatFileName,~] = fileparts(MFH.UserData.DatFilePath{infile});
     [IrfPath ,IrfFileName,~] = fileparts(MFH.UserData.IrfFilePath{:});
     

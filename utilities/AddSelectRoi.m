@@ -90,6 +90,8 @@ end
         ImageData = realhandle.CData;
         RoiData = ImageData.*src.createMask;
         RoiData(RoiData==0) = NaN;
+        Roi.Max = max(RoiData(:));
+        Roi.Min = min(RoiData(:));
         Roi.Median = median(RoiData(:),'omitnan');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
@@ -101,7 +103,11 @@ end
         tbh.Position([3 4]) = tbh.Extent([3 4]);
         FH.Position = tbh.Position + [0 0 70 40];
         movegui(FH,'southwest')
-        if ~strcmpi(event.EventName,'roimoved')
+        if isprop(event,'EventName')
+            if ~strcmpi(event.EventName,'roimoved')
+                AddToFigureListStruct(FH,MFH,'side');
+            end
+        else
             AddToFigureListStruct(FH,MFH,'side');
         end
         StopWait(AncestorFigure);
@@ -148,6 +154,8 @@ end
                 ImageData = ImH.CData;
                 RoiData = ImageData.*ShapeHandle.createMask;
                 RoiData(RoiData==0) = NaN;
+                Roi.Max = max(RoiData(:));
+                Roi.Min = min(RoiData(:));
                 Roi.Median = median(RoiData(:),'omitnan');
                 Roi.Mean = mean(RoiData(:),'omitnan');
                 Roi.Std = std(RoiData(:),'omitnan');
@@ -186,10 +194,10 @@ end
                     fitdata = [fitdata [Labels(ilabs); repmat(ActVal,numel(fieldnames(Roi)),1)]];
                 end
             end
-%             fitdata = [[{'View'}; repmat(FH(1).UserData.FitData.View(1),numel(fieldnames(Roi)),1) ] ...
-%                 [{'Breast'}; repmat(FH(1).UserData.FitData.Breast(1),numel(fieldnames(Roi)),1) ] ...
-%                 [{'Session'}; repmat(num2cell(FH(1).UserData.FitData.Session(1)),numel(fieldnames(Roi)),1) ] ...
-%                 [{'Repetition'}; repmat(num2cell(FH(1).UserData.FitData.Repetition(1)),numel(fieldnames(Roi)),1)] ];
+            %             fitdata = [[{'View'}; repmat(FH(1).UserData.FitData.View(1),numel(fieldnames(Roi)),1) ] ...
+            %                 [{'Breast'}; repmat(FH(1).UserData.FitData.Breast(1),numel(fieldnames(Roi)),1) ] ...
+            %                 [{'Session'}; repmat(num2cell(FH(1).UserData.FitData.Session(1)),numel(fieldnames(Roi)),1) ] ...
+            %                 [{'Repetition'}; repmat(num2cell(FH(1).UserData.FitData.Repetition(1)),numel(fieldnames(Roi)),1)] ];
         else
             fitdata = [];
         end

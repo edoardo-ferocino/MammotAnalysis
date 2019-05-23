@@ -30,7 +30,7 @@ uimenu(cmh,'Text','Show gated curve','Callback',{@ShowGatedCurve,parentfigure});
     end
     function output_txt=ShowGatedPickOnGraph(src,~,~)
         pos = src.Position; Xpos = pos(1); Ypos = pos(2);
-        AncestorFigure = ancestor(src,'figure');
+        %AncestorFigure = ancestor(src,'figure');
         AxH=ancestor(object2attach,'axes');
         GateID=AxH.UserData.ActualGateVal;
         WaveID=AxH.UserData.WaveID;

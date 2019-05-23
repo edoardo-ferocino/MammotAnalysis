@@ -1,12 +1,14 @@
 function AddNodeToTree(MFH,NodeFigH)
 CategoryList = {'ROI' 'Counts' 'Wavelenghts' 'Channels' 'Spectral' 'MuaMus' 'MuaMus-Single wave' 'Filters' 'LinkFigures' 'ShiftTool' 'ChangeColorbar' 'PickCurve' 'Info' 'Profile' 'ReferenceArea' 'ReferenceRoi' 'ReferencePickCurve' 'GatesImage'};
 FH=CreateOrFindFig('Figure list','uifigure',true);
+StartWait(MFH);
 TreeH=findobj(FH,'type','uitree');
 if isempty(TreeH)
     FH.CloseRequestFcn = {@SetFigureInvisible,FH};
     MFH.UserData.SideFigs = FH;
     TreeH = uitree(FH);
     TreeH.Position(3)=TreeH.Position(3)+200;
+    TreeH.Multiselect = 'on';
     FH.Position = TreeH.Position + [0 0 50 50];
     movegui(FH,'center')
     %for icats= 1: numel(CategoryList)
@@ -21,9 +23,8 @@ if isempty(TreeH)
         ,'String','Figure list','CallBack','FH=CreateOrFindFig(''Figure list'',''uifigure'',true);');
 end
 if isvalid(NodeFigH)
-    if ~isfield(NodeFigH.UserData,'FigCategory')
+    if strcmpi(NodeFigH.UserData.FigCategory,'NoCategory')
        warning(['Add category to: ',NodeFigH.Name]);
-       NodeFigH.UserData.FigCategory = 'NotACategory';
     end
     if isempty(TreeH.Children)
         uitreenode(TreeH,'Text',NodeFigH.UserData.FigCategory);
@@ -41,7 +42,8 @@ if isvalid(NodeFigH)
 end
 TreeH.Children(~isvalid(TreeH.Children)).delete;
 TreeH.expand;
-
+pause(0.5);
+StopWait(MFH)
     function ActionTree(~,~,FH,action)
        treeH = findobj(FH,'type','uitree');treeH.(action);
     end

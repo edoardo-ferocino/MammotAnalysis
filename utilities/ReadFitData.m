@@ -5,6 +5,7 @@ if ~isfield(MFH.UserData,'FitFilePath')
 end
 StartWait(MFH)
 for infile = 1:MFH.UserData.FitFileNumel
+    clearvars('-except','MFH','infile');
     FitFileName = MFH.UserData.FitFilePath{infile};
     opts = detectImportOptions(FitFileName);
     VarTypes = opts.VariableTypes;
@@ -74,6 +75,10 @@ for infile = 1:MFH.UserData.FitFileNumel
                 if ~isempty(Filters(ifil).Categories)
                     if numel(Filters(ifil).Categories)>100&&~strcmpi(ColumnNames{ic},'codeactualloop')
                         continue;
+                    end
+                    if isequal(str2double(Filters(ifil).Categories'),MFH.UserData.Wavelengths)
+                        ColumnNames{ic} = 'Wavelenghts';
+                        FitData.Properties.VariableNames(ic) = ColumnNames(ic);
                     end
                     Filters(ifil).Categories = ['Any' Filters(ifil).Categories'];
                     Filters(ifil).Name = ColumnNames{ic};

@@ -7,9 +7,11 @@ end
 StartWait(MFH);
 
 %% Read data
-PercFract = 95;
+
 
 for infile = 1:MFH.UserData.DatFileNumel
+clearvars('-except','MFH','infile');
+PercFract = 95;
 [Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath{infile});
 OnlinePlotCond = 1;
 if MFH.UserData.OnlinePlot.Value
