@@ -1,5 +1,5 @@
-InitScript
-MFH = figure('Name','Main panel','MenuBar','none','Toolbar','none','NumberTitle','off','CreateFcn','cd(''./utilities'');run(''InstallMammotAnalysis'');','WindowState','maximized'); %MFH.Units = 'normalized';
+%InitScript
+MFH = figure('Name','Main panel','MenuBar','none','Toolbar','none','NumberTitle','off','CreateFcn','run(''./utilities/InstallMammotAnalysis.m'');','WindowState','maximized'); %MFH.Units = 'normalized';
 MFH.UserData.Name = MFH.Name;
 MFH.UserData.Wavelengths =[635 680 785 905 933 975 1060];
 MFH.CloseRequestFcn = {@CloseMainFigure,MFH};
@@ -73,7 +73,3 @@ MFH.UserData.RotateDefaultView = CreatePushButton(MFH.UserData.DefaultViewContai
     'String','Rotate','Units','normalized','Position',[0 0.9 0.3 0.1],'Callback',{@RotateDefaultView,MFH.UserData.DefaultViewAxes});
 MFH.UserData.CompareContainer = CreateContainer(MFH,...
     'Title','Compare','OuterPosition',[0.47 0.05 0.5 0.75],'CreateFcn',{@CreateCompareAxes,MFH});%,'BorderType','none');
-warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
-javaFrame = get(MFH,'JavaFrame');
-javaFrame.setFigureIcon(javax.swing.ImageIcon(fullfile(pwd,'utilities','Logo.png')));
-warning('on','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
