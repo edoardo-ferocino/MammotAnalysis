@@ -1,7 +1,7 @@
 function [Width, varargout]=CalcWidth(Data,Level)
 %[Width,Baricentre,MaxPos,MaxVal]=CalcWidth(Data,Level);
 %Level is percentage from base of the pulse
-
+Data = squeeze(Data);
 NumChan=length(Data);
 [Peak,IndexPeak]=max(Data);
 DataNorm=Data/Peak;
@@ -13,9 +13,9 @@ extra=(Level-DataNorm(left))/(DataNorm(left+1)-DataNorm(left))+(Level-DataNorm(r
 Width=(right-left)-extra;
 NumArgOut = nargout-1;
 if NumArgOut>=1
-        right=find(DataNorm(IndexPeak:end)<0.005,1,'first')+(IndexPeak-1);
+        right=find(DataNorm(IndexPeak:end)<0.0,1,'first')+(IndexPeak-1);
         if isempty(right), right=NumChan; end
-        left=find(DataNorm(1:IndexPeak)<0.005,1,'last');
+        left=find(DataNorm(1:IndexPeak)<0.01,5,'last');
         if isempty(left), left=1; end
         somma =0;
         for ib=left:right

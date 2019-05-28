@@ -70,6 +70,10 @@ end
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'copy')).Text = ['Copy ROI ',num2str(RoiObj.UserData.ID)];
         RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'apply')).MenuSelectedFcn{2} = RoiObj;
+        RoiObj.UIContextMenu.Children(...
+            contains(lower({RoiObj.UIContextMenu.Children.Text}),'apply')).Text = ['Apply ROI ',num2str(RoiObj.UserData.ID),' to all axes'];
+        RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).MenuSelectedFcn = {@DeleteRoi,RoiObj};
         RoiObj.UIContextMenu.Children(...
             contains(lower({RoiObj.UIContextMenu.Children.Text}),'delete')).Text = ['Delete ROI ',num2str(RoiObj.UserData.ID)];
@@ -90,12 +94,12 @@ end
         ImageData = realhandle.CData;
         RoiData = ImageData.*src.createMask;
         RoiData(RoiData==0) = NaN;
-        Roi.Max = max(RoiData(:));
-        Roi.Min = min(RoiData(:));
         Roi.Median = median(RoiData(:),'omitnan');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
+        Roi.Max = max(RoiData(:));
+        Roi.Min = min(RoiData(:));
         FH=CreateOrFindFig(strcat('ROI - ',num2str(src.UserData.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
         FH.UserData.FigCategory = 'ROI';
@@ -154,12 +158,12 @@ end
                 ImageData = ImH.CData;
                 RoiData = ImageData.*ShapeHandle.createMask;
                 RoiData(RoiData==0) = NaN;
-                Roi.Max = max(RoiData(:));
-                Roi.Min = min(RoiData(:));
                 Roi.Median = median(RoiData(:),'omitnan');
                 Roi.Mean = mean(RoiData(:),'omitnan');
                 Roi.Std = std(RoiData(:),'omitnan');
                 Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
+                Roi.Max = max(RoiData(:));
+                Roi.Min = min(RoiData(:));
                 Header{iaxh} = AxH(iaxh).Title.String; %#ok<*AGROW>
                 data2write(iaxh,1) = Roi;
             end

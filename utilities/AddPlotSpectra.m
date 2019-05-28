@@ -91,8 +91,10 @@ uimenu(cmh,'Text','Plot spectra','Callback',{@PickSpectra,parentfigure});
                 DataFormattedString{iw}=[DataString{:,iw}];
                 OtherDataFormattedString{iw}=[OtherDataString{:,iw}];
             end
-            output_txt = [{['X: ',num2str(round(Xpos))]},...
-                {['Y: ',num2str(round(Ypos))]} DataFormattedString];
+            output_txt = [
+                {strcat('X: ',num2str(round(Xpos)))},...
+                {strcat('Y: ',num2str(round(Ypos)))},...
+                DataFormattedString];
             AddToFigureListStruct(FH,MFH,'side')
             StopWait(parentfigure);
             figure(AncestorFigure);
@@ -157,8 +159,10 @@ uimenu(cmh,'Text','Plot spectra','Callback',{@PickSpectra,parentfigure});
             for iw=1:numel(ConcNames)+2
                 NewFormattedString{iw}=[FormattedString{:,iw}];
             end
-            output_txt = {['X: ',num2str(round(Xpos))],...
-                ['Y: ',num2str(round(Ypos))] NewFormattedString{:}};
+            output_txt = [
+                {strcat('X: ',num2str(round(Xpos)))},...
+                {strcat('Y: ',num2str(round(Ypos)))},...
+                NewFormattedString{:}];
             AddToFigureListStruct(FH,MFH,'side')
             StopWait(parentfigure);
             figure(AncestorFigure);

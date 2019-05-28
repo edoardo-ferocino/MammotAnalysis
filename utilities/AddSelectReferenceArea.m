@@ -45,6 +45,9 @@ function output_txt=PickReferenceCurveOnGraph(src,~,~)
     FH.Color = 'blue';
     movegui(FH,'northwest')
     [~,~,numbin]=size(Data);
+    semilogy(1:numbin,squeeze(Data(Ypos,Xpos,:)));
+    xlim([1 numbin]);
+    ylim([10 max(Data(:))]);
     if isfield(parentfigure.UserData,'TrsSet')
         Counts = sum(Data(Ypos,Xpos,:),3);
         TrsSet = parentfigure.UserData.TrsSet;
@@ -52,14 +55,15 @@ function output_txt=PickReferenceCurveOnGraph(src,~,~)
         RelCounts(1) = (mean(Data(Ypos,Xpos,1:20))*numbin)./Counts*100;
         for iw = 2:numel(MFH.UserData.Wavelengths)+1
             RelCounts(iw) = (sum(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,1:20))*(numel(TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1)))./Counts * 100;
+            vline(SETT.Roi(iw-1,3)+1,'r','');
         end
     end
 
-    output_txt = {['X: ',num2str(round(Xpos))],...
-        ['Y: ',num2str(round(Ypos))],['Countrate: ',num2str(sum(Data(Ypos,Xpos,:))./parentfigure.UserData.CompiledHeaderData.McaTime)],...
-        [char('Bkg',num2str(MFH.UserData.Wavelengths')) num2str(RelCounts',':%.0f%%')]};
-    semilogy(1:numbin,squeeze(Data(Ypos,Xpos,:)));
-    ylim([10 max(Data(:))]);
+     output_txt = [...
+            {strcat('X: ',num2str(round(Xpos)))},...
+            {strcat('Y: ',num2str(round(Ypos)))},...
+            {strcat('Countrate: ',num2str(sum(Data(Ypos,Xpos,:))./parentfigure.UserData.CompiledHeaderData.McaTime))},...
+            {strcat(char('Bkg',num2str(MFH.UserData.Wavelengths')),num2str(RelCounts',':%.0f%%, '))}];
     AddToFigureListStruct(FH,MFH,'side')
     figure(AncestorFigure);
     MinimizeFFS(AncestorFigure);
@@ -109,12 +113,12 @@ function GetData(src,event)
         ImageData = realhandle.CData;
         RoiData = ImageData.*src.createMask;
         RoiData(RoiData==0) = NaN;
-        Roi.Max = max(RoiData(:));
-        Roi.Min = min(RoiData(:));
         Roi.Median = median(RoiData(:),'omitnan');
         Roi.Mean = mean(RoiData(:),'omitnan');
         Roi.Std = std(RoiData(:),'omitnan');
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
+        Roi.Max = max(RoiData(:));
+        Roi.Min = min(RoiData(:));
         FH=CreateOrFindFig(strcat('Reference ROI - ',num2str(src.UserData.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
         FH.UserData.FigCategory = 'ReferenceROI';
