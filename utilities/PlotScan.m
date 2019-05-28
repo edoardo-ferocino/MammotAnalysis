@@ -32,6 +32,7 @@ while(OnlinePlotCond)
     RawData=flip(RawData,2);
     isVisual = sum(RawData,[2 3 4]) ~= 0;
     RawVisualData = RawData(isVisual,:,:,:);
+    NumRows = size(RawVisualData,1);NumCols = size(RawVisualData,2);
     RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
@@ -75,6 +76,11 @@ while(OnlinePlotCond)
             Wave(iw).Data = RawVisualData(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
             for ich = 1:NumChan
                 Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
+                for ir = 1:NumRows
+                    for ic = 1:NumCols
+                        [Wave(iw).Chan(ich).Width(ir,ic),Wave(iw).Chan(ich).Bar(ir,ic)] = CalcWidth(Wave(iw).Chan(ich).Data(ir,ic,:,:),0.5);
+                    end
+                end
             end
             Wave(iw).SumChanData = squeeze(sum(Wave(iw).Data,3));
             Wave(iw).Curves = Wave(iw).SumChanData;
