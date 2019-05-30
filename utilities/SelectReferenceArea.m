@@ -39,7 +39,7 @@ for infile = 1:MFH.UserData.DatFileNumel
         RawData = permute(RawData,[1 2 4 3]);
     end
     RawData=flip(RawData,2);
-    isVisual = sum(RawData,[2 3 4]) ~= 0;
+    isVisual = sum(RawData,[2 3 4],'omitnan') ~= 0;
     RawVisualData = RawData(isVisual,:,:,:);
     RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
     Wavelengths = MFH.UserData.Wavelengths;

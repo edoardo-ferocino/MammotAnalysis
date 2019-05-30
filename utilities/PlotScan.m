@@ -30,7 +30,7 @@ while(OnlinePlotCond)
         RawData = permute(RawData,[1 2 4 3]);
     end
     RawData=flip(RawData,2);
-    isVisual = sum(RawData,[2 3 4]) ~= 0;
+    isVisual = sum(RawData,[2 3 4],'omitnan') ~= 0;
     RawVisualData = RawData(isVisual,:,:,:);
     NumRows = size(RawVisualData,1);NumCols = size(RawVisualData,2);
     RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
@@ -76,18 +76,23 @@ while(OnlinePlotCond)
             Wave(iw).Data = RawVisualData(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
             for ich = 1:NumChan
                 Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
-                for ir = 1:NumRows
-                    for ic = 1:NumCols
-                        [Wave(iw).Chan(ich).Width(ir,ic),Wave(iw).Chan(ich).Bar(ir,ic)] = CalcWidth(Wave(iw).Chan(ich).Data(ir,ic,:,:),0.5);
-                    end
-                end
             end
             Wave(iw).SumChanData = squeeze(sum(Wave(iw).Data,3));
+            for ir = 1:NumRows
+                for ic = 1:NumCols
+                    [Wave(iw).Width(ir,ic),Wave(iw).Bar(ir,ic)] = CalcWidth(Wave(iw).SumChanData(ir,ic,:,:),0.5);
+                end
+            end
+            Wave(iw).MedianWidth = median(Wave(iw).Width,'all','omitnan');
+            Wave(iw).WidthMask = Wave(iw).Width>Wave(iw).MedianWidth;
+            Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
+            Wave(iw).BarMask = Wave(iw).Bar>Wave(iw).MedianBar;
             Wave(iw).Curves = Wave(iw).SumChanData;
             Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
             subplot1(iw);
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
-            imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
+            imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
+            imh.UserData.ReferenceMask = and(Wave(iw).BarMask,((Wave(iw).CountsAllChan./AcqTime)>285000));
             title(num2str(Wavelengths(iw)));
             SetAxesAppeareance(subH(iw));
         end

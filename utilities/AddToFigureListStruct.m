@@ -32,6 +32,7 @@ for ifigs = 1:numel(FH)
             end
             if isfield(FH(ifigs).UserData,'VisualDatData')
                 AddPickCurve(FH(ifigs),ImH(imh),SumChan,MFH);
+                AddApplyReferenceMask(FH(ifigs),ImH(imh),MFH);
             end
             if strcmpi(FH(ifigs).UserData.FigCategory,'ReferenceArea')
                 AddSelectReferenceArea(FH(ifigs),ImH(imh),SumChan,MFH)

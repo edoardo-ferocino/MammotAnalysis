@@ -98,9 +98,9 @@ for infile = 1:MFH.UserData.FitFileNumel
     end
     XColID = find(strcmpi(ColumnNames,'X'));
     FitData(:,XColID).Variables = flip(FitData(:,XColID).Variables);
-    StopWait(MFH)
     SetFiltersForFit(FitData,FitParams,Filters,MFH,MFH.UserData.FitFilePath{infile});
 end
+StopWait(MFH)
 end
 
 

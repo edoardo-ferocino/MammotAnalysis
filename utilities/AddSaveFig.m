@@ -14,7 +14,12 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
         if PathName == 0, StopWait(gcf); return, end
         FullPath = fullfile(PathName,parentfigure.Name);
         warning off
-        save_figure(FullPath,parentfigure,'-png','-pdf');
+        figh = copyfig(parentfigure);
+        pbh = findobj(figh,'type','uicontrol');
+        delete(pbh)
+        figure(figh);
+        save_figure(FullPath,figh,'-png','-pdf');
+        delete(figh);
         %         figh = copyfig(parentfigure);
         %         figh.reset;
         %         figure(figh);
