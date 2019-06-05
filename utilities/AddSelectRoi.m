@@ -206,7 +206,7 @@ end
             fitdata = [];
         end
         if isprop(ShapeHandle,'Vertices')
-            vertdata =  [{'TL X' 'TL Y' 'TR X' 'TR Y' 'BR X' 'BR Y' 'BL X' 'BL Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)];
+            vertdata =  [{'TL X' 'TL Y' 'BL X' 'BL Y' 'BR X' 'BR Y' 'TR X' 'TR Y'};repmat(num2cell(reshape(ShapeHandle.Vertices',1,numel(ShapeHandle.Vertices))),numel(fieldnames(Roi)),1)];
         else
             vertdata = [];
         end
