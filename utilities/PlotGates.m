@@ -34,6 +34,7 @@ subH = subplot1(nSub(1),nSub(2));
 for iw = 1:numwave
     subplot1(iw);
     PlotPage(iw,1);
+    SetAxesAppeareance(subH(iw),'southoutside');
     SetPushButtons(FH,subH(iw),iw,1,numgate);
 end
 delete(subH(iw+1:end))
@@ -48,7 +49,7 @@ AddToFigureListStruct(FH,MFH,'data',FH.UserData.DatFilePath);
         CreatePushButton(ContainerH,'String','Increases','Units','normalized',...
             'Position',DecreasePushH.Position+[0 1/2 0 0],'Callback',{@Clicked,SubH,SubID,'up'});
         CreateEdit(ContainerH,'String','1','Units','normalized',...
-            'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0 0 0],'Callback',{@GotoPage,SubH,SubID});
+            'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0 0 0],'Callback',{@GotoPage,SubH,SubID},'Tag','GateID');
         CreateText(ContainerH,'String','Goto gate #','Units','normalized',...
             'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0.5 0 0]);
         SubH.UserData.WaveID = SubID;
@@ -74,6 +75,9 @@ AddToFigureListStruct(FH,MFH,'data',FH.UserData.DatFilePath);
             SubH.UserData.ActualGateVal = SubH.UserData.MinVal;
         end
         PlotPage(SubID,SubH.UserData.ActualGateVal);
+        ContH=ancestor(src,'uicontainer');
+        GateIDH=findobj(ContH,'Tag','GateID');
+        GateIDH.String = num2str(SubH.UserData.ActualGateVal);
         StopWait(ancestor(src,'figure'));
     end
     function GotoPage(src,~,SubH,SubID)
@@ -92,7 +96,6 @@ AddToFigureListStruct(FH,MFH,'data',FH.UserData.DatFilePath);
     end
     function imh = PlotPage(iw,ig)
         imh = imagesc(subH(iw),Data(iw).Gates(ig).Counts,[0 PercVal(iw)]);
-        SetAxesAppeareance(subH(iw),'southoutside');
         title(subH(iw),{num2str(Wavelengths(iw)) ...
             [num2str(Data(iw).Gates(ig).TimeArray(1),'%.0f') '-' ...
             num2str(Data(iw).Gates(ig).TimeArray(end),'%.0f') ' ps.' ...

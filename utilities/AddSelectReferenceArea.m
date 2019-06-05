@@ -55,15 +55,16 @@ function output_txt=PickReferenceCurveOnGraph(src,~,~)
         RelCounts(1) = (mean(Data(Ypos,Xpos,1:20))*numbin)./Counts*100;
         for iw = 2:numel(MFH.UserData.Wavelengths)+1
             RelCounts(iw) = (sum(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,1:20))*(numel(TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1)))./Counts * 100;
-            vline(SETT.Roi(iw-1,3)+1,'r','');
+           [CurveWidth(iw),CurveBar(iw)]=CalcWidth(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),0.5);
+            vline(TrsSet.Roi(iw-1,3)+1,'r','');
         end
     end
-
-     output_txt = [...
+    CurveWidth = CurveWidth.*parentfigure.UserData.CompiledHeaderData.McaFactor;
+    output_txt = [...
             {strcat('X: ',num2str(round(Xpos)))},...
             {strcat('Y: ',num2str(round(Ypos)))},...
             {strcat('Countrate: ',num2str(sum(Data(Ypos,Xpos,:))./parentfigure.UserData.CompiledHeaderData.McaTime))},...
-            {strcat(char('Bkg',num2str(MFH.UserData.Wavelengths')),num2str(RelCounts',':%.0f%%, '))}];
+            {strcat(char('Bkg',num2str(MFH.UserData.Wavelengths')),num2str(RelCounts',':%.0f%%, '),num2str(RelCounts'./100*Counts,'BkgFree: %g, '),num2str(CurveWidth','width: %.0f ps, '),num2str(CurveBar','Bar: %.1f ch'))}];
     AddToFigureListStruct(FH,MFH,'side')
     figure(AncestorFigure);
     MinimizeFFS(AncestorFigure);
