@@ -32,7 +32,7 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
         LowLimH = CreateEdit(ColLimContH,'String','Low lim','HorizontalAlignment','Left',...
             'Units','Normalized','OuterPosition',[0 0 1 0.5]);
         AutoSetH = CreateCheckBox(FH,'Value',true,'Units','Normalized','String','Auto set','Position',[0.8 0.30 0.2 0.08],'Callback',{@GetMaxMinColorBarLim,CBH,LowLimH,HighLimH});
-        CreateCheckBox(FH,'Value',false,'Units','Normalized','String','Restore All Colorbars','Position',[0.8 0.4 0.2 0.08],'Callback',{@RestoreAllColorbars,CBH});
+        CreatePushButton(FH,'Units','Normalized','String','Restore Checked Colorbars','Position',[0.75 0.4 0.25 0.08],'Callback',{@RestoreAllColorbars,CBH});
         
         CreatePushButton(FH,'Units','Normalized','Position',[0.90 0 0.10 0.08],'String','Link&Run','Callback',{@SetAllColorbars,CBH,LowLimH,HighLimH,AutoSetH});
         AddToFigureListStruct(FH,MFH,'side');
@@ -84,12 +84,16 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
             end
         end
     end
-    function RestoreThisColorbar(~,~)
+    function RestoreThisColorbar(src,~)
         AxH=ancestor(object2attach,'axes');
+        CBToolFigH = ancestor(src,'figure');
         AxH.CLim = AxH.UserData.OriginalCLims;
+        Objs = findobj(CBToolFigH,'Tag','LowLimCB');
+        Objs.String = num2str(AxH.CLim(1));
+        Objs = findobj(CBToolFigH,'Tag','HighLimCB');
+        Objs.String = num2str(AxH.CLim(2));
     end
-    function RestoreAllColorbars(src,~,CheckBoxHandle)
-        if src.Value == 0, return, end
+    function RestoreAllColorbars(~,~,CheckBoxHandle)
         actualfhlist = MFH.UserData.AllDataFigs(~contains(MFH.UserData.ListFigures.String,'Select filters'));
         FH=actualfhlist(logical([CheckBoxHandle.Value]));
         for ifigs = 1:numel(FH)
@@ -105,8 +109,8 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
         FH=CreateOrFindFig(['CB-',AxH.Title.String],'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
         FH.Position = AxH.Position + [AxH.Position(3)/3 0 -0.1*AxH.Position(3) -0.8*AxH.Position(4)];
         FH.UserData.FigCategory = 'ChangeColorbar';
-        CreateEdit(FH,'units','normalized','String','High','String',num2str(AxH.CLim(2)),'Callback',{@SetColorBar,AxH,'high'},'Position',[0 0.5 0.3 0.5]);
-        CreateEdit(FH,'units','normalized','String','Low','String',num2str(AxH.CLim(1)),'Callback',{@SetColorBar,AxH,'low'},'Position',[0 0 0.3 0.5]);
+        CreateEdit(FH,'units','normalized','String','High','String',num2str(AxH.CLim(2)),'Callback',{@SetColorBar,AxH,'high'},'Position',[0 0.5 0.3 0.5],'Tag','HighLimCB');
+        CreateEdit(FH,'units','normalized','String','Low','String',num2str(AxH.CLim(1)),'Callback',{@SetColorBar,AxH,'low'},'Position',[0 0 0.3 0.5],'Tag','LowLimCB');
         CreateText(FH,'units','normalized','String','High','Position',[0.3 0.3 0.3 0.5]);
         CreateText(FH,'units','normalized','String','Low','Position',[0.3 0 0.3 0.5]);
         CreatePushButton(FH,'units','normalized','String','Restore','Position',[0.6 0.25 0.4 0.5],'Callback',{@RestoreThisColorbar});

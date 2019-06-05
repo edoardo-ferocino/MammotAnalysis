@@ -1,7 +1,6 @@
 function AddNodeToTree(MFH,NodeFigH)
 CategoryList = {'ROI' 'Counts' 'Wavelenghts' 'Channels' 'Spectral' 'MuaMus' 'MuaMus-Single wave' 'Filters' 'LinkFigures' 'ShiftTool' 'ChangeColorbar' 'PickCurve' 'Info' 'Profile' 'ReferenceArea' 'ReferenceRoi' 'ReferencePickCurve' 'GatesImage'};
 FH=CreateOrFindFig('Figure list','uifigure',true);
-StartWait(MFH);
 TreeH=findobj(FH,'type','uitree');
 if isempty(TreeH)
     FH.CloseRequestFcn = {@SetFigureInvisible,FH};
@@ -43,7 +42,7 @@ end
 TreeH.Children(~isvalid(TreeH.Children)).delete;
 TreeH.expand;
 pause(0.5);
-StopWait(MFH)
+
     function ActionTree(~,~,FH,action)
        treeH = findobj(FH,'type','uitree');treeH.(action);
     end

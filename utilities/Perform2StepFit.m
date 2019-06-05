@@ -1,4 +1,4 @@
-function Perform2StepFit(~,~,FH,MFH)
+function Perform2StepFit(~,~,FH,TwoStepFitTypeH,MFH)
 PercFract = 95;
 [~,FileName]=fileparts(FH.UserData.FitFilePath);
 if ~isfield(MFH.UserData,'SpectraFilePath')
@@ -30,8 +30,18 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     Data.Mua = permute(Data.Mua,[3 1 2]);
     OrigSize = size(Data.Mua);
     DataResaphed = reshape(Data.Mua,[OrigSize(1) prod(OrigSize(2:3))]);
+    FitOpts = optimoptions('lsqlin','Display','off');
+    LowBounds = zeros(size(VarExtCoeff,2),1); UpBounds = [500,500,1000,1000,500];
+    InitCond = zeros(size(VarExtCoeff,2),1);
     for ic = 1:size(DataResaphed,2)
-        Conc(:,ic)=lsqnonneg(VarExtCoeff,DataResaphed(:,ic));
+        switch TwoStepFitTypeH.Value
+            case 1
+            Conc(:,ic)=lsqnonneg(VarExtCoeff,DataResaphed(:,ic));
+            case 2
+            Conc(:,ic)=lsqlin(VarExtCoeff,DataResaphed(:,ic),VarExtCoeff,DataResaphed(:,ic),[],[],LowBounds,UpBounds,InitCond,FitOpts);
+            case 3
+            Conc(:,ic)=VarExtCoeff\DataResaphed(:,ic);
+        end
     end
     Conc=reshape(Conc,[5 OrigSize(2) OrigSize(3)]);
     Conc = permute(Conc,[2 3 1]);
@@ -63,7 +73,7 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     ScattParams=reshape(ScattParams,[2 OrigSize(2) OrigSize(3)]);
     ScattParams = permute(ScattParams,[2 3 1]);
     
-    SpectralFH = CreateOrFindFig(['2-step fit - ' FileName],'windowstate','maximized');
+    SpectralFH = CreateOrFindFig(['2-step fit - ' FileName ' - ' TwoStepFitTypeH.String{TwoStepFitTypeH.Value}],'windowstate','maximized');
     
     nSubs = numSubplots(size(ScattParams,3)+size(Conc,3));
     subH=subplot1(nSubs(1),nSubs(2));

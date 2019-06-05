@@ -12,6 +12,7 @@ StartWait(MFH);
 for infile = 1:MFH.UserData.DatFileNumel
 clearvars('-except','MFH','infile');
 PercFract = 95;
+MinCountRateTresh = 285000;
 [Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath{infile});
 OnlinePlotCond = 1;
 if MFH.UserData.OnlinePlot.Value
@@ -92,7 +93,7 @@ while(OnlinePlotCond)
             subplot1(iw);
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
             imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
-            imh.UserData.ReferenceMask = and(Wave(iw).BarMask,((Wave(iw).CountsAllChan./AcqTime)>285000));
+            imh.UserData.ReferenceMask = and(Wave(iw).BarMask,((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh));
             title(num2str(Wavelengths(iw)));
             SetAxesAppeareance(subH(iw));
         end

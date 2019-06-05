@@ -108,12 +108,6 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 end
             end
             rows = all(rows,2);
-            %             if sum(rows)==numel(rows)
-            %                 ActualPage = [];ActualRows = [];
-            %                 msh = msgbox({'This combination of filters won''t work.' 'Please select a valid filter combination'},'Warning','help');
-            %                 movegui(msh,'center');
-            %                 return
-            %             end
             Page = FitData(:,cols); BPage = Page.Variables;
             BPage(~rows,:) = 0;
             Page.Variables = BPage;
@@ -228,8 +222,10 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
             FH(ifigs).UserData.FitFilePath = FigFilterHandle.UserData.FitFilePath;
             if strcmpi(Filters(1).FitType,'muamus')
                 if isempty(findobj(FH(ifigs),'type','pushbutton','string','2-step fit'))
+                    TwoStepFitTypeH=CreatePopUpMenu(FH(ifigs),'String',{'LSQNONNEG','LSQLIN','BACKSLASH'},'Units','Normalized',...
+                        'Position',[0.05 0 0.05 0.05]);
                     CreatePushButton(FH(ifigs),'String','2-step fit','Units','Normalized',...
-                        'Position',[0 0 0.05 0.05],'CallBack',{@Perform2StepFit,FH(ifigs),MFH});
+                        'Position',[0 0 0.05 0.05],'CallBack',{@Perform2StepFit,FH(ifigs),TwoStepFitTypeH,MFH});
                 end
             end
         end
