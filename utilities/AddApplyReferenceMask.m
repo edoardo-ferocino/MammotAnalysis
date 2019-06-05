@@ -10,14 +10,14 @@ mmh = uimenu(cmh,'Text','Reference Mask');
 uimenu(mmh,'Text','Apply Reference Mask','Callback',{@ApplyReferenceMask});
 uimenu(mmh,'Text','Remove Reference Mask','Callback',{@RemoveReferenceMask});
     function ApplyReferenceMask(~,~)
-        if ~isfield(object2attach.UserData,'ReferenceMask')
+        if ~isfield(parentfigure.UserData,'TotalReferenceMask')
             errordlg('no reference mask'); return
         end
-        object2attach.CData = object2attach.CData .* object2attach.UserData.ReferenceMask;
+        object2attach.CData = object2attach.CData .* parentfigure.UserData.TotalReferenceMask;
         %PercVal = GetPercentile(AxH.CData,PercFract);
     end
     function RemoveReferenceMask(~,~)
-        if ~isfield(object2attach.UserData,'ReferenceMask')
+        if ~isfield(parentfigure.UserData,'TotalReferenceMask')
             errordlg('no reference mask'); return
         end
         AxH=ancestor(object2attach,'axes');

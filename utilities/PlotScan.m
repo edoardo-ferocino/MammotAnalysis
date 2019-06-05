@@ -73,6 +73,7 @@ while(OnlinePlotCond)
         FH(end).UserData.FigCategory = 'Wavelenghts';
         nSub = numSubplots(numel(Wavelengths));
         subH = subplot1(nSub(1),nSub(2));
+        TotalReferenceMask = ones(size(RawVisualData,1),size(RawVisualData,2));
         for iw = 1:numel(Wavelengths)
             Wave(iw).Data = RawVisualData(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
             for ich = 1:NumChan
@@ -94,6 +95,7 @@ while(OnlinePlotCond)
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
             imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
             imh.UserData.ReferenceMask = and(Wave(iw).BarMask,((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh));
+            TotalReferenceMask = and(TotalReferenceMask,imh.UserData.ReferenceMask);
             title(num2str(Wavelengths(iw)));
             SetAxesAppeareance(subH(iw));
         end
@@ -155,6 +157,8 @@ for ifigs = 1:numel(FH)
     FH(ifigs).UserData.InfoData.Name = CH.LabelName;
     FH(ifigs).UserData.InfoData.Value = CH.LabelContent;
     FH(ifigs).UserData.TrsSet = TrsSet;
+    FH(ifigs).UserData.TotalReferenceMask = TotalReferenceMask;
+    FH(ifigs).UserData.FileName = FileName;
 end
 AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath{infile});
 end
