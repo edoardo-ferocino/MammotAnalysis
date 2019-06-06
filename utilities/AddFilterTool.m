@@ -6,7 +6,7 @@ else
     cmh = object2attach.UIContextMenu;
 end
 mmh = uimenu(cmh,'Text','Filters');
-FilterType = {'Median' 'Weiner' 'Gaussian'};
+FilterType = {'Median' 'Weiner' 'Gaussian' 'Diffuse' 'ClearBorder' 'NonLocalMean' 'Contour'};
 for ifil = 1:numel(FilterType)
    uimenu(mmh,'Text',FilterType{ifil},'Callback',{@ApplyFilter,FilterType{ifil}});
 end
@@ -21,6 +21,14 @@ uimenu(mmh,'Text','Restore','Callback',{@Restore});
             object2attach.CData = wiener2(object2attach.CData,[3 3]);
             case 'Gaussian'
             object2attach.CData = imgaussfilt(object2attach.CData);
+            case 'Diffuse'
+            object2attach.CData = imdiffusefilt(object2attach.CData);
+            case 'ClearBorder'
+            object2attach.CData = imclearborder(object2attach.CData,8);
+            case 'NonLocalMean'
+            object2attach.CData = imnlmfilt(object2attach.CData);
+%             case 'Contour'
+%             object2attach.CData = imcontour(object2attach.CData,1);    
         end
     end
     function Restore(src,~)

@@ -1,6 +1,7 @@
 function GetFilePath(~,~,type,MFH)
 [FileName,PathName,FilterIndex]=uigetfilecustom('*.txt;*.dat;*.fit;*.trs;*.spe');
 if FilterIndex == 0, return, end
+StartWait(MFH);
 if ~iscell(FileName)
     FileName = cellstr(FileName);
 end
@@ -21,5 +22,7 @@ end
 MFH.UserData.([DataType,'FilePath']) = FullPath;
 MFH.UserData.([DataType,'FileNumel']) = numel(FullPath);
 MFH.UserData.(['Disp',DataType,'FilePath']).String = strjoin(FileName,',');
+drawnow
+StopWait(MFH);
 end
 

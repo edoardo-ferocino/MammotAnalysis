@@ -100,13 +100,15 @@ end
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
         Roi.Max = max(RoiData(:));
         Roi.Min = min(RoiData(:));
+        Roi.Points = sum(isfinite(RoiData(:)));
         FH=CreateOrFindFig(strcat('ROI - ',num2str(src.UserData.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
         FH.UserData.FigCategory = 'ROI';
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
-        FH.Position = tbh.Position + [0 0 70 40];
+        FH.Position([3 4]) = tbh.Position([3 4]) + [70 40];
         movegui(FH,'southwest')
+        FH.Position(2)=FH.Position(2)*5;
         if isprop(event,'EventName')
             if ~strcmpi(event.EventName,'roimoved')
                 AddToFigureListStruct(FH,MFH,'side');
@@ -164,6 +166,7 @@ end
                 Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
                 Roi.Max = max(RoiData(:));
                 Roi.Min = min(RoiData(:));
+                Roi.Points = sum(isfinite(RoiData(:)));
                 Header{iaxh} = AxH(iaxh).Title.String; %#ok<*AGROW>
                 data2write(iaxh,1) = Roi;
             end

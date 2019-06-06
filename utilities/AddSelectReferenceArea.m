@@ -120,12 +120,13 @@ function GetData(src,event)
         Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
         Roi.Max = max(RoiData(:));
         Roi.Min = min(RoiData(:));
+        Roi.Points = sum(isfinite(RoiData(:)));
         FH=CreateOrFindFig(strcat('Reference ROI - ',num2str(src.UserData.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         FH.Color = src.Color;
         FH.UserData.FigCategory = 'ReferenceROI';
         tbh = uitable(FH,'RowName',fieldnames(Roi),'Data',struct2array(Roi)');
         tbh.Position([3 4]) = tbh.Extent([3 4]);
-        FH.Position = tbh.Position + [0 0 70 40];
+        FH.Position([3 4]) = tbh.Position([3 4]) + [70 40];
         movegui(FH,'southwest')
         if ~strcmpi(event.EventName,'roimoved')
             AddToFigureListStruct(FH,MFH,'side');

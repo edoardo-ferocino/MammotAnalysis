@@ -11,6 +11,7 @@ else
     ExtCoeff=SpectraData(ismember(SpectraData.lambda_nm_,MFH.UserData.Wavelengths),2:2+4);
     VarExtCoeff=ExtCoeff.Variables;
 end
+StartWait(FH);
 if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     if contains(FH.Name,'GlobalView: mua','IgnoreCase',true)
         FigureMua = FH;
@@ -31,7 +32,8 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     OrigSize = size(Data.Mua);
     DataResaphed = reshape(Data.Mua,[OrigSize(1) prod(OrigSize(2:3))]);
     FitOpts = optimoptions('lsqlin','Display','off');
-    LowBounds = zeros(size(VarExtCoeff,2),1); UpBounds = [500,500,1000,1000,500];
+    %LowBounds = zeros(size(VarExtCoeff,2),1); UpBounds = [500,500,1000,1000,500];
+    UpBounds = [500,500,1000,1000,500];LowBounds = -UpBounds;
     InitCond = zeros(size(VarExtCoeff,2),1);
     for ic = 1:size(DataResaphed,2)
         switch TwoStepFitTypeH.Value
@@ -56,7 +58,6 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     InitialGuess = [20 1];
     options = optimoptions('lsqcurvefit','Display','none');
     ScattParams = zeros(2,size(DataResaphed,2));
-    StartWait(FH)
     figh=uifigure('visible','off');figh.CloseRequestFcn = [];
     movegui(figh); figh.Position(3:4)= [400 100];
     figh.Visible = 'on';
@@ -69,7 +70,6 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
         ScattParams(:,ic) = FittParams';
     end
     close(progh), figh.CloseRequestFcn = 'closereq';delete(figh)
-    StopWait(FH)
     ScattParams=reshape(ScattParams,[2 OrigSize(2) OrigSize(3)]);
     ScattParams = permute(ScattParams,[2 3 1]);
     
@@ -119,6 +119,7 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     SpectralFH.UserData.FigCategory = '2-step fit';
     AddToFigureListStruct(SpectralFH,MFH,'data',FH.UserData.FitFilePath);
 end
+StopWait(FH)
     function Scatt=MieLaw(x,xdata)
         Scatt = x(1).*(xdata./xdata(1)).^(-x(2)); Scatt = Scatt';
     end
