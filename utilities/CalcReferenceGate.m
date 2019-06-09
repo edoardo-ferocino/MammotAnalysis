@@ -1,6 +1,8 @@
 function Wave = CalcReferenceGate(~,~,ParentFH,MFH)
-RefCurve = ParentFH.UserData.Gate.CurveReference.Curve;
-Irf = ParentFH.UserData.ActualIrfData;
+Bkg = mean(ParentFH.UserData.Gate.CurveReference.Curve(str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)));
+RefCurve = ParentFH.UserData.Gate.CurveReference.Curve - Bkg;
+Bkg = mean(ParentFH.UserData.ActualIrfData(str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)));
+Irf = ParentFH.UserData.ActualIrfData - Bkg;
 Factor = ParentFH.UserData.CompiledHeaderData.McaFactor;
 InterpStep = 0.1;
 numwave = numel(MFH.UserData.Wavelengths);

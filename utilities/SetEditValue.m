@@ -9,6 +9,12 @@ switch type
     case 'fractlast'
         MFH.UserData.FractLast.UserData.FractLast = ...
             str2double(src.String);
+    case 'bkglast'
+        MFH.UserData.BkgLast.UserData.BkgLast = ...
+            str2double(src.String);
+    case 'bkgfirst'
+        MFH.UserData.BkgFirst.UserData.BkgFirst = ...
+            str2double(src.String);
 end
 end
 

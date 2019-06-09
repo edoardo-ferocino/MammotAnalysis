@@ -1,7 +1,9 @@
 function Wave = ApplyGates(src,~,ParentFH,MFH)
 AncestorFigure = ancestor(src,'figure');
 StartWait(AncestorFigure);
-AllData = squeeze(ParentFH.UserData.VisualDatData);
+Bkg = mean(ParentFH.UserData.VisualDatData(:,:,:,str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)),4);
+AllData = ParentFH.UserData.VisualDatData - Bkg;
+AllData = squeeze(AllData);
 ReferenceGatesWaveS = ParentFH.UserData.ReferenceGatesWaveS;
 numwave = numel(MFH.UserData.Wavelengths);
 Roi = ParentFH.UserData.TrsSet.Roi(1:numwave,2:3)+1;

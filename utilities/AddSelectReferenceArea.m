@@ -52,9 +52,9 @@ function output_txt=PickReferenceCurveOnGraph(src,~,~)
         Counts = sum(Data(Ypos,Xpos,:),3);
         TrsSet = parentfigure.UserData.TrsSet;
         RelCounts = zeros(1,numel(MFH.UserData.Wavelengths)+1);
-        RelCounts(1) = (mean(Data(Ypos,Xpos,1:20))*numbin)./Counts*100;
+        RelCounts(1) = (mean(Data(Ypos,Xpos,str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)))*numbin)./Counts*100;
         for iw = 2:numel(MFH.UserData.Wavelengths)+1
-            RelCounts(iw) = (sum(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,1:20))*(numel(TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1)))./Counts * 100;
+            RelCounts(iw) = (sum(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),3)-mean(Data(Ypos,Xpos,str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)))*(numel(TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1)))./Counts * 100;
            [CurveWidth(iw),CurveBar(iw)]=CalcWidth(Data(Ypos,Xpos,TrsSet.Roi(iw-1,2)+1:TrsSet.Roi(iw-1,3)+1),0.5);
             vline(TrsSet.Roi(iw-1,3)+1,'r','');
         end

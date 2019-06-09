@@ -12,7 +12,7 @@ StartWait(MFH);
 for infile = 1:MFH.UserData.DatFileNumel
 clearvars('-except','MFH','infile');
 PercFract = 95;
-MinCountRateTresh = 285000;
+MinCountRateTresh = 150000-100000;
 [Path ,FileName,~] = fileparts(MFH.UserData.DatFilePath{infile});
 OnlinePlotCond = 1;
 if MFH.UserData.OnlinePlot.Value
@@ -73,9 +73,11 @@ while(OnlinePlotCond)
         FH(end).UserData.FigCategory = 'Wavelenghts';
         nSub = numSubplots(numel(Wavelengths));
         subH = subplot1(nSub(1),nSub(2));
-        TotalReferenceMask = ones(size(RawVisualData,1),size(RawVisualData,2));
+        Bkg = mean(RawVisualData(:,:,:,str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)),4);
+        ActCounts = RawVisualData - Bkg;
+        TotalReferenceMask = ones(size(ActCounts,1),size(ActCounts,2));
         for iw = 1:numel(Wavelengths)
-            Wave(iw).Data = RawVisualData(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
+            Wave(iw).Data = ActCounts(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
             for ich = 1:NumChan
                 Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
             end
@@ -85,16 +87,20 @@ while(OnlinePlotCond)
                     [Wave(iw).Width(ir,ic),Wave(iw).Bar(ir,ic)] = CalcWidth(Wave(iw).SumChanData(ir,ic,:,:),0.5);
                 end
             end
+            Wave(iw).Curves = Wave(iw).SumChanData;
+            Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
+            Wave(iw).Bar = Wave(iw).Bar.*((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh);
+            Wave(iw).Width = Wave(iw).Width.*((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh);
+            Wave(iw).Bar(Wave(iw).Bar==0) = nan;
+            Wave(iw).Width(Wave(iw).Width==0) = nan;
             Wave(iw).MedianWidth = median(Wave(iw).Width,'all','omitnan');
             Wave(iw).WidthMask = Wave(iw).Width>Wave(iw).MedianWidth;
             Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
-            Wave(iw).BarMask = Wave(iw).Bar>Wave(iw).MedianBar;
-            Wave(iw).Curves = Wave(iw).SumChanData;
-            Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
+            Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1-0.05));
             subplot1(iw);
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
             imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
-            imh.UserData.ReferenceMask = and(Wave(iw).BarMask,((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh));
+            imh.UserData.ReferenceMask = Wave(iw).BarMask;
             TotalReferenceMask = and(TotalReferenceMask,imh.UserData.ReferenceMask);
             title(num2str(Wavelengths(iw)));
             SetAxesAppeareance(subH(iw));
@@ -105,7 +111,7 @@ while(OnlinePlotCond)
         % Actual counts bkg free
         FH(end+1) = CreateOrFindFig(['Actual counts bkg free - ' FileName],'WindowState','maximized');
         FH(end).UserData.FigCategory= 'Counts';
-        Bkg = mean(RawVisualData(:,:,:,1:20),4);
+        Bkg = mean(RawVisualData(:,:,:,str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)),4);
         ActCounts = RawVisualData - Bkg;
         ActCountsAllChan=sum(ActCounts,3);
         ActCountsAllChanImage = sum(ActCountsAllChan,4);

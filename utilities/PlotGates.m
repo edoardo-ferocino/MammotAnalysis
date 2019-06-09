@@ -96,6 +96,11 @@ AddToFigureListStruct(FH,MFH,'data',FH.UserData.DatFilePath);
     end
     function imh = PlotPage(iw,ig)
         imh = imagesc(subH(iw),Data(iw).Gates(ig).Counts,[0 PercVal(iw)]);
+         if numel(subH(iw).Children)>1
+             subH(iw).Children(1).UIContextMenu = subH(iw).Children(end).UIContextMenu;
+             subH(iw).Children(1).UserData = subH(iw).Children(end).UserData;
+             subH(iw).Children(end).delete
+         end
         title(subH(iw),{num2str(Wavelengths(iw)) ...
             [num2str(Data(iw).Gates(ig).TimeArray(1),'%.0f') '-' ...
             num2str(Data(iw).Gates(ig).TimeArray(end),'%.0f') ' ps.' ...
