@@ -207,6 +207,7 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
                 ImH = findobj(AxH(iaxh).Children,'type','image');
                 ImH.CData = ImH.UserData.OriginalCData;
                 AxH(iaxh).CLim = AxH(iaxh).UserData.OriginalCLims;
+                delete(findobj(AxH(iaxh),'type','rectangle'));
             end
         end
         StopWait(ancestor(src,'figure'));

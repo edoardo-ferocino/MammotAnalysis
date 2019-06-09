@@ -60,7 +60,7 @@ for ifigs = 1:numel(FH)
         CreatePushButton(FH(ifigs),'units','normalized','String','Figure list','Position',[0.95 0 0.05 0.05],'CallBack','CreateOrFindFig(''Figure list'',''uifigure'',true);');
         CreatePushButton(FH(ifigs),'units','normalized','String','Main Panel','Position',[0.95 0.05 0.05 0.05],'CallBack','CreateOrFindFig(''Main panel'');');
         FH(ifigs).Units = preunits;
-    elseif contains(FH(ifigs).UserData.FigCategory,'roi','IgnoreCase',true)||contains(FH(ifigs).UserData.FigCategory,'referenceroi','IgnoreCase',true)
+    elseif contains(FH(ifigs).UserData.FigCategory,'roi','IgnoreCase',true)||contains(FH(ifigs).UserData.FigCategory,'referenceroi','IgnoreCase',true)||contains(FH(ifigs).UserData.FigCategory,'ReferenceMaskStats','IgnoreCase',true)
         AddNodeToTree(MFH,FH(ifigs));
     end
     AddSaveFig(FH(ifigs))

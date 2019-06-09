@@ -31,7 +31,7 @@ if isvalid(NodeFigH)
         uitreenode(TreeH,'Text',NodeFigH.UserData.FigCategory);
     end
     nodeh=uitreenode(TreeH.Children(strcmpi({TreeH.Children.Text},NodeFigH.UserData.FigCategory)),'Text',NodeFigH.Name,'NodeData',NodeFigH);
-    if strcmpi(NodeFigH.UserData.FigCategory,'roi')||strcmpi(NodeFigH.UserData.FigCategory,'referenceroi')
+    if strcmpi(NodeFigH.UserData.FigCategory,'roi')||strcmpi(NodeFigH.UserData.FigCategory,'referenceroi')||strcmpi(NodeFigH.UserData.FigCategory,'referencemaskstats')
         TempName=fullfile(tempdir,'roiicon.png');
         imwrite(reshape(repmat(NodeFigH.Color,16*16,1),16,16,3),TempName);
         nodeh.Icon = TempName;
