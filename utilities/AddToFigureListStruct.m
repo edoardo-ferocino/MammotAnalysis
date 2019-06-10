@@ -14,7 +14,7 @@ end
 for ifigs = 1:numel(FH)
     StartWait(FH(ifigs));
     if ~isfield(FH(ifigs).UserData,'FigCategory')
-      FH(ifigs).UserData.FigCategory = 'NoCategory';  
+        FH(ifigs).UserData.FigCategory = 'NoCategory';
     end
     if strcmpi(type,'data')
         FH(ifigs).UserData.DataFilePath=FHDataFilePath;
@@ -32,8 +32,8 @@ for ifigs = 1:numel(FH)
             end
             if isfield(FH(ifigs).UserData,'VisualDatData')
                 AddPickCurve(FH(ifigs),ImH(imh),SumChan,MFH);
-                AddApplyReferenceMask(FH(ifigs),ImH(imh),MFH);
             end
+            AddApplyReferenceMask(FH(ifigs),ImH(imh),MFH);
             if strcmpi(FH(ifigs).UserData.FigCategory,'ReferenceArea')
                 AddSelectReferenceArea(FH(ifigs),ImH(imh),SumChan,MFH)
             end

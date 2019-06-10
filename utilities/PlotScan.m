@@ -33,8 +33,8 @@ while(OnlinePlotCond)
     RawData=flip(RawData,2);
     isVisual = sum(RawData,[2 3 4],'omitnan') ~= 0;
     RawVisualData = RawData(isVisual,:,:,:);
-    NumRows = size(RawVisualData,1);NumCols = size(RawVisualData,2);
     RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
+    NumRows = size(RawVisualData,1);NumCols = size(RawVisualData,2);
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
         TrsSet = TRSread(MFH.UserData.TRSSetFilePath);
@@ -54,6 +54,13 @@ while(OnlinePlotCond)
     AllCounts = sum(RawVisualData,4);
     CountRatesImage = AllCounts./AcqTime;
     if (~MFH.UserData.OnlinePlot.Value)
+        if isfile(fullfile(Path,FileName,'_info.txt'))
+            InfoScan=readtable(fullfile(Path,FileName,'_info.txt'));
+            InfoScan.Var1{contains(InfoScan.Var1,'border'),2};
+        end
+        
+        
+        
         % Count rate per channel
         FH = CreateOrFindFig(['Count rates per channel - ' FileName],'WindowState','maximized');
         FH.UserData.FigCategory = 'Channels';

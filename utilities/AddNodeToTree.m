@@ -42,6 +42,7 @@ end
 TreeH.Children(~isvalid(TreeH.Children)).delete;
 TreeH.expand;
 pause(0.5);
+drawnow
 
     function ActionTree(~,~,FH,action)
        treeH = findobj(FH,'type','uitree');treeH.(action);

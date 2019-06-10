@@ -1,4 +1,4 @@
-function FH=CreateOrFindFig(Name,varargin)
+function [FH,varargout]=CreateOrFindFig(Name,varargin)
 LookForVarargin = varargin;
 ActualVarArgin = varargin;
 
@@ -24,6 +24,7 @@ else
 end
 if ~isempty(FH)
     figure(FH);
+    isnew = false;
 else
     if isUIFig
         FH = uifigure('Name',Name,ActualVarArgin{:});
@@ -31,5 +32,10 @@ else
         FH = figure('Name',Name,ActualVarArgin{:});
     end
     FH.UserData.isFFS = any(contains(LookForVarargin,{'maximized'},'IgnoreCase',true));
+    isnew = true;
 end
+if nargout>1
+    varargout{1} = isnew;
+end
+drawnow
 end

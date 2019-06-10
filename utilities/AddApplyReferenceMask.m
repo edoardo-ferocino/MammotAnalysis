@@ -24,6 +24,8 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
             object2attach.UserData.ReferenceMaskRoi.ID = MFH.UserData.ReferenceMaskRoi.ID;
         end
         object2attach.CData = object2attach.CData .* parentfigure.UserData.TotalReferenceMask;
+        PercVal = GetPercentile(object2attach.CData,PercFract);
+        object2attach.Parent.CLim = [0 PercVal];
         RoiData = object2attach.CData;
         RoiData(RoiData==0) = NaN;
         Roi.Median = median(RoiData(:),'omitnan');
@@ -33,7 +35,7 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
         Roi.Max = max(RoiData(:));
         Roi.Min = min(RoiData(:));
         Roi.Points = sum(isfinite(RoiData(:)));
-        FH=CreateOrFindFig(strcat('Reference Mask Stats - ',num2str(object2attach.UserData.ReferenceMaskRoi.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
+        [FH,isnewfig]=CreateOrFindFig(strcat('Reference Mask Stats - ',num2str(object2attach.UserData.ReferenceMaskRoi.ID)),'NumberTitle','off','ToolBar','none','MenuBar','none');
         if isfield(FH.UserData,'Color')
             FH.Color = FH.UserData.Color;
         else
@@ -47,8 +49,9 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
         FH.Position([3 4]) = tbh.Position([3 4]) + [70 40];
         movegui(FH,'southwest')
         FH.Position(2)=FH.Position(2)*5;
-        AddToFigureListStruct(FH,MFH,'side');
-        %PercVal = GetPercentile(AxH.CData,PercFract);
+        if isnewfig
+            AddToFigureListStruct(FH,MFH,'side');
+        end
     end
     function RemoveReferenceMask(~,~)
         if ~isfield(parentfigure.UserData,'TotalReferenceMask')
@@ -58,7 +61,6 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
         object2attach.CData = object2attach.UserData.OriginalCData;
         AxH.CLim = AxH.UserData.OriginalCLims;
         delete(findobj(ancestor(object2attach,'axes'),'type','rectangle'));
-        %PercVal = GetPercentile(AxH.CData,PercFract);
     end
     function CreateLinkDataFigure(~,~,opertype)
         FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
@@ -100,6 +102,9 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
             if(contains(FH(ifh).Name,'optical prop','IgnoreCase',true)&&~contains(FH(ifh).Name,'globalview','IgnoreCase',true))
                 continue;
             end
+            if ~isfield(FH(ifh).UserData,'TotalReferenceMask')
+               FH(ifh).UserData.TotalReferenceMask = parentfigure.UserData.TotalReferenceMask; 
+            end
             AxH = findobj(FH(ifh),'type','axes');
             clear data2write Header;
             for iaxh = 1:numel(AxH)
@@ -113,6 +118,8 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
                     ImH.UserData.ReferenceMaskRoi.ID = MFH.UserData.ReferenceMaskRoi.ID;
                 end
                 ImH.CData = ImH.CData.* parentfigure.UserData.TotalReferenceMask;
+                PercVal = GetPercentile(ImH.CData,PercFract);
+                ImH.Parent.CLim = [0 PercVal];
                 RoiData = ImH.CData;
                 RoiData(RoiData==0) = NaN;
                 Roi.Median = median(RoiData(:),'omitnan');

@@ -15,9 +15,8 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
         FullPath = fullfile(PathName,parentfigure.Name);
         warning off
         figh = copyfig(parentfigure);
-        pbh = findobj(figh,'type','uicontrol');
+        delete(findobj(figh,'type','uicontrol'));
         delete(findobj(figh,'type','colorbar'));
-        delete(pbh)
         figure(figh);
         axh= findobj(figh,'type','axes');
         for iaxh = 1:numel(axh)

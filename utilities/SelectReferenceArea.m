@@ -42,6 +42,7 @@ for infile = 1:MFH.UserData.DatFileNumel
     isVisual = sum(RawData,[2 3 4],'omitnan') ~= 0;
     RawVisualData = RawData(isVisual,:,:,:);
     RawVisualData = GetActualOrientationAction(MFH,RawVisualData);
+    NumRows = size(RawVisualData,1);NumCols = size(RawVisualData,2);
     Wavelengths = MFH.UserData.Wavelengths;
     if isfield(MFH.UserData,'TRSSetFilePath')
         TrsSet = TRSread(MFH.UserData.TRSSetFilePath);
@@ -54,6 +55,35 @@ for infile = 1:MFH.UserData.DatFileNumel
         end
     end
     
+    % Wavelenghts count rate
+    MinCountRateTresh = 150000-100000;
+    AcqTime = CH.McaTime;
+    Bkg = mean(RawVisualData(:,:,:,str2double(MFH.UserData.BkgFirst.String):str2double(MFH.UserData.BkgLast.String)),4);
+    ActCounts = RawVisualData - Bkg;
+    TotalReferenceMask = ones(size(ActCounts,1),size(ActCounts,2));
+    for iw = 1:numel(Wavelengths)
+        Wave(iw).Data = ActCounts(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
+        for ich = 1:NumChan
+            Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
+        end
+        Wave(iw).SumChanData = squeeze(sum(Wave(iw).Data,3));
+        for ir = 1:NumRows
+            for ic = 1:NumCols
+                [Wave(iw).Width(ir,ic),Wave(iw).Bar(ir,ic)] = CalcWidth(Wave(iw).SumChanData(ir,ic,:,:),0.5);
+            end
+        end
+        Wave(iw).Curves = Wave(iw).SumChanData;
+        Wave(iw).CountsAllChan = squeeze(sum(Wave(iw).Curves,3)); %#ok<*AGROW>
+        Wave(iw).Bar = Wave(iw).Bar.*((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh);
+        Wave(iw).Width = Wave(iw).Width.*((Wave(iw).CountsAllChan./AcqTime)>MinCountRateTresh);
+        Wave(iw).Bar(Wave(iw).Bar==0) = nan;
+        Wave(iw).Width(Wave(iw).Width==0) = nan;
+        Wave(iw).MedianWidth = median(Wave(iw).Width,'all','omitnan');
+        Wave(iw).WidthMask = Wave(iw).Width>Wave(iw).MedianWidth;
+        Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
+        Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1-0.05));
+        TotalReferenceMask = and(TotalReferenceMask,Wave(iw).BarMask);
+    end
     
     % Total count rate
     AcqTime = CH.McaTime;
@@ -82,10 +112,11 @@ for infile = 1:MFH.UserData.DatFileNumel
     FH.UserData.InfoData.Name = CH.LabelName;
     FH.UserData.InfoData.Value = CH.LabelContent;
     FH.UserData.TrsSet = TrsSet;
+    FH.UserData.TotalReferenceMask = TotalReferenceMask;
     AddToFigureListStruct(FH,MFH,'data',MFH.UserData.DatFilePath{infile});
-%     ReferenceCurveS = CalcReferenceGate(SETT.Roi(1:numel(Wavelengths),2:end)+1,IRF,MFH);
-%     DataCurveS = ApplyGates(ReferenceCurveS,Data,MFH);
-%     PlotGates(DataCurveS,MFH);
+    %     ReferenceCurveS = CalcReferenceGate(SETT.Roi(1:numel(Wavelengths),2:end)+1,IRF,MFH);
+    %     DataCurveS = ApplyGates(ReferenceCurveS,Data,MFH);
+    %     PlotGates(DataCurveS,MFH);
 end
 StopWait(MFH)
 end
