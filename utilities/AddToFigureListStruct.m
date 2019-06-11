@@ -43,7 +43,7 @@ for ifigs = 1:numel(FH)
             if strcmpi(FH(ifigs).UserData.FigCategory,'Spectral')||strcmpi(FH(ifigs).UserData.FigCategory,'MuaMus')||strcmpi(FH(ifigs).UserData.FigCategory,'2-step fit')
                 AddPlotSpectra(FH(ifigs),ImH(imh),MFH);
             end
-            AddShowTriggerPoint(FH(ifigs),ImH(imh),MFH);
+            AddShowTrimmerPoint(FH(ifigs),ImH(imh),MFH);
             AddSelectRoi(FH(ifigs),ImH(imh),MFH);
             AddGetDataProfile(FH(ifigs),ImH(imh),MFH);
             AddDefineBorder(FH(ifigs),ImH(imh),MFH);
