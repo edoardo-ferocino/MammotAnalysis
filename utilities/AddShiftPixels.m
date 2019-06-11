@@ -9,7 +9,7 @@ uimenu(cmh,'Text','Correct shift','Callback',{@CreateShiftCorrectFigure,false});
 
     function FH=CreateShiftCorrectFigure(~,~,isnew)
         AxH=ancestor(object2attach,'axes');
-        Tag = [parentfigure.Name,'-',AxH.Title.String,'-',num2str(parentfigure.Number)];
+        Tag = ['SCF-',parentfigure.Name,'-',AxH.Title.String,'-',num2str(parentfigure.Number)];
         if(isempty(findobj(groot,'Tag',Tag))||isnew)
             if isnew
                 clf(findobj(groot,'Tag',Tag'))

@@ -34,7 +34,7 @@ uimenu(cmh,'Text','Show gated curve','Callback',{@ShowGatedCurve,parentfigure});
         AxH=ancestor(object2attach,'axes');
         GateID=AxH.UserData.ActualGateVal;
         WaveID=AxH.UserData.WaveID;
-        Tag = [parentfigure.Name,'-',WaveID];
+        Tag = ['GC',parentfigure.Name,'-',WaveID];
         FH=CreateOrFindFig([GatedCurveFigureName,'-Wave:',num2str(MFH.UserData.Wavelengths(WaveID))],'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
         %cla(findobj(FH,'type','axes'));
         FH.UserData.FigCategory = 'PickGatedCurve';

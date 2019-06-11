@@ -105,7 +105,7 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
     end
     function ChangeThisColorbar(~,~)
         AxH=ancestor(object2attach,'axes');
-        Tag = [parentfigure.Name,'-',AxH.Title.String];
+        Tag = ['CB-',parentfigure.Name,'-',AxH.Title.String];
         FH=CreateOrFindFig(['CB-',AxH.Title.String],'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
         FH.Position = AxH.Position + [AxH.Position(3)/3 0 -0.1*AxH.Position(3) -0.8*AxH.Position(4)];
         FH.UserData.FigCategory = 'ChangeColorbar';

@@ -54,13 +54,6 @@ while(OnlinePlotCond)
     AllCounts = sum(RawVisualData,4);
     CountRatesImage = AllCounts./AcqTime;
     if (~MFH.UserData.OnlinePlot.Value)
-        if isfile(fullfile(Path,FileName,'_info.txt'))
-            InfoScan=readtable(fullfile(Path,FileName,'_info.txt'));
-            InfoScan.Var1{contains(InfoScan.Var1,'border'),2};
-        end
-        
-        
-        
         % Count rate per channel
         FH = CreateOrFindFig(['Count rates per channel - ' FileName],'WindowState','maximized');
         FH.UserData.FigCategory = 'Channels';
@@ -69,7 +62,7 @@ while(OnlinePlotCond)
         for ich = 1 : NumChan
             subplot1(ich);
             PercVal = GetPercentile(CountRatesImage(:,:,ich),PercFract);
-            imagesc(CountRatesImage(:,:,ich),[0 PercVal]);
+            imagesc(CountRatesImage(:,:,ich),CheckCLims([0 PercVal]));
             title(num2str(ich));
             SetAxesAppeareance(subH(ich));
         end
@@ -106,7 +99,7 @@ while(OnlinePlotCond)
             Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1-0.05));
             subplot1(iw);
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
-            imh = imagesc(Wave(iw).CountsAllChan./AcqTime,[0 PercVal]);
+            imh = imagesc(Wave(iw).CountsAllChan./AcqTime,CheckCLims([0 PercVal]));
             imh.UserData.ReferenceMask = Wave(iw).BarMask;
             TotalReferenceMask = and(TotalReferenceMask,imh.UserData.ReferenceMask);
             title(num2str(Wavelengths(iw)));
@@ -124,7 +117,7 @@ while(OnlinePlotCond)
         ActCountsAllChanImage = sum(ActCountsAllChan,4);
         subH=subplot1(1,1); subplot1(1);
         PercVal = GetPercentile(ActCountsAllChanImage,PercFract);
-        imagesc(ActCountsAllChanImage,[0 PercVal]);
+        imagesc(ActCountsAllChanImage,CheckCLims([0 PercVal]));
         title('Actual counts');
         SetAxesAppeareance(subH)
     end
@@ -138,7 +131,7 @@ while(OnlinePlotCond)
     CountRatesImageAllChan=sum(CountRatesImage,3);
     subH=subplot1(1,1); subplot1(1);
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
-    imagesc(CountRatesImageAllChan,[0 PercVal]);
+    imagesc(CountRatesImageAllChan,CheckCLims([0 PercVal]));
     title('Total CountRate');
     SetAxesAppeareance(subH)
     

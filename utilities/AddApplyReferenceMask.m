@@ -25,7 +25,7 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
         end
         object2attach.CData = object2attach.CData .* parentfigure.UserData.TotalReferenceMask;
         PercVal = GetPercentile(object2attach.CData,PercFract);
-        object2attach.Parent.CLim = [0 PercVal];
+        object2attach.Parent.CLim = CheckCLims([0 PercVal]);
         RoiData = object2attach.CData;
         RoiData(RoiData==0) = NaN;
         Roi.Median = median(RoiData(:),'omitnan');
@@ -119,7 +119,7 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
                 end
                 ImH.CData = ImH.CData.* parentfigure.UserData.TotalReferenceMask;
                 PercVal = GetPercentile(ImH.CData,PercFract);
-                ImH.Parent.CLim = [0 PercVal];
+                ImH.Parent.CLim = CheckCLims([0 PercVal]);
                 RoiData = ImH.CData;
                 RoiData(RoiData==0) = NaN;
                 Roi.Median = median(RoiData(:),'omitnan');

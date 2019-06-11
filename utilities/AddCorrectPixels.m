@@ -66,7 +66,7 @@ end
                     ImH.CData = ImH.CData.*~Mask + Wave(1).CountsAllChan.*Mask;
                     tshapeh = shapeh(ish);
                     PercVal = GetPercentile(ImH.CData,PercFract);
-                    ImH.Parent.CLim = [0 PercVal];                   
+                    ImH.Parent.CLim = CheckCLims([0 PercVal]);     
                 end
             end
         end

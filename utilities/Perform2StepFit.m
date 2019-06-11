@@ -81,7 +81,7 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
     for is = 1:size(Conc,3)
         PercVal = GetPercentile(Conc(:,:,is),PercFract);
         subplot1(is);
-        imagesc(subH(is),Conc(:,:,is),[0 PercVal]);
+        imagesc(subH(is),Conc(:,:,is),CheckCLims([0 PercVal]));
         SetAxesAppeareance(subH(is),'southoutside')
         tempstring = SpectraData.Properties.VariableNames{1+is}; tempstring(strfind(tempstring,'_'):end) = [];
         switch tempstring
@@ -105,7 +105,7 @@ if contains(FH.Name,'GlobalView:','IgnoreCase',true)
         ias = is -size(Conc,3);
         PercVal = GetPercentile(ScattParams(:,:,ias),PercFract);
         subplot1(is);
-        imagesc(subH(is),ScattParams(:,:,ias),[0 PercVal]);
+        imagesc(subH(is),ScattParams(:,:,ias),CheckCLims([0 PercVal]));
         SetAxesAppeareance(subH(is),'southoutside')
         title(ScattNames{ias});
         subH(is).UserData.(ScattNames{ias}) = ScattParams(:,:,ias);

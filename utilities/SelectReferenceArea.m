@@ -94,7 +94,7 @@ for infile = 1:MFH.UserData.DatFileNumel
     CountRatesImageAllChan=sum(CountRatesImage,3);
     subH=subplot1(1,1); subplot1(1);
     PercVal = GetPercentile(CountRatesImageAllChan,PercFract);
-    imagesc(CountRatesImageAllChan,[0 PercVal]);
+    imagesc(CountRatesImageAllChan,CheckCLims([0 PercVal]));
     title('Total CountRate');
     SetAxesAppeareance(subH)
     
