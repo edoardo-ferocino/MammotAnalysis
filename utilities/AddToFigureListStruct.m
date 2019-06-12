@@ -50,7 +50,7 @@ for ifigs = 1:numel(FH)
             AddShiftPixels(FH(ifigs),ImH(imh),MFH);
             AddSetColorbar(FH(ifigs),ImH(imh),MFH);
             AddFilterTool(FH(ifigs),ImH(imh),MFH);
-            %AddPicture(FH(ifigs),ImH(imh),MFH)
+            AddOverlapProfile(FH(ifigs),ImH(imh),MFH);
             AddSendToCompareAxes(FH(ifigs),ImH(imh),MFH);
             %AddFillBlackLines(FH(end),imh,Wave,MFH);
             %AddCorrectPixels(FH(end),imh,Wave,MFH);

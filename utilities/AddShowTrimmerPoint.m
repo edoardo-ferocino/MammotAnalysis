@@ -18,13 +18,13 @@ uimenu(mmh,'Text','Remove Trimmer Point','Callback',{@RemoveTrimmerPoint});
        if isfile(fullfile(Path,[FileName,'_info.txt']))
             InfoScan=readtable(fullfile(Path,[FileName,'_info.txt']));
             Data = object2attach.CData;
-            TriggCoord = find(Data(1,:)~=0,1,'last')-InfoScan.Var2(contains(InfoScan.Var1,'border'));
-            if isempty(TrigCoord)
+            TrimmCoord = find(Data(1,:)~=0,1,'last')-InfoScan.Var2(contains(InfoScan.Var1,'border'));
+            if isempty(TrimmCoord)
                errordlg({['Error reading:' fullfile(Path,[FileName,'_info.txt'])],'No "Border" entry found'},'Error');
                return
             end
             hold on
-            plot(AxH,TriggCoord,1,'Marker','square','MarkerFaceColor','red','MarkerSize',5,'Tag',Tag);
+            plot(AxH,TrimmCoord,1,'Marker','square','MarkerFaceColor','red','MarkerSize',5,'Tag',Tag);
             %text(AxH,TriggCoord,5,num2str(TriggCoord),'FontSize',15);
             hold off
         end 
