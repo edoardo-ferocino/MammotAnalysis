@@ -11,30 +11,16 @@ uimenu(mmh,'Text','Restore this colorbar','CallBack',{@RestoreThisColorbar});
 uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
 
     function CreateLinkDataFigure(~,~)
-        FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
-        clf(FH);
-        FH.UserData.FigCategory = 'LinkFigures';
-        actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
-        numfig = numel(actualnameslist);
-        for ifigs = 1:numfig
-            CH(ifigs) = CreateContainer(FH,'BorderType','none','Units','Normalized','Position',[0 (1/numfig)*(ifigs-1) 1 1/numfig]);%#ok<*AGROW> %,'BorderType','none');
-            CreateEdit(CH(ifigs),'String',actualnameslist{ifigs},'HorizontalAlignment','Left',...
-                'Units','Normalized','OuterPosition',[0 0 0.7 1]);
-            CBH(ifigs) = CreateCheckBox(CH(ifigs),'String','Link','Units','Normalized','Position',[0.7 0 0.1 1]);
-            if strcmpi(actualnameslist{ifigs}(1:strfind(actualnameslist{ifigs},'-')-1)...
-                    ,parentfigure.Name((1:strfind(actualnameslist{ifigs},'-')-1)))
-                CBH(ifigs).Value = true;
-            end
-        end
-        ColLimContH = CreateContainer(FH,'BorderType','line','Units','Normalized','Position',[0.8 0.1 0.2 0.2]);%,'BorderType','none');
+        [FH,CH,CBH]=CreateLinkDataFigGen(MFH);
+        ColLimContH = CreateContainer(FH,'BorderType','line','Units','Normalized','Position',[0.75 0.1 0.2 0.2]);%,'BorderType','none');
         HighLimH = CreateEdit(ColLimContH,'String','High lim','HorizontalAlignment','Left',...
             'Units','Normalized','OuterPosition',[0 0.5 1 0.5]);
         LowLimH = CreateEdit(ColLimContH,'String','Low lim','HorizontalAlignment','Left',...
             'Units','Normalized','OuterPosition',[0 0 1 0.5]);
-        AutoSetH = CreateCheckBox(FH,'Value',true,'Units','Normalized','String','Auto set','Position',[0.8 0.30 0.2 0.08],'Callback',{@GetMaxMinColorBarLim,CBH,LowLimH,HighLimH});
-        CreatePushButton(FH,'Units','Normalized','String','Restore Checked Colorbars','Position',[0.75 0.4 0.25 0.08],'Callback',{@RestoreAllColorbars,CBH});
+        AutoSetH = CreateCheckBox(FH,'Value',true,'Units','Normalized','String','Auto set','Position',[0.75 0.30 0.2 0.08],'Callback',{@GetMaxMinColorBarLim,CBH,LowLimH,HighLimH});
+        CreatePushButton(FH,'Units','Normalized','String','Restore Checked Colorbars','Position',[0.70 0.4 0.25 0.08],'Callback',{@RestoreAllColorbars,CBH});
         
-        CreatePushButton(FH,'Units','Normalized','Position',[0.90 0 0.10 0.08],'String','Link&Run','Callback',{@SetAllColorbars,CBH,LowLimH,HighLimH,AutoSetH});
+        CreatePushButton(FH,'Units','Normalized','Position',[0.85 0 0.10 0.08],'String','Link&Run','Callback',{@SetAllColorbars,CBH,LowLimH,HighLimH,AutoSetH});
         AddToFigureListStruct(FH,MFH,'side');
     end
     function GetMaxMinColorBarLim(src,~,CheckBoxHandle,LowLimH,HighLimH)

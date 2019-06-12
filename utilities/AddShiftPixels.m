@@ -36,18 +36,8 @@ uimenu(cmh,'Text','Correct shift','Callback',{@CreateShiftCorrectFigure,false});
         AddToFigureListStruct(FH,MFH,'side');
     end
     function CreateLinkDataFigure(~,~)
-        FH = CreateOrFindFig('Link Figures','NumberTitle','off','Toolbar','None','MenuBar','none');
-        clf(FH);
-        FH.UserData.FigCategory = 'LinkFigures';
-        actualnameslist = MFH.UserData.ListFigures.String(~contains(MFH.UserData.ListFigures.String,'Select filters'));
-        numfig = numel(actualnameslist);
-        for ifigs = 1:numfig
-            CH(ifigs) = CreateContainer(FH,'BorderType','none','Units','Normalized','Position',[0 (1/numfig)*(ifigs-1) 1 1/numfig]);%,'BorderType','none');
-            CreateEdit(CH(ifigs),'String',actualnameslist{ifigs},'HorizontalAlignment','Left',...
-                'Units','Normalized','OuterPosition',[0 0 0.7 1]);
-            CBH(ifigs) = CreateCheckBox(CH(ifigs),'String','Link','Units','Normalized','Position',[0.7 0 0.1 1]);
-        end
-        CreatePushButton(FH,'Units','Normalized','Position',[0.90 0 0.10 0.08],'String','Link&Run','Callback',{@ApplyToData,CBH});
+        [FH,CH,CBH]=CreateLinkDataFigGen(MFH);
+        CreatePushButton(FH,'Units','Normalized','Position',[0.85 0 0.10 0.08],'String','Link&Run','Callback',{@ApplyToData,CBH});
         AddToFigureListStruct(FH,MFH,'side');
     end
     function ApplyShiftCorrection(src,~)
