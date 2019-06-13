@@ -51,6 +51,7 @@ for ifigs = 1:numel(FH)
             AddSetColorbar(FH(ifigs),ImH(imh),MFH);
             AddFilterTool(FH(ifigs),ImH(imh),MFH);
             AddOverlapProfile(FH(ifigs),ImH(imh),MFH);
+            AddMeasureDistance(FH(ifigs),ImH(imh),MFH);
             AddSendToCompareAxes(FH(ifigs),ImH(imh),MFH);
             %AddFillBlackLines(FH(end),imh,Wave,MFH);
             %AddCorrectPixels(FH(end),imh,Wave,MFH);

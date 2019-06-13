@@ -73,10 +73,8 @@ uimenu(cmh,'Text','Overlap Picture','CallBack',{@OverlapPicture});
         imagesc(rgb); grid on;
         axis image; axis on; %colormap pink;
         FH.UserData.FigCategory = 'Overlapped';
+        FH.UserData.ScaleFactor = PixelResolution;
         AddToFigureListStruct(FH,MFH,'data',parentfigure.UserData.DataFilePath);
-        TName = [tempname,'.tiff'];
-        imwrite(rgb,TName);
-        imtool(TName);
     end
     function TrimmCoord=ShowTrimmerPoint(~,~)
        TrimmCoord = [];
