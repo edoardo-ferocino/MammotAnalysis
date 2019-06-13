@@ -9,7 +9,7 @@ uimenu(cmh,'Text','Overlap Picture','CallBack',{@OverlapPicture});
 
     function OverlapPicture(~,~)
         [FilePath,FileName,~] = fileparts(parentfigure.UserData.DataFilePath);
-        FullPathPicture = [fullfile(FilePath,'\Pictures',FileName) '.png'];
+        FullPathPicture = [fullfile(FilePath,'Scan',FileName) '.png'];
         if ~isfile(FullPathPicture)
             [FileName,FilePath,FilterIndex]=uigetfilecustom('*.png');
             if FilterIndex==0, return; end
@@ -31,14 +31,27 @@ uimenu(cmh,'Text','Overlap Picture','CallBack',{@OverlapPicture});
         [XC1,YC1]=GetCenter(InterpolatedScannedImage);
         % open image of the breast and interpolate to PixelResoltution
         TName = [tempname,'.tiff'];
-        imwrite(uint8((2^8-1)*mat2gray(object2attach.CData,[min(object2attach.CData(:)) max(object2attach.CData(:))])), TName);
+        TrimCoord=ShowTrimmerPoint;
+        AxH = ancestor(object2attach,'axes'); 
+        imwrite(uint8((2^8-1)*mat2gray(object2attach.CData,AxH.CLim)), TName);
         BreastIm = imread(TName);
         delete(TName);
         [sxb,syb]=size(BreastIm);
-        InterpolatedBreasIm=imresize(BreastIm, [sxb*PixelResolution, syb*PixelResolution] );
+        if~isfield(parentfigure.UserData,'CompiledHeaderData')
+           temp = inputdlg('Insert # acq per step'); 
+           pixels_per_mm = str2double(temp{1});  
+        else
+           pixels_per_mm = 1/parentfigure.UserData.CompiledHeaderData.LoopDelta(1); 
+        end
+        InterpolatedBreasIm=imresize(BreastIm, [sxb/pixels_per_mm*PixelResolution, syb/pixels_per_mm*PixelResolution] );
         [sx2,sy2]=size(InterpolatedBreasIm);
         %select reference point in image breast (interp2)
-        [XC2,YC2]=GetCenter(InterpolatedBreasIm);
+        if isempty(TrimCoord)
+            [XC2,YC2]=GetCenter(InterpolatedBreasIm);
+        else 
+            YC2 = TrimCoord/pixels_per_mm*PixelResolution;
+            XC2 = 1/pixels_per_mm*PixelResolution;
+        end
         
         BufferMat=zeros(sx1+2*sx2,sy1+2*sy2);
         BufferMat(sx2:sx1+sx2-1,sy2:sy1+sy2-1)=InterpolatedScannedImage;
@@ -64,5 +77,27 @@ uimenu(cmh,'Text','Overlap Picture','CallBack',{@OverlapPicture});
         TName = [tempname,'.tiff'];
         imwrite(rgb,TName);
         imtool(TName);
+    end
+    function TrimmCoord=ShowTrimmerPoint(~,~)
+       TrimmCoord = [];
+       [Path,FileName,~]=fileparts(parentfigure.UserData.DataFilePath);
+       InfoFilePath = fullfile(Path,[FileName,'_info.txt']);
+       if ~isfile(InfoFilePath)
+         [FileName,Path,FilterIndex]=uigetfilecustom('*.txt;','Select info file');
+         if FilterIndex == 0, return, end
+         InfoFilePath = [Path,FileName];
+       end
+            InfoScan=readtable(InfoFilePath);
+            Data = object2attach.CData;
+            TrimmCoord = find(Data(1,:)~=0,1,'last')-InfoScan.Var2(contains(InfoScan.Var1,'border'));
+            if isempty(TrimmCoord)
+               errordlg({['Error reading:' fullfile(Path,[FileName,'_info.txt'])],'No "Border" entry found'},'Error');
+               return
+            end
+            %hold on
+            %AxH = ancestor(object2attach,'axes');
+            %plot(AxH,TrimmCoord,1,'Marker','square','MarkerFaceColor','red','MarkerSize',5);
+            %%text(AxH,TriggCoord,5,num2str(TriggCoord),'FontSize',15);
+            %hold off
     end
 end
