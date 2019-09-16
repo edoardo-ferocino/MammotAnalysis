@@ -13,15 +13,15 @@ extra=(Level-DataNorm(left))/(DataNorm(left+1)-DataNorm(left))+(Level-DataNorm(r
 Width=(right-left)-extra;
 NumArgOut = nargout-1;
 if NumArgOut>=1
-        right=find(DataNorm(IndexPeak:end)<0.01,1,'first')+(IndexPeak-1);
+        right=find(DataNorm(IndexPeak:end)<0.05,1,'first')+(IndexPeak-1);
         if isempty(right), right=NumChan; end
-        left=find(DataNorm(1:IndexPeak)<0.1,1,'last');
+        left=find(DataNorm(1:IndexPeak)<0.05,1,'last');
         if isempty(left), left=1; end
         somma =0;
-        for ib=left+1:right-1
+        for ib=left:right
             somma=somma +Data(ib)*ib;
         end
-        varargout{1}= somma/sum(Data(left+1:right-1));
+        varargout{1}= somma/sum(Data(left:right));
 end
 if nargout >=2
         [A,varargout{2}] = max(Data); 

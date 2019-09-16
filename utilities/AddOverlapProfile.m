@@ -148,6 +148,7 @@ uimenu(mmh,'Text','Overlap to all','CallBack',{@CreateLinkDataFigure});
                 imagesc(AxH(iaxh),rgb);
                 SetAxesAppeareance(AxH(iaxh));
             end
+            FigureParent.UserData.FigCategory = 'Overlapped';
             FigureParent.Name = ['Overlapped - ' FigureParent.Name];
             AddToFigureListStruct(FigureParent,MFH,'data',FigureParent.UserData.DataFilePath);
             StopWait(FigureParent);

@@ -174,7 +174,7 @@ uimenu(mmh,'Text','Remove From All','Callback',{@CreateLinkDataFigure,'remove'})
             if strcmpi(answer,'yes')
                 StartWait(FigureParent);
                 PathName =uigetdircustom('Select destination');
-                if PathName == 0, delete(RoiObj);return, end
+                if PathName == 0, return, end
                 FullPath = fullfile(PathName,FigureParent.Name);
                 warning off
                 save_figure(FullPath,FigureParent,'-png','-pdf');

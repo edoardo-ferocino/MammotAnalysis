@@ -144,6 +144,15 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                 subplot1(ifit);
                 PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(FitParams(ifit).Name).Variables);
                 VisualPlotVar = PlotVar(sum(PlotVar,2,'omitnan')~=0,:);
+                if(strcmpi(FitParams(1).FitType,'conc'))
+                    if(strcmpi(FitParams(ifit).Name,'a'))
+                        ActualVisualPlotVarSize = size(VisualPlotVar);
+                    else
+                        if ~isequal(size(VisualPlotVar),ActualVisualPlotVarSize)
+                            VisualPlotVar = padarray(VisualPlotVar,[ActualVisualPlotVarSize(1)-size(VisualPlotVar,1),0],'post');
+                        end
+                    end
+                end
                 PercVal = GetPercentile(VisualPlotVar,PercFract);
                 imagesc(subH(ifit),VisualPlotVar,CheckCLims([0 PercVal]));
                 SetAxesAppeareance(subH(ifit),'southoutside')
@@ -204,6 +213,9 @@ AddToFigureListStruct(FigFilterHandle,MFH,'data',FitFilePath);
                     PlotVar = GetActualOrientationAction(MFH,UnstuckedRealPage.(ExtraConcParams(ifit).Name).Variables);
                     PlotVar = ApplyBorderToData(MFH,PlotVar);
                     VisualPlotVar = PlotVar(sum(PlotVar,2,'omitnan')~=0,:);
+                    if ~isequal(size(VisualPlotVar),ActualVisualPlotVarSize)
+                        VisualPlotVar = padarray(VisualPlotVar,[ActualVisualPlotVarSize(1)-size(VisualPlotVar,1),0],'post');
+                    end
                     PercVal = GetPercentile(VisualPlotVar,PercFract);
                     imagesc(subH(ifit),VisualPlotVar,CheckCLims([0 PercVal]));
                     SetAxesAppeareance(subH(ifit),'southoutside')

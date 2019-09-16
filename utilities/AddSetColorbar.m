@@ -91,8 +91,12 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
     end
     function ChangeThisColorbar(~,~)
         AxH=ancestor(object2attach,'axes');
-        Tag = ['CB-',parentfigure.Name,'-',AxH.Title.String];
-        FH=CreateOrFindFig(['CB-',AxH.Title.String],'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
+        AxName = AxH.Title.String;
+        if iscell(AxH.Title.String)
+            AxName = AxH.Title.String{1};
+        end
+        Tag = ['CB-',parentfigure.Name,'-',AxName];
+        FH=CreateOrFindFig(['CB-',AxName],'Tag',Tag,'numbertitle','off','MenuBar','none','toolbar','none','units','normalized');
         FH.Position = AxH.Position + [AxH.Position(3)/3 0 -0.1*AxH.Position(3) -0.8*AxH.Position(4)];
         FH.UserData.FigCategory = 'ChangeColorbar';
         CreateEdit(FH,'units','normalized','String','High','String',num2str(AxH.CLim(2)),'Callback',{@SetColorBar,AxH,'high'},'Position',[0 0.5 0.3 0.5],'Tag','HighLimCB');
@@ -102,11 +106,11 @@ uimenu(mmh,'Text','Link colorbars','CallBack',{@CreateLinkDataFigure});
         CreatePushButton(FH,'units','normalized','String','Restore','Position',[0.6 0.25 0.4 0.5],'Callback',{@RestoreThisColorbar});
         AddToFigureListStruct(FH,MFH,'side');
         function SetColorBar(src,~,AxH,type)
-           ValPos = 2; 
-           if strcmpi(type,'low')
-              ValPos = 1;
-           end
-           AxH.CLim(ValPos) =  str2double(src.String);
+            ValPos = 2;
+            if strcmpi(type,'low')
+                ValPos = 1;
+            end
+            AxH.CLim(ValPos) =  str2double(src.String);
         end
     end
 

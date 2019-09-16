@@ -81,7 +81,7 @@ for infile = 1:MFH.UserData.DatFileNumel
         Wave(iw).MedianWidth = median(Wave(iw).Width,'all','omitnan');
         Wave(iw).WidthMask = Wave(iw).Width>Wave(iw).MedianWidth;
         Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
-        Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1-0.05));
+        Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1));
         TotalReferenceMask = and(TotalReferenceMask,Wave(iw).BarMask);
     end
     

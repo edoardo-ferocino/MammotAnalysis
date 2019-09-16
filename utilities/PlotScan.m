@@ -96,7 +96,7 @@ while(OnlinePlotCond)
             Wave(iw).MedianWidth = median(Wave(iw).Width,'all','omitnan');
             Wave(iw).WidthMask = Wave(iw).Width>Wave(iw).MedianWidth;
             Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
-            Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1-0.05));
+            Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*(1-0.10));
             subplot1(iw);
             PercVal = GetPercentile(Wave(iw).CountsAllChan./AcqTime,PercFract);
             imh = imagesc(Wave(iw).CountsAllChan./AcqTime,CheckCLims([0 PercVal]));
