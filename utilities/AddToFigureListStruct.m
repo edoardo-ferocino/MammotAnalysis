@@ -67,8 +67,10 @@ for ifigs = 1:numel(FH)
     end
     AddSaveFig(FH(ifigs))
     warning('off','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
+    warning('off','MATLAB:ui:javaframe:PropertyToBeRemoved');
     javaFrame = get(FH(ifigs),'JavaFrame');
     javaFrame.setFigureIcon(javax.swing.ImageIcon(fullfile(pwd,'utilities','Logo.PNG')));
+    warning('on','MATLAB:ui:javaframe:PropertyToBeRemoved');
     warning('on','MATLAB:HandleGraphics:ObsoletedProperty:JavaFrame')
     StopWait(FH(ifigs));
 end

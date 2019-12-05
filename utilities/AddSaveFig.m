@@ -15,8 +15,18 @@ uimenu(cmh,'Label',MenuName,'CallBack',{@SaveFig});
         FullPath = fullfile(PathName,parentfigure.Name);
         warning off
         figh = copyfig(parentfigure);
-        delete(findobj(figh,'type','uicontrol'));
+        allchildren = findobj(figh,'Parent',nfh);
+        except = findobj(figh,'type','axes');
+        delete(setdiff(allchildren, except));
         figure(figh);
+        axh= findobj(figh,'type','axes');
+        for iaxh = 1:numel(axh)
+            axh(iaxh).Title = [];
+            axh(iaxh).UserData = [];
+            axh(iaxh).Children.UserData = [];
+        end
+        reset(figh)
+        colormap pink
         save_figure(FullPath,figh,'-png','-pdf');
         delete(figh);
         %         figh = copyfig(parentfigure);
