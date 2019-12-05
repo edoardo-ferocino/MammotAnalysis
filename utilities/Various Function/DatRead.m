@@ -1,7 +1,7 @@
 function [ Data, varargout ] = DatRead(FileName,varargin)
-%DatRead3('FileName')
+%DatRead('FileName')
 %Can be as input a selection of the following parameters
-%DatRead3(...,'loop4',numloop4,'loop5',numloop5,'datatype','uint32','compilesub',true/false,'forcereading',true/false)
+%DatRead(...,'nSource',nSource,'nDet',nDet,'nBoard',nBoard','loop4',numloop4,'loop5',numloop5,'datatype','uint32'/'ushort'/'double','compilesub',true/false,'forcereading',true/false)
 %[Data,Header,EasyReadableHead,SubHeaders,EasyReadableSubHead,UnSqueezedHeader]=DatRead3(...)
 
 NumArgOut = nargout-1;
@@ -10,21 +10,24 @@ ForceReading = false;
 isCompileSubHeader = false;
 HeadLen=764;
 datatype = 'ushort';
-nBoard = 1; nDet=1;
+nBoard = 1; nDet=1; nSource = 1;
 loop5=1;loop4=1;
 ismandatoryarg = zeros(8,1);
 m_loop5 = 1;m_loop4 = 2;m_loop3 = 3;m_loop2 = 4;m_loop1 = 5;
 m_nsource = 6;m_ndet = 7;m_nboard = 8;m_nbin = 9;
 isdatatypeargin=0;
+Data = [];
+for ino = 1:nargout-1
+    varargout{ino} = [];
+end
 
 if isfile(FileName)
-   FilePath = FileName; 
+    FilePath = FileName;
 else
     FilePath = [FileName '.DAT'];
 end
 if ~isfile(FilePath), errordlg('File not found'); Data = []; return; end
 
-fid=fopen(FilePath,'rb');
 for iN = 1:NumArgin
     if strcmpi(varargin{iN},'loop5')
         loop5 = varargin{iN+1};
@@ -59,7 +62,7 @@ for iN = 1:NumArgin
         ForceReading = logical(varargin{iN+1});
     end
     if strcmpi(varargin{iN},'nSource')
-        nDet = varargin{iN+1};
+        nSource = varargin{iN+1};
         ismandatoryarg(m_nsource)=1;
     end
     if strcmpi(varargin{iN},'nDet')
@@ -75,21 +78,33 @@ for iN = 1:NumArgin
         ismandatoryarg(m_nbin)=1;
     end
 end
+if any(ismandatoryarg([m_nboard m_ndet m_nsource]))
+    if sum(ismandatoryarg([m_nboard m_ndet m_nsource]))~=numel(ismandatoryarg([m_nboard m_ndet m_nsource]))
+        errordlg('Please insert nDet, nSource, nBoard'); Data = [];
+        return;
+    end
+end
 
+fid=fopen(FilePath,'rb');
 Head=fread(fid,HeadLen,'uint8');
 if (numel(categories(categorical(Head)))==1||sum(Head)==0)&&sum(ismandatoryarg)~=numel(ismandatoryarg)
     errordlg('Please insert all loop values and nDet, nSource, nBoard, nBin'); Data = [];
+    fclose(fid);
     return;
 end
 
 CompiledHeader = FillHeader(Head);
 SubLen=CompiledHeader.SizeSubHeader;
+if SubLen==0 && sum(Head)==0
+   SubLen = 204; 
+end
 if SubLen == 0
     SkipSub = true;
     if(~all(ismandatoryarg([m_nboard m_ndet m_nsource])))
-        errordlg('Please insert nSource, nDet, nBoard'); Data = [];
+        errordlg('Please insert nSource, nDet, nBoard');
+        fclose(fid);
+        return;
     end
-    return;
 else
     SkipSub = false;
 end
@@ -149,7 +164,7 @@ for iN = 1:NumArgin
         ForceReading = logical(varargin{iN+1});
     end
     if strcmpi(varargin{iN},'nSource')
-        nDet = varargin{iN+1};
+        nSource = varargin{iN+1};
         ismandatoryarg(m_nsource)=1;
     end
     if strcmpi(varargin{iN},'nDet')
@@ -171,8 +186,10 @@ if(~isdatatypeargin)
 else
     datatry={datatype};
 end
-if ~all(ismandatoryarg([m_nboard m_ndet m_nsource])) && SkipSub==0
-    for itry = 1:numel(datatry)
+DataSize = [2,4,8];
+DataType = {'ushort','long','double'};
+for itry = 1:numel(datatry)
+    if (~all(ismandatoryarg([m_nboard m_ndet m_nsource])) && SkipSub==0)
         frewind(fid);
         fread(fid,HeadLen,'uint8');
         out = false;
@@ -183,11 +200,11 @@ if ~all(ismandatoryarg([m_nboard m_ndet m_nsource])) && SkipSub==0
             try
                 CompSub = FillSub(SubRaw);
             catch ME
-               if strcmpi(ME.identifier,'MATLAB:badsubscript')
-                   out = true;
-               else
-                   rethrow(ME);
-               end
+                if strcmpi(ME.identifier,'MATLAB:badsubscript')
+                    out = true;
+                else
+                    rethrow(ME);
+                end
             end
             fread(fid,nBin,datatry{itry});
             ActParms = [CompSub.Source CompSub.Det CompSub.Board];
@@ -207,43 +224,38 @@ if ~all(ismandatoryarg([m_nboard m_ndet m_nsource])) && SkipSub==0
         nSource = numel(categories(categorical(Parms(:,1))));
         nDet = numel(categories(categorical(Parms(:,2))));
         nBoard = numel(categories(categorical(Parms(:,3))));
-        NumLoop=CompiledHeader.LoopNum;
-        info=dir(FilePath);
-        datatype = datatry{itry};
-        if info.bytes == (HeadLen + prod(NumLoop)*(nBoard*nDet*nSource)*(SubLen+nBin*2))
-            datasize = 2;
-            break;
-        end
-        if info.bytes == (HeadLen + prod(NumLoop)*(nBoard*nDet*nSource)*(SubLen+nBin*4))
-            datasize = 4;
-            break;
-        end
-        if info.bytes == (HeadLen + prod(NumLoop)*(nBoard*nDet*nSource)*(SubLen+nBin*8))
-            datasize = 8;
-            break;
-        end
-        if(ForceReading==true&&isdatatypeargin)
-            break;
-        end
-        if (ForceReading==false)&&itry==numel(datatry)
-            errordlg({'Can''t handle sizemismatch. Insert more argin' 'Or use (...''forcereading'',''true'') argin'}); Data = [];
-            fclose(fid);
-            return;
-        end
-        if (ForceReading==true)&&itry==numel(datatry)
-            fh = figure('NumberTitle','off','Name','Choose type','Toolbar','none','menubar','none','HandleVisibility','off','Units','normalized','Position',[0.5 0.5 0.1 0.3]);
-            movegui(fh,'center');
-            uph = uipanel(fh,'Title','Choose type','units','normalized','position',[0 0 1 1]);
-            bg = uibuttongroup(uph,'Visible','on','Position',[0 0 1 1]);
-            uicontrol(bg,'style','radiobutton','String','ushort','units','normalized','position',[0 0 1 0.5]);
-            uicontrol(bg,'style','radiobutton','String','uint32','units','normalized','position',[0 1/3 1 0.5]);
-            uicontrol(bg,'style','radiobutton','String','double','units','normalized','position',[0 2/3 1 0.5]);
-            uicontrol(uph,'style','pushbutton','String','Ok','units','normalized','position',[0.5 0 0.5 0.1],'Callback',@AssignDataType);
-            waitfor(fh,'Tag');
-            close(fh);
-            
-            fclose(fid);
-            fid=fopen(FilePath,'rb');
+    end
+    NumLoop=CompiledHeader.LoopNum;
+    info=dir(FilePath);
+    datatype = datatry{itry};
+    if info.bytes == (HeadLen + prod(NumLoop)*(nBoard*nDet*nSource)*(SubLen+nBin*DataSize(itry)))
+        datatype = DataType{itry};
+        datasize = DataSize(itry);
+        break;
+    end
+    if(ForceReading==true&&isdatatypeargin)
+        break;
+    end
+    if (ForceReading==false)&&itry==numel(datatry)
+        errordlg({'Can''t handle sizemismatch. Insert more argin' 'Or use (...''forcereading'',''true'') argin'}); Data = [];
+        fclose(fid);
+        return;
+    end
+    if (ForceReading==true)&&itry==numel(datatry)
+        fh = figure('NumberTitle','off','Name','Choose type','Toolbar','none','menubar','none','HandleVisibility','off','Units','normalized','Position',[0.5 0.5 0.1 0.3]);
+        movegui(fh,'center');
+        uph = uipanel(fh,'Title','Choose type','units','normalized','position',[0 0 1 1]);
+        bg = uibuttongroup(uph,'Visible','on','Position',[0 0 1 1]);
+        uicontrol(bg,'style','radiobutton','String','ushort','units','normalized','position',[0 0 1 0.5]);
+        uicontrol(bg,'style','radiobutton','String','uint32','units','normalized','position',[0 1/3 1 0.5]);
+        uicontrol(bg,'style','radiobutton','String','double','units','normalized','position',[0 2/3 1 0.5]);
+        uicontrol(uph,'style','pushbutton','String','Ok','units','normalized','position',[0.5 0 0.5 0.1],'Callback',@AssignDataType);
+        waitfor(fh,'Tag');
+        close(fh);
+        
+        frewind(fid);
+        if (~all(ismandatoryarg([m_nboard m_ndet m_nsource])) && SkipSub==0)
+            %fid=fopen(FilePath,'rb');
             fread(fid,HeadLen,'uint8');
             out = false;
             BuffParms = []; Parms = [];
@@ -268,13 +280,11 @@ if ~all(ismandatoryarg([m_nboard m_ndet m_nsource])) && SkipSub==0
             nSource = numel(categories(categorical(Parms(:,1))));
             nDet = numel(categories(categorical(Parms(:,2))));
             nBoard = numel(categories(categorical(Parms(:,3))));
-            break;
         end
+        break;
     end
-    
-    
-    
 end
+
 fclose(fid);
 NumLoop=CompiledHeader.LoopNum;
 CompiledHeader.NumBoard = nBoard;

@@ -11,10 +11,10 @@ if exist(TempPath,'file')    % Load the Sim.mat file
         case 2
             Type = varargin{1}; Title = varargin{2};
     end
-    [FileName,PathName,FilterIndex] = uigetfile(Type,Title,PathName,'MultiSelect','on');
+    [FileName,PathName,FilterIndex] = uigetfile(varargin{:},PathName);
     
 else
-    [FileName,PathName,FilterIndex] = uigetfile(varargin{:},'MultiSelect','on');
+    [FileName,PathName,FilterIndex] = uigetfile(varargin{:});
     
 end
 if FilterIndex == 0, return, end

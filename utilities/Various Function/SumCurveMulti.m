@@ -1,9 +1,9 @@
 InitScript
 
 %%
-IRF_FN = 'IRFGGMH0000';
-Data_FN = 'GGMH0000';
-is_scan = true; is_sum_rep_irf = true; is_sum_rep_data = false;
+IRF_FN = 'IRF0000';
+Data_FN = 'rebecca0001';
+is_scan = true; is_sum_rep_irf = true; is_sum_rep_data = true;
 SETT = TRSread('../Settings/TRS');
 [IRF,H,CH,SH,CSH,UnSquezSubs]=DatRead3(IRF_FN,'compilesub',true);
 ndIRF = ndims(IRF);
