@@ -52,9 +52,11 @@ for infile = 1:MPOBJ.Data.DatFileNumel
             % Count rate per channel
             mfigobjs = mfigure('Name',['Count rate per channel (all \lambda) - ' FileName],'WindowState','maximized','Category','Channels');
             nsub = numSubplots(NumChan);
-            tiledlayout(nsub(1),nsub(2),'Padding','compact','TileSpacing','none');
+            %             tiledlayout(nsub(1),nsub(2),'Padding','compact','TileSpacing','none');
+            subplot1(nsub(1),nsub(2));
             for ich = 1 : NumChan
-                nexttile
+                %                 nexttile
+                subplot1(ich);
                 imagesc(CountRateAllLambdas(:,:,ich));
                 title(['Channel ',num2str(ich)]);
             end
@@ -63,15 +65,16 @@ for infile = 1:MPOBJ.Data.DatFileNumel
             % Wavelenghts count rate
             mfigobjs(end+1)=mfigure('Name',['Count rate (bkg free) per \lambda (all channels) - ' FileName],'WindowState','maximized','Category','Wavelengths');
             nSub = numSubplots(numel(Wavelengths));
-            tiledlayout(nSub(1),nSub(2));
+            %             tiledlayout(nSub(1),nSub(2));
+            subplot1(nSub(1),nSub(2));
             ActCounts = BkgSubtract(RawVisualData,str2double(MPOBJ.Graphical.BkgFirst.String):str2double(MPOBJ.Graphical.BkgLast.String),'noneg');
             TotalReferenceMask = true(NumRows,NumCols);
             for iw = 1:numel(Wavelengths)
                 Wave(iw).Data = ActCounts(:,:,:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
                 Wave(iw).SummedChannelsData = squeeze(sum(Wave(iw).Data,3));
-%                 for ich = 1:NumChan
-%                     Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
-%                 end
+                %                 for ich = 1:NumChan
+                %                     Wave(iw).Chan(ich).Data = Wave(iw).Data(:,:,ich,:);
+                %                 end
                 for ir = 1:NumRows
                     for ic = 1:NumCols
                         [Wave(iw).Width(ir,ic),Wave(iw).Bar(ir,ic)] = CalcWidth(Wave(iw).SummedChannelsData(ir,ic,:),CalcWidthLevel);
@@ -86,7 +89,8 @@ for infile = 1:MPOBJ.Data.DatFileNumel
                 %             Wave(iw).WidthMask = Wave(iw).Width>Wave(iw).MedianWidth;
                 Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
                 Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*MedianPercentageTreshold);
-                nexttile;
+                %                 nexttile;
+                subplot1(iw);
                 imagesc(Wave(iw).CountRateAllChan);
                 ReferenceMask = Wave(iw).BarMask;
                 TotalReferenceMask = and(TotalReferenceMask,ReferenceMask);
