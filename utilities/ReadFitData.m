@@ -1,106 +1,99 @@
-function ReadFitData(~,~,MFH)
-if ~isfield(MFH.UserData,'FitFilePath')
-    errordlg('Please load the Fit file','Error');
+function ReadFitData(~,~,MPOBJ)
+if ~isfield(MPOBJ.Data,'FitFilePath')
+    DisplayError('No fit file','Please load the Fit file');
     return
 end
-StartWait(MFH)
-for infile = 1:MFH.UserData.FitFileNumel
-    clearvars('-except','MFH','infile');
-    FitFileName = MFH.UserData.FitFilePath{infile};
+MPOBJ.StartWait;
+for infile = 1:MPOBJ.Data.FitFileNumel
+    clearvars('-except','MPOBJ','infile');
+    FitFileName = MPOBJ.Data.FitFilePath{infile};
     opts = detectImportOptions(FitFileName);
     VarTypes = opts.VariableTypes;
-    FitData=readtable(FitFileName,opts,'ReadVariableNames',1);%,'Delimiter','\t','EndOfLine','\r\n');
-    
+    FitData=readtable(FitFileName,opts,'ReadVariableNames',true);
+    FitData.Properties.VariableUnits=horzcat(VarTypes,'none');
     OriginalColNames = {'loop3actual','loop2actual','CodeActual','varconc00opt','varconc01opt',...
-        'varconc02opt','varconc03opt','varconc04opt','vara0opt','varb0opt','varmua0opt','varmus0opt'};
+        'varconc02opt','varconc03opt','varconc04opt','vara0opt','varb0opt','varmua0opt','varmus0opt'}';
     RealColNames = {'X','Y','CodeActualLoop','Hb','HbO2','Lipid',...
-        'H20','Collagen','A','B','mua','mus'};
+        'Water','Collagen','A','B','Absorption','Scattering'}';
     ColumnNames = FitData.Properties.VariableNames;
-    CompNames = {'Hb' 'HbO2' 'Lipid' 'H20' 'Collagen' 'A' 'B'};
-    MuaMusNames = {'mua','mus'};
-    LocationNames = {'X','Y'};
-    Labels = {'Repetition' 'View' 'Breast' 'Session'};
-    Content = [ ["rep" "repetition" "-" "-"];...
-        ["OB" "CC" "CL" "-"];...
-        ["SX" "DX" "L" "R"];...
-        ["ses" "session" "-" "-"]];
-    for ic = 1:numel(ColumnNames)
-        match = find(strcmpi(OriginalColNames,ColumnNames{ic}));
-        try
-            Cats = categories(categorical(FitData.(ColumnNames{ic})))';
-            if isempty(Cats), continue, end
-            if strcmpi(VarTypes{ic},'char')
-                for ilabs = 1:numel(Labels)
-                    for icats = 1:numel(Cats)
-                        TempCatChar = Cats{icats};
-                        TempCat = TempCatChar(isletter(TempCatChar));
-                        if any(strcmpi(TempCat,Content(ilabs,:)))
-                            FitData.Properties.VariableNames(ic) = Labels(ilabs);
-                            continue
-                        end
+    CompNames = {'Hb' 'HbO2' 'Lipid' 'Water' 'Collagen' 'A' 'B' 'SO2' 'HbTot'}';
+    MuaMusNames = {'Absorption','Scattering'}';
+    LocationNames = {'X','Y'}';
+    for ic = 1:numel(ColumnNames)-1
+        cats = unique(FitData.(ColumnNames{ic}),'stable');
+        if strcmpi(FitData.Properties.VariableUnits{ic},'char')
+            if ~isempty(regexpi(cats{1},'ses\w?','match'))
+                FitData.Properties.VariableNames(ic) = {'Session'};
+            elseif ~isempty(regexpi(cats{1},'rep\w?','match'))
+                FitData.Properties.VariableNames(ic) = {'Repetition'};
+            elseif ~isempty(regexpi(cats{1},'DX|SX|^R|^L','match'))
+                if strcmpi(cats{1},'DX')==false&&strcmpi(cats{1},'SX')==false
+                    if strcmpi(cats{1},'r')||strcmpi(cats{1},'l')
+                        FitData.Properties.VariableNames(ic) = {'Breast'};
                     end
+                else
+                    FitData.Properties.VariableNames(ic) = {'Breast'};
                 end
+            elseif ~isempty(regexpi(cats{1},'CC|OB','match'))
+                FitData.Properties.VariableNames(ic) = {'View'};
             end
-        catch ME
-            if ~strcmpi(ME.identifier,'MATLAB:categorical:CantCreateCategoryNames')
-                throw(ME);
+        elseif strcmpi(FitData.Properties.VariableUnits{ic},'double')
+            if isequal(cats,MPOBJ.Wavelengths)
+              FitData.Properties.VariableNames(ic) = {'Lambda'};
             end
         end
+        match = find(strcmpi(OriginalColNames,ColumnNames{ic}));
         if match
             FitData.Properties.VariableNames{ic} = RealColNames{match};
         end
     end
-    ColumnNames = FitData.Properties.VariableNames;
-    
-    if any(strcmpi(ColumnNames,MuaMusNames{1}))
-        fitType = 'muamus';
+    if any(strcmpi(FitData.Properties.VariableNames,MuaMusNames{1}))
+        Type = 'OptProps';
         FitParamsNames = MuaMusNames;
-    end
-    if any(strcmpi(ColumnNames,CompNames{1}))
-        fitType = 'conc';
+    elseif any(strcmpi(FitData.Properties.VariableNames,CompNames{1}))
+        Type = 'Spectral';
+        FitData.HbTot = FitData.Hb+FitData.HbO2;
+        FitData.SO2 = FitData.Hb./FitData.HbTot .* 100;
+        FitData.SO2(isnan(FitData.SO2))=0;
+        FitData.Properties.VariableUnits(end-1:end)={'double','double'};
+        FitData = movevars(FitData,{'HbTot' 'SO2'},'After','Collagen');
         FitParamsNames = CompNames;
     end
-    ifil = 1; ifitp = 1; Vect2Match = [FitParamsNames,LocationNames];
-    for ic = 1:numel(ColumnNames)
+    ColumnNames = FitData.Properties.VariableNames;
+    ifil = 1; ifitp = 1; Vect2Match = vertcat(FitParamsNames,LocationNames);
+    for ic = 1:numel(ColumnNames)-1
         match = find(strcmpi(Vect2Match,ColumnNames{ic}));
         if match
-            FitParams(ifitp).Name = Vect2Match{match}; %#ok<*AGROW>
-            FitParams(ifitp).ColID = ic;
-            FitParams(ifitp).Type = VarTypes{ic};
-            FitParams(ifitp).FitType = fitType;
+            Params(ifitp,1).Name = Vect2Match{match}; %#ok<*AGROW>
+            Params(ifitp,1).ColID = ic;
+            Params(ifitp,1).Type = VarTypes{ic};
             ifitp = ifitp +1;
         else
-            try
-                Filters(ifil).Categories = categories(categorical(FitData.(ColumnNames{ic})));
-                if ~isempty(Filters(ifil).Categories)
-                    if numel(Filters(ifil).Categories)>100&&~strcmpi(ColumnNames{ic},'codeactualloop')
-                        continue;
-                    end
-                    if isequal(str2double(Filters(ifil).Categories'),MFH.UserData.Wavelengths)
-                        ColumnNames{ic} = 'Wavelenghts';
-                        FitData.Properties.VariableNames(ic) = ColumnNames(ic);
-                    end
-                    Filters(ifil).Categories = ['Any' Filters(ifil).Categories'];
-                    Filters(ifil).Name = ColumnNames{ic};
-                    Filters(ifil).ColID = ic;
-                    Filters(ifil).Type = VarTypes{ic};
-                    Filters(ifil).FitType = fitType;
-                    ifil = ifil +1;
-                else
-                    Filters(ifil) = [];
-                end
-            catch ME
-                if ~strcmpi(ME.identifier,'MATLAB:categorical:CantCreateCategoryNames')
-                    throw(ME);
-                end
+            Filters(ifil,1).Categories = unique(FitData.(ColumnNames{ic}),'sorted');
+            if numel(Filters(ifil,1).Categories)>50&&~strcmpi(ColumnNames{ic},'codeactualloop')
+                continue;
             end
+            if strcmpi(FitData.Properties.VariableUnits{ic},'double')
+              Filters(ifil,1).Categories=num2cell(Filters(ifil,1).Categories); 
+            end
+            Filters(ifil,1).Categories = horzcat('Any',Filters(ifil,1).Categories');
+            Filters(ifil,1).SelectedCategory = 'Any';
+            Filters(ifil,1).Name = ColumnNames{ic};
+            Filters(ifil,1).LambdaFilter = false;
+            if strcmpi(Filters(ifil,1).Name,'Lambda')
+                Filters(ifil,1).LambdaFilter = true;
+            end
+            Filters(ifil,1).ColID = ic;
+            Filters(ifil,1).Type = FitData.Properties.VariableUnits{ic};
+            ifil = ifil +1;
         end
     end
     XColID = find(strcmpi(ColumnNames,'X'));
     FitData(:,XColID).Variables = flip(FitData(:,XColID).Variables);
-    SetFiltersForFit(FitData,FitParams,Filters,MFH,MFH.UserData.FitFilePath{infile});
+    Fit.Params = Params;Fit.Type = Type;Fit.Filters = Filters;Fit.Data = FitData;
+    SetFitFilters(Fit,MPOBJ.Data.FitFilePath{infile});
 end
-StopWait(MFH)
+MPOBJ.StopWait;
 end
 
 

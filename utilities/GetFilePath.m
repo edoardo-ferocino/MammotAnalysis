@@ -1,28 +1,37 @@
-function GetFilePath(~,~,type,MFH)
-[FileName,PathName,FilterIndex]=uigetfilecustom('*.txt;*.dat;*.fit;*.trs;*.spe');
+function GetFilePath(pushbuttonobj,~,type)
+mfigobj = ancestor(pushbuttonobj,'figure');
+mfigobj = mfigobj.UserData.mfigobj;
+switch type
+    case 'fit'
+        Filter = {'*.txt','FIT output'};
+        DataType = 'Fit';
+    case 'dat'
+        Filter = {'*.dat','DAT file'};
+        DataType = 'Dat';
+    case 'irf'
+        Filter = {'*.dat','IRF file'};
+        DataType = 'Irf';
+    case 'trs'
+        Filter = {'*.trs','TRS settings'};
+        DataType = 'TRSSet';
+    case 'spe'
+        Filter = {'*.spe','SPE file'};
+        DataType = 'Spe';
+    otherwise
+        DisplayError('Format file not supported','To implement');
+        return;
+end
+[FileName,PathName,FilterIndex]=uigetfilecustom(Filter);
 if FilterIndex == 0, return, end
-StartWait(MFH);
+mfigobj.StartWait;
 if ~iscell(FileName)
     FileName = cellstr(FileName);
 end
 FullPath = fullfile(PathName,FileName);
-switch type
-    case 'fit'
-        DataType = 'Fit';
-    case 'dat'
-        DataType = 'Dat';
-    case 'irf'
-        DataType = 'Irf';
-    case 'trs'
-        DataType = 'TRSSet';
-    case 'spectra'
-        DataType = 'Spectra';
-end
-
-MFH.UserData.([DataType,'FilePath']) = FullPath;
-MFH.UserData.([DataType,'FileNumel']) = numel(FullPath);
-MFH.UserData.(['Disp',DataType,'FilePath']).String = strjoin(FileName,',');
+mfigobj.Data.([DataType,'FilePath']) = FullPath;
+mfigobj.Data.([DataType,'FileNumel']) = numel(FullPath);
+mfigobj.Graphical.(['Disp',DataType,'FilePath']).String = strjoin(FileName,' - ');
 drawnow
-StopWait(MFH);
+mfigobj.StopWait;
 end
 
