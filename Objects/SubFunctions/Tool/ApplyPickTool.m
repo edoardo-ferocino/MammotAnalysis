@@ -10,6 +10,8 @@ for iobj = 1:nobjs
             message = PickCurveOnImage(mtoolactvobj);
         case 'spectra'
             message = PickSpectraOnImage(mtoolactvobj);
+        case 'info'
+            message = PickInfoOnImage(mtoolactvobj,toolname(2:end));
     end
     if dosetstatus==true
         mtoolactvobj.Status.(completetoolname) = 1;

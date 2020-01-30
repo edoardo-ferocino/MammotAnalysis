@@ -55,6 +55,8 @@ classdef mtool < handle
                     ApplyHistoryTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
                 case 'compare'
                     ApplyCompareTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
+                case 'gate'
+                    ApplyGateTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
             end
             notify(mtoolobjs(1).Parent,'AxesSelection');
         end

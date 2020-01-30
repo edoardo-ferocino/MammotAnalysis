@@ -12,7 +12,8 @@ else
     Category = 'Spectral';
 end
 mfigobj = mfigure('Name',FigureName,'Category',Category,'WindowState','maximized');
-mfigobj.ScaleFactor = 2;
+mfigobj.ScaleFactor = 2; % to improve
+mfigobj.Data.Fit = Fit;
 if numel(Page)>1
     nsub(2) = 2;
     nsub(1) = numel(Page);
@@ -44,23 +45,4 @@ end
 delete(subH((numel(Fit.Params)-2)*numel(Page)+1:end));
 mfigobj.AddAxesToFigure;
 warning('on','MATLAB:table:ModifiedVarnames');
-
-return
-
-for ifigs = 1:numel(FH)
-    FH(ifigs).UserData.InfoData.Name = {Filters.Name};
-    FH(ifigs).UserData.InfoData.Value = {Filters.ActualValue};
-    FH(ifigs).UserData.FitData = FitData;
-    FH(ifigs).UserData.Filters = Filters;
-    FH(ifigs).UserData.FitFilePath = FigFilterHandle.UserData.FitFilePath;
-    if strcmpi(Filters(1).FitType,'OptProps')
-        if isempty(findobj(FH(ifigs),'type','pushbutton','string','2-step fit'))
-            TwoStepFitTypeH=CreatePopUpMenu(FH(ifigs),'String',{'LSQNONNEG','LSQLIN','BACKSLASH'},'Units','Normalized',...
-                'Position',[0.05 0 0.05 0.05]);
-            CreatePushButton(FH(ifigs),'String','2-step fit','Units','Normalized',...
-                'Position',[0 0 0.05 0.05],'CallBack',{@Perform2StepFit,FH(ifigs),TwoStepFitTypeH,MFH});
-        end
-    end
-end
-
 end

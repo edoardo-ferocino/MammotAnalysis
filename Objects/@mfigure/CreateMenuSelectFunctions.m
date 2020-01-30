@@ -23,9 +23,4 @@ for im = 1:mfigobj.nSubMenu
         mfigobj.SubMenu(im).MenuSelectedFcn = @mfigobj.Exit;
     end
 end
-for im = 1:mfigobj.nMainMenu
-    if contains(mfigobj.GetToolName(mfigobj.MainMenu(im)),'mainpanel','IgnoreCase',true)
-       % mfigobj.MainMenu(im).MenuSelectedFcn = @mfigobj.ShowMainPanel;
-    end
-end
 end

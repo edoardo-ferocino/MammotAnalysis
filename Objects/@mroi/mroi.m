@@ -6,7 +6,7 @@ classdef mroi < handle
     properties
         RoiValues;          %roi stats
         CopiedRoi=false;       %roi copied
-        Name = char.empty;  % Name of the Roi
+        Name;               % Name of the Roi
     end
     properties (Dependent)
         Selected;           % true if roi is selected
@@ -28,6 +28,7 @@ classdef mroi < handle
             maxesobj = mtoolobj.Axes;
             axh=maxesobj.axes;
             if strcmpi(shape,'entireimage')
+                mroiobj.Name = 'Entire image';
                 shape = 'Rectangle';
                 shape2copy.Position = [0.5 0.5 size(maxesobj.ImageData,2) size(maxesobj.ImageData,1)];
             end
@@ -38,6 +39,8 @@ classdef mroi < handle
             if strcmpi(type,'border')
                 Shape.Color = 'blue';
                 Shape.StripeColor = 'yellow';
+            elseif strcmpi(type,'gate')
+                Shape.Color = 'magenta';
             end
             Shape.SelectedColor = 'red';
             if all(Shape.Color == Shape.SelectedColor)
@@ -60,6 +63,9 @@ classdef mroi < handle
             addlistener(Shape,'ObjectBeingDestroyed',@(src,event)mroiobj.CleanToolRoiState(src,event,maxesobj));
             mroiobj.Shape = Shape;
             mroiobj.Type = type;
+            if strcmpi(mroiobj.Name,'Entire image')
+               uistack(Shape,'bottom');
+            end
         end
     end
     methods (Access = private)

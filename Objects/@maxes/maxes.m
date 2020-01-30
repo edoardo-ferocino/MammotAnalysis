@@ -86,6 +86,7 @@ classdef maxes < handle
             maxesobj.History.Roi = [];
             addlistener(maxesobj,'ToolApplied',@maxesobj.UpdateHistory);
             set(maxesobj.Image,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
+            set(maxesobj.axes,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
             maxesobj.Tool = mtool(maxesobj,maxesobj.Parent);
         end
     end

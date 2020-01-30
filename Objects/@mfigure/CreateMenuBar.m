@@ -41,17 +41,19 @@ if ~strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
     uimenu(rsmh,'Text','&Rectangle','Tag',[rsmh.Tag mfigobj.spacer 'Rectangle'],'Accelerator','r');
     uimenu(rsmh,'Text','&FreeHand','Tag',[rsmh.Tag mfigobj.spacer 'Freehand']);
     uimenu(rsmh,'Text','&Circle','Tag',[rsmh.Tag mfigobj.spacer 'Circle']);
-    uimenu(rsmh,'Text','&Entire image','Tag',[rsmh.Tag mfigobj.spacer 'EntireImage']);
+    uimenu(rsmh,'Text','&Entire image','Tag',[rsmh.Tag mfigobj.spacer 'EntireImage'],'Accelerator','i');
     uimenu(rmh,'Text','&Copy','Tag',[rmh.Tag mfigobj.spacer 'Copy'],'Accelerator','c');
     uimenu(rmh,'Text','&Paste','Tag',[rmh.Tag mfigobj.spacer 'Paste'],'Accelerator','v');
     uimenu(rmh,'Text','&Delete','Tag',[rmh.Tag mfigobj.spacer 'Delete']);
     nrmh=uimenu(rmh,'Text','&Name','Tag',[rmh.Tag mfigobj.spacer 'Name']);
     uimenu(nrmh,'Text','&Lesion','Tag',[nrmh.Tag mfigobj.spacer 'Lesion']);
     uimenu(nrmh,'Text','&Background','Tag',[nrmh.Tag mfigobj.spacer 'Background']);
+    uimenu(nrmh,'Text','&External','Tag',[nrmh.Tag mfigobj.spacer 'External']);
+    uimenu(nrmh,'Text','&Internal','Tag',[nrmh.Tag mfigobj.spacer 'Internal']);
     uimenu(nrmh,'Text','&Other','Tag',[nrmh.Tag mfigobj.spacer 'Other']);
     uimenu(rmh,'Text','&Show','Tag',[rmh.Tag mfigobj.spacer 'Show'],'Accelerator','q');
     uimenu(rmh,'Text','&Move together','Tag',[rmh.Tag mfigobj.spacer 'movetogether']);
-%     uimenu(rmh,'Text','&Interrupt move together','Tag',[rmh.Tag mfigobj.spacer 'stopmovetogether']);
+    %     uimenu(rmh,'Text','&Interrupt move together','Tag',[rmh.Tag mfigobj.spacer 'stopmovetogether']);
     %% Border tools
     bmh=uimenu(mfigobj.Figure,'Text','Define &border','Tag',[mfigobj.Tag mfigobj.spacer 'Border']);
     sbmh=uimenu(bmh,'Text','&Shape','Tag',[bmh.Tag mfigobj.spacer 'Shape']);
@@ -79,6 +81,16 @@ if ~strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
     poimh=uimenu(mfigobj.Figure,'Text','Pick on &Image','Tag',[mfigobj.Tag mfigobj.spacer 'PickOnImage']);
     uimenu(poimh,'Text','&Curve','Tag',[poimh.Tag mfigobj.spacer 'Curve']);
     uimenu(poimh,'Text','&Spectra','Tag',[poimh.Tag mfigobj.spacer 'Spectra']);
+    poiimh=uimenu(poimh,'Text','&Info','Tag',[poimh.Tag mfigobj.spacer 'Info']);
+    uimenu(poiimh,'Text','&Activated','Tag',[poiimh.Tag mfigobj.spacer 'Activated']);
+    %% Gate tools
+    gmh=uimenu(mfigobj.Figure,'Text','&Gate tools','Tag',[mfigobj.Tag mfigobj.spacer 'Gate'],'Accelerator','g');
+    gsrmh=uimenu(gmh,'Text','&Select Reference','Tag',[gmh.Tag mfigobj.spacer 'Reference']);
+    gssrmh=uimenu(gsrmh,'Text','&Shape','Tag',[gsrmh.Tag mfigobj.spacer 'Shape']);
+    uimenu(gssrmh,'Text','&Rectangle','Tag',[gssrmh.Tag mfigobj.spacer 'Rectangle']);
+    uimenu(gssrmh,'Text','&FreeHand','Tag',[gssrmh.Tag mfigobj.spacer 'Freehand']);
+    uimenu(gssrmh,'Text','&Circle','Tag',[gssrmh.Tag mfigobj.spacer 'Circle']);
+    uimenu(gsrmh,'Text','&Point','Tag',[gsrmh.Tag mfigobj.spacer 'Point']);
     %% Separator
     uimenu(mfigobj.Figure,'Text','|','Tag',[mfigobj.Tag mfigobj.spacer 'Separator'],'Enable','off');
 end

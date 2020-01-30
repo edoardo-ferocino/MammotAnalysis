@@ -170,7 +170,7 @@ classdef mfigure < handle
         end
         function naxes=get.nAxes(mfigobj)
             % Get the number of maxes objs
-            naxes=numel(findobj(mfigobj.Figure,'type','axes'));
+            naxes=numel(findobj(mfigobj.Figure,'type','image'));
         end
         function ntools=get.nTool(mfigobj)
             % Get the number of mtool objs
@@ -207,8 +207,8 @@ classdef mfigure < handle
         function SetFigureInvisible(mfigobj,~,~)
             mfigobj.Figure.Visible = 'off';
         end
-        [completetoolname,varargout] = GetToolName(mfigobj,menuobj);
         ToolSelection(mfigobj,menuobj,event);  % mixed methods
+        [completetoolname,varargout] = GetToolName(mfigobj,menuobj);
     end
     methods (Hidden = true)
         % Methods inherithed by children

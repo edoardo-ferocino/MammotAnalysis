@@ -1,26 +1,22 @@
-function message = ApplyRoiTool(mtoolobj,completetoolname,toolname,shape2copy)
-if ~exist('shape2copy','var')
-    shape2copy = [];
-end
+function message = ApplyGateTool(mtoolobj,completetoolname,toolname)
 nobjs = numel(mtoolobj);
 dosetstatus = false;
 dosethistory = true;
-type = 'roi';
-if contains(completetoolname,'border')
-    type = 'border';
-elseif contains(completetoolname,'gate')
-    type = 'gate';
+allparents = unique(mtoolobj.Parent);
+if numel(allparents)>1
+    DisplayError('The selected axes does not apply','Select an axes of a "Total" image');
+    return;
+elseif ~strcmpi(allparents.Category,'Counts')
+    DisplayError('The selected axes does not apply','Select an axes of a "Total" image');
+    return;
 end
 for iobj = 1:nobjs
     maxesactvobj = mtoolobj(iobj).Axes;
     mtoolactvobj = mtoolobj(iobj);
     switch toolname{1}
-        case 'shape'
-            message = ApplyShape(mtoolactvobj,toolname{2},type,shape2copy);
-            if nobjs>1 && iobj == 1
-                shape2copy = mtoolactvobj.Roi(end).Shape;
-            end
-        case 'copy'
+        case 'reference'
+            message = SelectAndApplyRefence(mtoolactvobj,toolname(2:end),nobjs,iobj);
+       case 'apply'
             message = CopyRoi(mtoolactvobj);
         case 'paste'
             [message,allcopiedroiobjs] = PasteRoi(mtoolactvobj);

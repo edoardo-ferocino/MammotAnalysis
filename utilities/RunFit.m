@@ -37,6 +37,7 @@ for ipage = 1:npages
         end
     end
     rows = all(rows,2);
+    Fit.ActualRows{ipage} = rows;
     Page{ipage} = Fit.Data(rows,cols);
 end
 if npages >1

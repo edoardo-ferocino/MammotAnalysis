@@ -7,7 +7,11 @@ message = 'Profile applied';
 end
 function output_txt=ProfileOnGraph(datacursorobj,~,maxesobj,orientation)
 pos = datacursorobj.Position; cpos = pos(1); rpos = pos(2);
-mfigobj=mfigure('Name',['Profile ', orientation, ' of ',maxesobj.Name,'. ',maxesobj.Parent.Name],'Category','Profile');
+MP = get(0, 'MonitorPositions');
+if size(MP, 1) == 1  % Single monitor
+    maxesobj.Parent.Figure.WindowState = 'normal';
+end
+mfigure('Name',['Profile ', orientation, ' of ',maxesobj.Name,'. ',maxesobj.Parent.Name],'Category','Profile');
 Data = maxesobj.ImageData;
 [numr,numc]=size(Data);
 output_txt = [...
@@ -23,5 +27,5 @@ else
     xline(maxesobj.axes,cpos,'Color','red');
 end
 ylim(GetPercentile(Data,[maxesobj.LowPercentile maxesobj.HighPercentile]))
-%maxesobj.Parent.Show
+maxesobj.Parent.Show
 end

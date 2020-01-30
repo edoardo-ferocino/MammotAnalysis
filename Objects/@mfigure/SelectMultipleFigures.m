@@ -1,4 +1,4 @@
-function figobj = SelectMultipleFigures(mfigobj,~,~,operation)
+function treemfigobj = SelectMultipleFigures(mfigobj,~,~,operation)
 % Open multiple figure selection tool
 allmfigobjs=mfigobj.GetAllFigs('all');
 treemfigobj = mfigure('Name','Multiple figure selection','Tag','FigureSelection','uifigure','true','Category','Selection');
@@ -21,8 +21,10 @@ end
 treeh.SelectionChangedFcn = {@GetSelection,allmfigobjs,operation};
 dbh=uibutton(treemfigobj.Figure,'Position',[treeh.Position(1) treeh.Position(2)+treeh.Position(4) 60 22] ...
     ,'Text','Deselect','ButtonPushedFcn',{@Deselect,allmfigobjs,treeh,operation});
-uibutton(treemfigobj.Figure,'Position',[treeh.Position(1)+dbh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
+obh=uibutton(treemfigobj.Figure,'Position',[treeh.Position(1)+dbh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
     ,'Text','Ok','ButtonPushedFcn',@OkAndClose);
+uibutton(treemfigobj.Figure,'Position',[treeh.Position(1)+obh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
+    ,'Text','Exit','ButtonPushedFcn',@Exit);
 delete(treeh.Children);
 movegui(treemfigobj.Figure,'center')
 allcategories = arrayfun(@(iaf)allmfigobjs(iaf).Category,1:numel(allmfigobjs),'UniformOutput',false);
@@ -35,7 +37,6 @@ end
 expand(treeh,'all');
 pause(0.5);
 drawnow
-figobj = treemfigobj;
 end
 function GetSelection(treeh,event,allmfigobjs,operation)
 actnode = setdiff(event.SelectedNodes,event.PreviousSelectedNodes);
@@ -68,5 +69,10 @@ arrayfun(@(ifs)SetSelectToValue(allmfigobjs(ifs),false,operation),1:numel(allmfi
 treeh.SelectedNodes = [];
 end
 function OkAndClose(treeh,~)
+treeh.Parent.Data.ExitStatus = 'Ok';
+close(treeh.Parent);
+end
+function Exit(treeh,~)
+treeh.Parent.Data.ExitStatus = 'Exit';
 close(treeh.Parent);
 end
