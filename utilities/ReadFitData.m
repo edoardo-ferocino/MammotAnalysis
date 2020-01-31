@@ -36,6 +36,8 @@ for infile = 1:MPOBJ.Data.FitFileNumel
                 end
             elseif ~isempty(regexpi(cats{1},'CC|OB','match'))
                 FitData.Properties.VariableNames(ic) = {'View'};
+            elseif ~isempty(regexpi(cats{1},'Patient','match'))
+                FitData.Properties.VariableNames(ic) = {'Patient'};
             end
         elseif strcmpi(FitData.Properties.VariableUnits{ic},'double')
             if isequal(cats,MPOBJ.Wavelengths)
@@ -91,6 +93,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     XColID = find(strcmpi(ColumnNames,'X'));
     FitData(:,XColID).Variables = flip(FitData(:,XColID).Variables);
     Fit.Params = Params;Fit.Type = Type;Fit.Filters = Filters;Fit.Data = FitData;
+    Fit.DataFilePath = MPOBJ.Data.FitFilePath{infile};
     SetFitFilters(Fit,MPOBJ.Data.FitFilePath{infile});
 end
 MPOBJ.StopWait;

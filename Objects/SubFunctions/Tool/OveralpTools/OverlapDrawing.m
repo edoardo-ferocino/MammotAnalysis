@@ -1,7 +1,7 @@
 function Overlap = OverlapDrawing(mtoolobj,Overlap)
 PixelResolution=5;
 if isempty(Overlap)
-    [FilePath,FileName,~] = fileparts(mtoolobj.Parent.Data.DatFilePath);
+    [FilePath,FileName,~] = fileparts(mtoolobj.Parent.Data.DataFilePath);
     FullPathPicture = [fullfile(FilePath,'Scan',FileName) '.png'];
     if ~isfile(FullPathPicture)
         [FileName,FilePath,FilterIndex]=uigetfilecustom({'*.png','Scan'});
@@ -24,7 +24,7 @@ if isempty(Overlap)
     % open image of the breast and interpolate to PixelResoltution
 end
 TName = [tempname,'.tiff'];
-TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DatFilePath,mtoolobj.Axes.ImageData);
+TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DataFilePath,mtoolobj.Axes.ImageData);
 imwrite(uint8((255)*mat2gray(mtoolobj.Axes.ImageData,mtoolobj.Axes.CLim)), TName);
 BreastIm = imread(TName);
 delete(TName);
