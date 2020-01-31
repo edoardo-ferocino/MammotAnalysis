@@ -10,7 +10,7 @@ switch toolname{1}
         mselectfigobj = mtoolobj(1).Parent.SelectMultipleFigures([],[],'select');%here, it selects only one compare figure
         waitfor(mselectfigobj.Figure,'Visible','off');
         allmfigobjs = mselectfigobj.GetAllFigs;
-        ID = regexp(allmfigobjs(allmfigobjs.Selected).Tag,'(\d+)','match');
+        ID = regexpi(allmfigobjs(allmfigobjs.Selected).Tag,'(\d+)','match');
         ID = str2double(ID{1});
 end
 mfigobj=mfigure('Name',['Compare figures ' num2str(ID)],'Tag',['comparefigure',num2str(ID)],'Category','Compare');

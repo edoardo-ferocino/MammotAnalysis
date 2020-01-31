@@ -6,7 +6,7 @@ classdef mroi < handle
     properties
         RoiValues;          %roi stats
         CopiedRoi=false;       %roi copied
-        Name;               % Name of the Roi
+        Name = char.empty;               % Name of the Roi
     end
     properties (Dependent)
         Selected;           % true if roi is selected
@@ -86,6 +86,32 @@ classdef mroi < handle
             Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
             Roi.Max = max(RoiData(:));
             Roi.Min = min(RoiData(:));
+            if isfield(mroiobj.Tool.Parent.Data,'Fit')
+               if ~strcmpi(mroiobj.Tool.Parent.Data.Fit.Type,'spectral')
+                 Roi.Lambda = str2double(cell2mat(regexpi(maxesobj.Name,'(\d)+','match')));
+                 if contains(maxesobj.Name,'\mu_{s}''')
+                     Roi.FitType = 'Mus';
+                 else
+                     Roi.FitType = 'Mua';
+                 end
+               else
+                 Roi.Lambda = double.empty;  
+               end
+               Labels = {'Session' 'Breast' 'View' 'Patient'};
+               for il = 1:numel(Labels)
+                   logicalpos = strcmpi({mroiobj.Tool.Parent.Data.Fit.Filters.Name},Labels(il));
+                   if any(logicalpos)
+                       Roi.(Labels{il})=mroiobj.Tool.Parent.Data.Fit.Filters(logicalpos).Categories{2};
+                   end
+               end
+            else
+               Labels = {'Session' 'Breast' 'View' 'Patient'};
+               for il = 1:numel(Labels)
+                   Roi.(Labels{il}) = char.empty;
+               end
+               Roi.Lambda = double.empty; 
+               Roi.FitType = char.empty;
+            end
             mroiobj.RoiValues = Roi;
             notify(mroiobj,'SyncronousRoiMovement');
         end

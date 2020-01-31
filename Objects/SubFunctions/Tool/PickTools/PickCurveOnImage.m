@@ -33,8 +33,8 @@ end
 mfigobj=mfigure('Name',['Pick curve of ',maxesobj.Name,'. ',maxesobj.Parent.Name],'Category','Pick Curve');
 Data = maxesobj.ImageData;
 PickData = maxesobj.Parent.Data.PickData;
-lambda = regexp(maxesobj.Name,'\lambda\s=*\s(\d)+','tokens');
-channel = regexp(maxesobj.Name,'Channel ([0-9]?)','tokens');
+lambda = regexpi(maxesobj.Name,'\lambda\s=*\s(\d)+','tokens');
+channel = regexpi(maxesobj.Name,'Channel ([0-9]?)','tokens');
 if ~isempty(lambda)
     lambda=lambda{1};lambda=lambda{1};lambda=str2double(lambda);
     PickData = PickData(mfigobj.Wavelengths==lambda).SummedChannelsData;

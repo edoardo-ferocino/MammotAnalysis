@@ -2,7 +2,7 @@ clearvars, close all force
 run('.\utilities\Installer.m');
 MainPanel = mfigure('Tag','MainPanel','Name','Main panel','MenuBar','none','Toolbar','none','NumberTitle','off','WindowState','maximized','Units','normalized','Category','MainPanel');
 MainPanel.Data.MinCountRateTresh = 150000-100000;
-MainPanel.Data.MedianPercentageTreshold = (1-0.10);
+MainPanel.Data.MedianPercentageTreshold = (1-0.05);
 MainPanel.Data.CalcWidthLevel = 0.5;
 MainPanel.Data.BkgFirst = 180;
 MainPanel.Data.BkgLast = 190;

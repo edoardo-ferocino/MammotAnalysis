@@ -55,7 +55,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     elseif any(strcmpi(FitData.Properties.VariableNames,CompNames{1}))
         Type = 'Spectral';
         FitData.HbTot = FitData.Hb+FitData.HbO2;
-        FitData.SO2 = FitData.Hb./FitData.HbTot .* 100;
+        FitData.SO2 = FitData.HbO2./FitData.HbTot .* 100;
         FitData.SO2(isnan(FitData.SO2))=0;
         FitData.Properties.VariableUnits(end-1:end)={'double','double'};
         FitData = movevars(FitData,{'HbTot' 'SO2'},'After','Collagen');

@@ -21,7 +21,7 @@ for iobj = 1:nobjs
     AllData = [AllData;Data]; %#ok<AGROW>
     AllStyles = [AllStyles,styleroi]; %#ok<AGROW>
 end
-th=uitable(showroimfigobj.Figure,'data',rows2vars(AllData),'Position',[0 0 showroimfigobj.Figure.Position(3) 270+20]); 
+th=uitable(showroimfigobj.Figure,'data',rows2vars(AllData),'Position',[0 0 showroimfigobj.Figure.Position(3) 270+130]); 
 th.ColumnWidth = horzcat({100},repelem({100},1,size(th.Data,2))); 
 showroimfigobj.Figure.Position(4) = th.Position(4)+20;
 uibutton(showroimfigobj.Figure,'Position',[0 th.Position(4) 50 20],'Text','Export','ButtonPushedFcn',{@ExportTable,AllData});

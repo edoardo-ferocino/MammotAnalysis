@@ -32,7 +32,7 @@ if size(MP, 1) == 1  % Single monitor
 end
 mfigobj=mfigure('Name',['Pick spectra. ',maxesobj.Parent.Name],'Category','Pick Spectra');
 isspectral = regexpi(maxesobj.Name,'^a|^b|^collagen|^lipid|^water|^hb|^hbo2|^hbtot|^so2');%\lambda\s=*\s(\d)+','tokens');
-isoptprops = regexp(maxesobj.Name,'\\mu_{a}|\\mu_{s}''', 'once');%Channel ([0-9]?)','tokens');
+isoptprops = regexpi(maxesobj.Name,'\\mu_{a}|\\mu_{s}''', 'once');%Channel ([0-9]?)','tokens');
 if ~isempty(isspectral)
     AbsCompNames = {'Hb' 'HbO2' 'Lipid' 'Water' 'Collagen'}';
     CompValues = zeros(size(AbsCompNames));
@@ -57,12 +57,12 @@ elseif ~isempty(isoptprops)
     AbsorptionSpectra = zeros(size(mfigobj.Wavelengths));
     ScatteringSpectra = zeros(size(mfigobj.Wavelengths));
     for ia = 1:maxesobj.Parent.nAxes
-        mua_lambda = regexp(maxesobj.Parent.Axes(ia).Name,'\\mu_{a}, \\lambda = (\d*)', 'tokens');
+        mua_lambda = regexpi(maxesobj.Parent.Axes(ia).Name,'\\mu_{a}, \\lambda = (\d*)', 'tokens');
         if ~isempty(mua_lambda)
             mua_lambda=mua_lambda{1};mua_lambda=mua_lambda{1};mua_lambda=str2double(mua_lambda);
             AbsorptionSpectra(ismember(mfigobj.Wavelengths,mua_lambda))=maxesobj.Parent.Axes(ia).ImageData(rpos,cpos);
         end
-        mus_lambda = regexp(maxesobj.Parent.Axes(ia).Name,'\\mu_{s}'', \\lambda = (\d*)', 'tokens');
+        mus_lambda = regexpi(maxesobj.Parent.Axes(ia).Name,'\\mu_{s}'', \\lambda = (\d*)', 'tokens');
         if ~isempty(mus_lambda)
             mus_lambda=mus_lambda{1};mus_lambda=mus_lambda{1};mus_lambda=str2double(mus_lambda);
             ScatteringSpectra(ismember(mfigobj.Wavelengths,mus_lambda))=maxesobj.Parent.Axes(ia).ImageData(rpos,cpos);
