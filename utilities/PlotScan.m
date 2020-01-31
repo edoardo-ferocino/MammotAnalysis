@@ -3,6 +3,7 @@ if ~isfield(MPOBJ.Data,'DatFilePath')
     DisplayError('No data file','Please load the Data file');
     return
 end
+profile on
 %% StartWait
 MPOBJ.StartWait;
 %% Read data
@@ -155,4 +156,6 @@ end
 MPOBJ.SelectMultipleFigures([],[],'show');
 %% StopWait
 MPOBJ.StopWait;
+profile viewer
+profile off
 end

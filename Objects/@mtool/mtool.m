@@ -84,6 +84,8 @@ classdef mtool < handle
                 case 'history'
                 case 'compare'
                 case 'select'
+                case 'gate'
+                    RemoveGateTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
             end
             notify(mtoolobjs(1).Parent,'AxesSelection');
         end

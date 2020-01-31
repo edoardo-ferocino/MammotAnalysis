@@ -1,6 +1,7 @@
 function ToolSelection(mfigobj,menuobj,~)
 % Respond to menu selection
 allmfigobjs=mfigobj.GetAllFigs;
+if mfigobj.nTool == 0, return, end
 if sum(vertcat(mfigobj.Axes.Selected))==0 && sum(vertcat(allmfigobjs.Selected))==0
     msgbox('Select at least one axes','Selection','help')
     return

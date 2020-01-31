@@ -15,9 +15,12 @@ for iobj = 1:nobjs
     mtoolactvobj = mtoolobj(iobj);
     switch toolname{1}
         case 'reference'
-            message = SelectAndApplyRefence(mtoolactvobj,toolname(2:end),nobjs,iobj);
-       case 'apply'
-            message = CopyRoi(mtoolactvobj);
+            message = SelectReference(mtoolactvobj,toolname(2:end),nobjs,iobj);
+            if strcmpi(toolname{2},'point')
+                dosetstatus = true;
+            end
+        case 'apply'
+            message = ApplyReference(mtoolactvobj);
         case 'paste'
             [message,allcopiedroiobjs] = PasteRoi(mtoolactvobj);
             if iobj==nobjs

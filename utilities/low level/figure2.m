@@ -2,7 +2,9 @@
 function FigHandle = figure2(varargin)
 [figureargs,otherargs]=parseInputs(varargin);
 isuifigure = otherargs.uifigure;
-if any(ishandle(figureargs{1}))||any(isnumeric(figureargs{1})), isuifigure = 0; end
+if ~isempty(figureargs)
+    if any(ishandle(figureargs{1}))||any(isnumeric(figureargs{1})), isuifigure = 0; end
+end
 MP = get(0, 'MonitorPositions');
 if size(MP, 1) == 1  % Single monitor
     if isuifigure
@@ -44,26 +46,28 @@ end
 
 function [figureargs,otherargsstruc]=parseInputs(argin)
 figureargs = cell.empty;
-if ishandle(argin{1})
-  figureargs{numel(figureargs)+1} = argin{1};
-  argin = argin(2:end);
-elseif isnumeric(argin{1})
-  figureargs{numel(figureargs)+1} = argin{1};  
-  argin = argin(2:end);
-end
-tfh=figure('visible','off');
-isprops = cellfun(@(genprop) isprop(tfh,genprop),argin(1:2:numel(argin)-1));
-delete(tfh);
-isprops = repelem(isprops,2);
-nfigargs = numel(argin(isprops));
-nactfigargs = numel(figureargs);
-figureargs(nactfigargs+1:nactfigargs+nfigargs) = argin(isprops);
-otherargs = argin(~isprops);
 fields={'uifigure'};
 val = {false};
 for ifl = 1:numel(fields)
     otherargsstruc.(fields{ifl}) = val{ifl};
 end
+if isempty(argin)
+    return;
+elseif ishandle(argin{1})
+    figureargs{numel(figureargs)+1} = argin{1};
+    argin = argin(2:end);
+elseif isnumeric(argin{1})
+    figureargs{numel(figureargs)+1} = argin{1};
+    argin = argin(2:end);
+end
+tfh={'Position' 'OuterPosition' 'InnerPosition' 'Units' 'Renderer' 'RendererMode' 'Visible' 'Color' 'CloseRequestFcn' 'CurrentAxes' 'CurrentCharacter' 'CurrentObject' 'CurrentPoint' 'SelectionType' 'SizeChangedFcn' 'FileName' 'IntegerHandle' 'NextPlot' 'Alphamap' 'Colormap' 'GraphicsSmoothing' 'WindowButtonDownFcn' 'WindowButtonUpFcn' 'WindowButtonMotionFcn' 'WindowScrollWheelFcn' 'WindowKeyPressFcn' 'WindowKeyReleaseFcn' 'MenuBar' 'ToolBar' 'Pointer' 'PointerShapeCData' 'PointerShapeHotSpot' 'Name' 'NumberTitle' 'Number' 'Children' 'Parent' 'HandleVisibility' 'UIContextMenu' 'ButtonDownFcn' 'BusyAction' 'BeingDeleted' 'Interruptible' 'CreateFcn' 'DeleteFcn' 'Type' 'Tag' 'UserData' 'Clipping' 'Scrollable' 'WindowStyle' 'WindowState' 'DockControls' 'Resize' 'PaperPosition' 'PaperPositionMode' 'PaperSize' 'PaperType' 'PaperUnits' 'InvertHardcopy' 'PaperOrientation' 'KeyPressFcn' 'KeyReleaseFcn'};
+isprops = arrayfun(@(genprop) strcmpi(argin,tfh(genprop)),1:numel(tfh),'UniformOutput',false)';
+isprops = any(cell2mat(isprops));
+isprops(find(isprops == 1)+1)=1;
+nfigargs = numel(argin(isprops));
+nactfigargs = numel(figureargs);
+figureargs(nactfigargs+1:nactfigargs+nfigargs) = argin(isprops);
+otherargs = argin(~isprops);
 for iot = 1:2:numel(otherargs)
     switch lower(otherargs{iot})
         case 'uifigure'

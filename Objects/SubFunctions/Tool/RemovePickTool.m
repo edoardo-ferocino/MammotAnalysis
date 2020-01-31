@@ -6,13 +6,13 @@ for iobj = 1:nobjs
     maxesactvobj = mtoolobj(iobj).Axes;
     mtoolactvobj = mtoolobj(iobj);
     dch=datacursormode(mtoolactvobj.Parent.Figure);
+    dch.Enable = 'off';
     if strcmpi(toolname{1},'info')
        poiimh=mtoolobj.Parent.Menu(arrayfun(@(im) strcmpi(mtoolobj.GetToolName(mtoolobj.Parent.Menu(im)),'pickonimageinfo'),1:mtoolobj.Parent.nMenu));
        for imh=1:numel(poiimh.Children)
            poiimh.Children(imh).Checked = 'off';
        end
     end
-    dch.Enable = 'off';
     delete(findobj(maxesactvobj.axes,'type','constantline'));
     maxesactvobj.Parent.Figure.WindowState = 'maximized';
     if dosetstatus

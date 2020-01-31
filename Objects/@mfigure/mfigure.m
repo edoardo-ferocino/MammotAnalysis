@@ -150,12 +150,12 @@ classdef mfigure < handle
             % Set the selection of figure
             if logical(newdata) == true
                 mfigobj.Figure.Color = mfigobj.SelectedColor;
-                if mfigobj.nAxes
+                if mfigobj.nTool
                     mfigobj.Axes.ToogleSelect('on');
                 end
             else
                 set(mfigobj.Figure,'Color','default');
-                if mfigobj.nAxes
+                if mfigobj.nTool
                     mfigobj.Axes.ToogleSelect('off');
                 end
             end
@@ -170,11 +170,11 @@ classdef mfigure < handle
         end
         function naxes=get.nAxes(mfigobj)
             % Get the number of maxes objs
-            naxes=numel(findobj(mfigobj.Figure,'type','image'));
+            naxes=numel(findobj(mfigobj.Figure,'type','axes'));
         end
         function ntools=get.nTool(mfigobj)
             % Get the number of mtool objs
-            ntools=mfigobj.nAxes;
+            ntools=numel(findobj(mfigobj.Figure,'type','image'));
         end
         ToogleSelect(mfigobj,varargin); %Tool for toogle selection of figure
         function ShowMainPanel(mfigobj,~,~)
@@ -212,7 +212,7 @@ classdef mfigure < handle
     end
     methods (Hidden = true)
         % Methods inherithed by children
-        mfigobj = SelectMultipleFigures(mfigobj,menuobj,event,operation);  % mixed methods
+        mfigobj = SelectMultipleFigures(mfigobj,menuobj,event,operation,figurename);  % mixed methods
         DeselectAll(mfigobj,menuobj,event);  % mixed methods
         function allmfigobjs=GetAllFigs(mfigobj,varargin)
             tag2find = char.empty;

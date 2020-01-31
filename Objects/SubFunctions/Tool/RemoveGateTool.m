@@ -1,4 +1,4 @@
-function RemoveRoiTool(mtoolobj,completetoolname,toolname,varargin)
+function RemoveGateTool(mtoolobj,completetoolname,toolname,varargin)
 nobjs = numel(mtoolobj);
 dosetstatus = true;
 dosethistory = true;
@@ -6,14 +6,10 @@ for iobj = 1:nobjs
     maxesactvobj = mtoolobj(iobj).Axes;
     mtoolactvobj = mtoolobj(iobj);
     switch toolname{1}
-        case 'movetogether'
-            message = RemoveMoveTogether(mtoolactvobj);
-        case 'name'
-            message = RemoveNameRoi(mtoolactvobj);
-            if ~contains(lower(message),'error')
-                dosetstatus = true;
-            else
-                dosetstatus = false;
+        case 'reference'
+            if strcmpi(toolname{2},'point')
+                dch=datacursormode(mtoolactvobj.Parent.Figure);
+                dch.Enable = 'off';
             end
     end
     if dosetstatus

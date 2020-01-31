@@ -4,7 +4,7 @@ if isfield(maxesactvobj.Parent.Data,'TotalReferenceMask')
 else
     mselectfigobj = maxesactvobj.Parent.SelectMultipleFigures([],[],'select');
     waitfor(mselectfigobj.Figure,'Visible','off');
-    if strcmpi(mselectfigobj.Data.ExitStatu,'Exit')
+    if strcmpi(mselectfigobj.Data.ExitStatus,'Exit')
         return;
     end
     allmfigobjs = mselectfigobj.GetAllFigs;

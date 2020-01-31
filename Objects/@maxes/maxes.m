@@ -35,6 +35,10 @@ classdef maxes < handle
             maxesobj.Parent = mfigobj;
             maxesobj.axes = axesh;
             maxesobj.Image = findobj(axesh,'type','image');
+            if isempty(maxesobj.Image)
+                maxesobj.Tool = mtool(maxesobj,maxesobj.Parent);
+                return;
+            end
             maxesobj.CLim = GetPercentile(maxesobj.ImageData,[maxesobj.LowPercentile maxesobj.HighPercentile]);
             maxesobj.OriginalCLim = maxesobj.CLim;
             location = 'eastoutside';
@@ -67,18 +71,18 @@ classdef maxes < handle
                 colorbartitle = 'cm^{-1}';
             end
             maxesobj.Colorbar.Title.String = colorbartitle;
-            maxesobj.axes.YDir = 'reverse';
-            axis(maxesobj.axes,'image');
-            colormap(maxesobj.axes,'pink');
-            shading(maxesobj.axes,'interp');
-            drawnow
-            if ~isempty(maxesobj.axes.XTickLabel)
-                drawnow
-                maxesobj.axes.XTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.XTickLabel)*maxesobj.Parent.ScaleFactor));
+            axesh.YDir = 'reverse';
+            axis(axesh,'image');
+            colormap(axesh,'pink');
+            shading(axesh,'interp');
+%             drawnow
+            if ~isempty(axesh.XTickLabel)
+                axesh.XTickLabel=cellstr(num2str(axesh.XTick'.*maxesobj.Parent.ScaleFactor));
+%                 maxesobj.axes.XTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.XTickLabel)*maxesobj.Parent.ScaleFactor));
             end
             if ~isempty(maxesobj.axes.YTickLabel)
-                drawnow
-                maxesobj.axes.YTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.YTickLabel)*maxesobj.Parent.ScaleFactor));
+                axesh.YTickLabel=cellstr(num2str(axesh.YTick'.*maxesobj.Parent.ScaleFactor));
+%                 maxesobj.axes.YTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.YTickLabel)*maxesobj.Parent.ScaleFactor));
             end
             maxesobj.History.Data = maxesobj.ImageData;
             maxesobj.History.Message = {'Original Data'};

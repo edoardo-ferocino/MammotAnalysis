@@ -12,13 +12,13 @@ for iobj = 1:nobjs
                selectedshapes(is).Label = char.empty; 
             end
     end
-    history.data = maxesactvobj.ImageData;
-    history.toolname = completetoolname;
-    history.message = ['Removed ', toolname{1}, ' to colorbar'];
     if dosetstatus == true
         mtoolactvobj.Status.(completetoolname) = 0;
     end
     if dosethistory == true
+        history.data = maxesactvobj.ImageData;
+        history.toolname = completetoolname;
+        history.message = ['Removed ', toolname{1}, ' to colorbar'];
         notify(maxesactvobj,'ToolApplied',historyeventdata(history));
     end
 end
