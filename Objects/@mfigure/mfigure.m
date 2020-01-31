@@ -33,6 +33,7 @@ classdef mfigure < handle
         MainMenu;                 %main menus handle
         SubMenu;                  %submenus handle
         ScaleFactor = 1;
+        OtherFiguresSelectedH;
     end
     properties (Dependent)
         Selected;               %figure is selected for multiple apply of tools (or shortcut for selecting all axes of a figure)
@@ -96,6 +97,9 @@ classdef mfigure < handle
             if strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
                 mfigobj.CreateMenuBar;
                 mfigobj.CreateMenuSelectFunctions;
+            end
+            if isempty(mfigobj.OtherFiguresSelectedH)
+                mfigobj.OtherFiguresSelectedH=uipanel(mfigobj.Figure,'BorderType','none','Position',[0.97 0.97 0.03 0.03]);
             end
         end
         function Save(mfigobj)

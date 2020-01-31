@@ -11,7 +11,6 @@ else
     if ~isfield(allmfigobjs(vertcat(allmfigobjs.Selected)).Data,'TotalReferenceMask')
         [~,TotalReferenceMask]=MedianMask(datain,maxesactvobj);
         allmfigobjs(vertcat(allmfigobjs.Selected)).Selected = false;
-        allmfigobjs(vertcat(allmfigobjs.Selected)).DeselectAll;
     else
         TotalReferenceMask=allmfigobjs(vertcat(allmfigobjs.Selected)).Data.TotalReferenceMask;
     end

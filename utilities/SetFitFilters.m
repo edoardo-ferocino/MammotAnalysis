@@ -14,4 +14,5 @@ for ifil = 1:numel(Filters)
         [0.4 0.3 0.3 0.5],'String',Filters(ifil).Name,'HorizontalAlignment','left');
 end
 uicontrol(mfigobj.Figure,'Style','pushbutton','Units','Normalized','Position',[0.92 0.92 0.08 0.08],'String','Run','Callback',{@RunFit,poph,Fit,mfigobj});
+mfigobj.Show('off');
 end

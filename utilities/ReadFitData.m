@@ -96,6 +96,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     Fit.DataFilePath = MPOBJ.Data.FitFilePath{infile};
     SetFitFilters(Fit,MPOBJ.Data.FitFilePath{infile});
 end
+MPOBJ.SelectMultipleFigures([],[],'show');
 MPOBJ.StopWait;
 end
 

@@ -12,6 +12,7 @@ switch toolname{1}
         allmfigobjs = mselectfigobj.GetAllFigs;
         ID = regexpi(allmfigobjs(allmfigobjs.Selected).Tag,'(\d+)','match');
         ID = str2double(ID{1});
+        allmfigobjs(allmfigobjs.Selected).Selected = false;
 end
 mfigobj=mfigure('Name',['Compare figures ' num2str(ID)],'Tag',['comparefigure',num2str(ID)],'Category','Compare');
 tlh=findobj(mfigobj.Figure,'Type','tiledlayout');

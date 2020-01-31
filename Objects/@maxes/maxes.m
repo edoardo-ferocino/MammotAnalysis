@@ -97,9 +97,11 @@ classdef maxes < handle
     methods
         ToogleSelect(maxesobj,varargin);            % axes selection
         function set.ImageData(maxesobj,newdata)    % set image data
+            if isempty(maxesobj.Image),out = false; return; end
             maxesobj.Image.CData = newdata;
         end
         function out = get.ImageData(maxesobj)      % get image data
+            if isempty(maxesobj.Image),out = false; return; end
             out = maxesobj.Image.CData;
         end
         function set.CLim(maxesobj,newdata)         % set colorbar limits
@@ -109,9 +111,11 @@ classdef maxes < handle
             out = maxesobj.axes.CLim;
         end
         function set.Selected(maxesobj,newdata)     % set selection of axes
+            if isempty(maxesobj.Image),out = false; return; end
             maxesobj.ToogleSelect(logic2onoff(newdata));
         end
         function out = get.Selected(maxesobj)       % get selection of axes
+            if isempty(maxesobj.Image),out = false; return; end
             out = onoff2logic(maxesobj.Image.Selected);
         end
         function set.Name(maxesobj,newdata)
