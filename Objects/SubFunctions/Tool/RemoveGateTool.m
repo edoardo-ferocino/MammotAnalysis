@@ -10,7 +10,11 @@ for iobj = 1:nobjs
             if strcmpi(toolname{2},'point')
                 dch=datacursormode(mtoolactvobj.Parent.Figure);
                 dch.Enable = 'off';
+                message = 'Point Reference choice disabled';
             end
+        case 'navigate'
+            delete(mtoolactvobj.Axes.axes.UserData.Graphicals);
+            message = 'Navigate tools deleted';
     end
     if dosetstatus
         mtoolactvobj.Status.(completetoolname) = 0;

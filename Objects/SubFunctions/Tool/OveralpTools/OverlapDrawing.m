@@ -22,7 +22,7 @@ if isempty(Overlap)
     % select the reference center in the scanner image (interp1)
     [XC1,YC1]=GetCenter(InterpolatedScannedImage);
     % open image of the breast and interpolate to PixelResoltution
-    TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DatFilePath,mtoolobj.Axes.ImageData);
+    TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DataFilePath,mtoolobj.Axes.ImageData);
 end
 TName = [tempname,'.tiff'];
 imwrite(uint8((255)*mat2gray(mtoolobj.Axes.ImageData,mtoolobj.Axes.CLim)), TName);

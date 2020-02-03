@@ -146,7 +146,7 @@ for infile = 1:MPOBJ.Data.DatFileNumel
         %     mfigobjs(ifigs).Data.InfoData.Value = CH.LabelContent;
         %     mfigobjs(ifigs).Data.TrsSet = TrsSet;
         mfigobjs(ifigs).Data.TotalReferenceMask = TotalReferenceMask;
-        %     mfigobjs(ifigs).Data.FileName = FileName;
+        mfigobjs(ifigs).Data.FileName = FileName;
         mfigobjs(ifigs).ScaleFactor = abs(CH.LoopDelta(1));
         mfigobjs(ifigs).AddAxesToFigure;
         mfigobjs(ifigs).Show('off');

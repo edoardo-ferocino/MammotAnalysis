@@ -1,9 +1,9 @@
 function SetFitFilters(Fit,FitFilePath)
-[~,name,~]=fileparts(FitFilePath);
-FigFilterName = ['Select filters - ' name];
+[~,FileName,~]=fileparts(FitFilePath);
+FigFilterName = ['Select filters - ' FileName];
 mfigobj = mfigure('Name',FigFilterName,'NumberTitle','off','Toolbar','None','MenuBar','none','Category','Filters');
-clf(mfigobj.Figure);
-Fit.FileName = name;
+delete(setdiff(findobj(mfigobj.Figure,'type','uicontrol','-or','type','uipanel'),mfigobj.OtherFiguresSelectedH));
+Fit.FileName = FileName;
 Filters = Fit.Filters;
 poph=matlab.ui.control.UIControl.empty(numel(Filters),0);
 for ifil = 1:numel(Filters)

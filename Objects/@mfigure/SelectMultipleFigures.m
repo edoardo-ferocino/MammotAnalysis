@@ -29,7 +29,7 @@ uibutton(treemfigobj.Figure,'Position',[obh.Position(1)+obh.Position(3) treeh.Po
 end
 treeh.SelectionChangedFcn = {@GetSelection,allmfigobjs,operation};
 dbh=findobj(treemfigobj.Figure,'type','uibutton','Tag','Deselect');
-dbh.ButtonPushedFcn = {@Deselct,allmfigobjs,treeh,operation};
+dbh.ButtonPushedFcn = {@Deselect,allmfigobjs,treeh,operation};
 delete(treeh.Children);
 allcategories = arrayfun(@(iaf)allmfigobjs(iaf).Category,1:numel(allmfigobjs),'UniformOutput',false);
 singlecategories = unique(allcategories);

@@ -14,5 +14,6 @@ for is = 1:numel(selectedrois)
     end
     mtoolobj.Roi(selectedrois(is)).Selected = false;
 end
+mtoolobj.Axes.CLim = GetPercentile(mtoolobj.Axes.ImageData,[mtoolobj.Axes.LowPercentile mtoolobj.Axes.HighPercentile]);
 message = ['Delete tool applied to ROI ',IDselectedrois];
 end

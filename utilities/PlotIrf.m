@@ -85,7 +85,7 @@ for infile = 1:MPOBJ.Data.IrfFileNumel
         %     mfigobjs(ifigs).Data.InfoData.Name = CH.LabelName;
         %     mfigobjs(ifigs).Data.InfoData.Value = CH.LabelContent;
         %     mfigobjs(ifigs).Data.TrsSet = TrsSet;
-        %     mfigobjs(ifigs).Data.FileName = FileName;
+        mfigobjs(ifigs).Data.FileName = FileName;
         mfigobjs(ifigs).ScaleFactor = abs(CH.LoopDelta(1));
         mfigobjs(ifigs).AddAxesToFigure;
         mfigobjs(ifigs).Show('off');

@@ -23,6 +23,7 @@ for iobj = 1:nobjs
             data = MedianMask(data,maxesactvobj);
     end
     maxesactvobj.ImageData = data;
+    maxesactvobj.CLim = GetPercentile(maxesactvobj.ImageData,[maxesactvobj.LowPercentile maxesactvobj.HighPercentile]);
     if dosetstatus == true
         mtoolactvobj.Status.(completetoolname) = 1;
     end

@@ -92,6 +92,7 @@ if ~strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
     uimenu(gssrmh,'Text','&Circle','Tag',[gssrmh.Tag mfigobj.spacer 'Circle']);
     uimenu(gsrmh,'Text','&Point','Tag',[gsrmh.Tag mfigobj.spacer 'Point']);
     uimenu(gmh,'Text','&Apply Reference','Tag',[gmh.Tag mfigobj.spacer 'Apply']);
+    uimenu(gmh,'Text','&Navigate','Tag',[gmh.Tag mfigobj.spacer 'Navigate']);
     %% Separator
     uimenu(mfigobj.Figure,'Text','|','Tag',[mfigobj.Tag mfigobj.spacer 'Separator'],'Enable','off');
 end

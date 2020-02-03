@@ -10,9 +10,9 @@ switch toolname{1}
         mselectfigobj = mtoolobj(1).Parent.SelectMultipleFigures([],[],'select');%here, it selects only one compare figure
         waitfor(mselectfigobj.Figure,'Visible','off');
         allmfigobjs = mselectfigobj.GetAllFigs;
-        ID = regexpi(allmfigobjs(allmfigobjs.Selected).Tag,'(\d+)','match');
+        ID = regexpi(allmfigobjs(vertcat(allmfigobjs.Selected)).Tag,'(\d+)','match');
         ID = str2double(ID{1});
-        allmfigobjs(allmfigobjs.Selected).Selected = false;
+        allmfigobjs(vertcat(allmfigobjs.Selected)).Selected = false;
 end
 mfigobj=mfigure('Name',['Compare figures ' num2str(ID)],'Tag',['comparefigure',num2str(ID)],'Category','Compare');
 tlh=findobj(mfigobj.Figure,'Type','tiledlayout');
@@ -20,12 +20,16 @@ if isempty(tlh)
     tlh=tiledlayout(mfigobj.Figure,'flow','Padding','none','TileSpacing','none');
 end
 nobjs = numel(mtoolobj);
+if mfigobj.nTool~=0
+    delete(vertcat(mfigobj.Axes.Colorbar));
+end
 for iobj = 1:nobjs
     nexttile(tlh);
     maxesactvobj = mtoolobj(iobj).Axes;
     mtoolactvobj=mtoolobj(iobj);
     %
     imagesc(maxesactvobj.ImageData);
+    title(maxesactvobj.Name);
     %
     if dosetstatus == true
         mtoolactvobj.Status.(completetoolname) = 1;

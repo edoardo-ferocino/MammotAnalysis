@@ -12,6 +12,8 @@ for iobj = 1:nobjs
             message = PickSpectraOnImage(mtoolactvobj);
         case 'info'
             message = PickInfoOnImage(mtoolactvobj,toolname(2:end));
+        case 'gates'
+            message = PickGatesOnImage(mtoolactvobj);
     end
     if dosetstatus==true
         mtoolactvobj.Status.(completetoolname) = 1;

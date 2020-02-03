@@ -44,11 +44,15 @@ classdef maxes < handle
             location = 'eastoutside';
             if strcmpi(axesh.Parent.Type,'tiledlayout')
                 tlh = axesh.Parent;
-                if tlh.GridSize(1)>1
+                if tlh.GridSize(1)<=tlh.GridSize(2)
                     location = 'southoutside';
                 end
             end
-            maxesobj.Colorbar = colorbar(axesh,'Location',location);
+            if isempty(maxesobj.Colorbar)
+                maxesobj.Colorbar = colorbar(axesh,'Location',location);
+            else
+                maxesobj.Colorbar.Location = location;
+            end
             switch maxesobj.Name
                 case 'A'
                     colorbartitle = 'cm^{-1}';
@@ -69,6 +73,12 @@ classdef maxes < handle
             elseif contains(maxesobj.Name,'scattering','IgnoreCase',true)
                 maxesobj.Name = regexprep(maxesobj.Name,'scattering','\\mu_{s}''','ignorecase');
                 colorbartitle = 'cm^{-1}';
+            elseif contains(maxesobj.Name,'\mu_{a}','IgnoreCase',true)
+                colorbartitle = 'cm^{-1}';
+            elseif contains(maxesobj.Name,'\mu_{s}''','IgnoreCase',true)
+                colorbartitle = 'cm^{-1}';
+            elseif contains(maxesobj.Name,'gate','IgnoreCase',true)
+                colorbartitle = 'counts';
             end
             maxesobj.Colorbar.Title.String = colorbartitle;
             axesh.YDir = 'reverse';
@@ -97,7 +107,7 @@ classdef maxes < handle
     methods
         ToogleSelect(maxesobj,varargin);            % axes selection
         function set.ImageData(maxesobj,newdata)    % set image data
-            if isempty(maxesobj.Image),out = false; return; end
+            if isempty(maxesobj.Image), return; end
             maxesobj.Image.CData = newdata;
         end
         function out = get.ImageData(maxesobj)      % get image data
@@ -111,7 +121,7 @@ classdef maxes < handle
             out = maxesobj.axes.CLim;
         end
         function set.Selected(maxesobj,newdata)     % set selection of axes
-            if isempty(maxesobj.Image),out = false; return; end
+            if isempty(maxesobj.Image),return; end
             maxesobj.ToogleSelect(logic2onoff(newdata));
         end
         function out = get.Selected(maxesobj)       % get selection of axes

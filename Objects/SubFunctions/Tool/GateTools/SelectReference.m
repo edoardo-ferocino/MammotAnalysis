@@ -1,5 +1,17 @@
 function message = SelectReference(mtoolobj,toolname,nobjs,iobj)
 persistent shape2copy
+allparents = unique(mtoolobj.Parent);
+if numel(allparents)>1
+    DisplayError('The selected axes does not apply','Select an axes of a "Total" image');
+    return;
+elseif ~strcmpi(allparents.Category,'Counts')
+    DisplayError('The selected axes does not apply','Select an axes of a "Total" image');
+    return;
+elseif nobjs>1
+    DisplayError('Too many axes selected','Select only one axes');
+    return;
+end
+
 type = 'gate';
 switch toolname{1}
     case 'shape'

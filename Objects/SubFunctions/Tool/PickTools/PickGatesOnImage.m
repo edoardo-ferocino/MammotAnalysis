@@ -1,9 +1,9 @@
-function message = PickSpectraOnImage(mtoolobj)
+function message = PickGatesOnImage(mtoolobj)
 dch = datacursormode(mtoolobj.Parent.Figure);
 datacursormode on
 dch.DisplayStyle = 'window';
 dch.UpdateFcn = {@PickSpectra,mtoolobj.Parent};
-message = 'Pick Spectra applied';
+message = 'Pick gate applied';
 end
 function output_txt=PickSpectra(datacursorobj,~,mfigobj)
 persistent PreviousParent
@@ -30,9 +30,9 @@ MP = get(0, 'MonitorPositions');
 if size(MP, 1) == 1  % Single monitor
     maxesobj.Parent.Figure.WindowState = 'normal';
 end
-mfigobj=mfigure('Name',['Pick spectra. ',maxesobj.Parent.Name],'Category','Pick Spectra');
-isspectral = regexpi(maxesobj.Name,'^a|^b|^collagen|^lipid|^water|^hb|^hbo2|^hbtot|^so2');%\lambda\s=*\s(\d)+','tokens');
-isoptprops = regexpi(maxesobj.Name,'\\mu_{a}|\\mu_{s}''', 'once');%Channel ([0-9]?)','tokens');
+mfigobj=mfigure('Name',['Pick Gates. ',maxesobj.Parent.Name],'Category','Pick Spectra');
+isspectral = regexpi(maxesobj.Name,'(\d)+.\s(\d)+','tokens');
+isoptprops = regexpi(maxesobj.Name,'\\mu_{a}|\\mu_{s}''', 'once');
 if ~isempty(isspectral)
     AbsCompNames = {'Hb' 'HbO2' 'Lipid' 'Water' 'Collagen'}';
     CompValues = zeros(size(AbsCompNames));

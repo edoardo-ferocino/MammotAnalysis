@@ -49,7 +49,7 @@ for iobj = 1:nobjs
         case 'delete'
             message = DeleteRoi(mtoolactvobj);
         case 'deleteborder'
-            message = DeleteTool(mtoolactvobj,toolname{2});
+            message = DeleteBorder(mtoolactvobj,toolname{2});
     end
     if dosetstatus==true
         mtoolactvobj.Status.(completetoolname) = 1;

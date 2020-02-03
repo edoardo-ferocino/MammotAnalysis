@@ -113,7 +113,11 @@ classdef mfigure < handle
             if mfigobj.nAxes~=0
                 mfigobj.CreateMenuBar;
                 mfigobj.CreateMenuSelectFunctions;
+                dch=datacursormode(mfigobj.Figure);
+                dch.removeAllDataCursors;
+                dch.Enable = 'off';
                 mfigobj.Figure.KeyPressFcn = @mfigobj.GetKeyboardShortcut;
+                mfigobj.Figure.ToolBar = 'figure';
                 mfigobj.Figure.ButtonDownFcn = @mfigobj.ToogleSelect;
                 addlistener(mfigobj,'AxesSelection',@mfigobj.UpdateFigureMenu); % Update figure menus checked status
                 ah = findobj(mfigobj.Figure,'type','axes');
@@ -199,6 +203,7 @@ classdef mfigure < handle
             allmfigobjs = mfigobj.GetAllFigs('all');
             allmfigobjs.Close;
             run('.\utilities\Uninstaller.m');
+            evalin('base','clear ''MainPanel''');
         end
     end
     methods (Access = private)
