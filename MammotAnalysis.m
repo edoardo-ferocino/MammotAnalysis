@@ -10,7 +10,7 @@ if ~isfile('.\Settings\sett.mat')
 else
     load('.\Settings\sett.mat','Data');
     MainPanel.Data = Data;
-    clear Data
+    clear Data;
 end
 MainPanel.Data.MinCountRateTresh = 0;
 MainPanel.Data.MedianPercentageTreshold = (1-0.05);

@@ -10,7 +10,10 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     opts = detectImportOptions(FitFileName);
     VarTypes = opts.VariableTypes;
     FitData=readtable(FitFileName,opts,'ReadVariableNames',true);
-    FitData.Properties.VariableUnits=horzcat(VarTypes,'none');
+    if any(strcmpi(FitData.Properties.VariableNames,'ExtraVar1'))
+        FitData = FitData(:,~strcmpi(FitData.Properties.VariableNames,'ExtraVar1'));
+    end
+    FitData.Properties.VariableUnits = VarTypes;
     OriginalColNames = {'loop3actual','loop2actual','CodeActual','varconc00opt','varconc01opt',...
         'varconc02opt','varconc03opt','varconc04opt','vara0opt','varb0opt','varmua0opt','varmus0opt'}';
     RealColNames = {'X','Y','CodeActualLoop','Hb','HbO2','Lipid',...
@@ -19,7 +22,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     CompNames = {'Hb' 'HbO2' 'Lipid' 'Water' 'Collagen' 'A' 'B' 'SO2' 'HbTot'}';
     MuaMusNames = {'Absorption','Scattering'}';
     LocationNames = {'X','Y'}';
-    for ic = 1:numel(ColumnNames)-1
+    for ic = 1:numel(ColumnNames)
         cats = unique(FitData.(ColumnNames{ic}),'stable');
         if strcmpi(FitData.Properties.VariableUnits{ic},'char')
             if ~isempty(regexpi(cats{1},'ses\w?','match'))
@@ -63,7 +66,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     end
     ColumnNames = FitData.Properties.VariableNames;
     ifil = 1; ifitp = 1; Vect2Match = vertcat(FitParamsNames,LocationNames);
-    for ic = 1:numel(ColumnNames)-1
+    for ic = 1:numel(ColumnNames)
         match = find(strcmpi(Vect2Match,ColumnNames{ic}));
         if match
             Params(ifitp,1).Name = Vect2Match{match}; %#ok<*AGROW>
