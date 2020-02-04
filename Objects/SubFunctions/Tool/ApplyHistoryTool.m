@@ -9,6 +9,9 @@ for iobj = 1:nobjs
         case 'back'
             if maxesactvobj.HistoryIndex-1 >= 1
                 maxesactvobj.ImageData = maxesactvobj.History(maxesactvobj.HistoryIndex-1).Data;
+                if isfield(maxesactvobj.Parent.Data,'PickData')
+                    maxesactvobj.Parent.Data.PickData = maxesactvobj.History(maxesactvobj.HistoryIndex-1).PickData;
+                end
                 message = 'Back';
             else
                 dosethistory = false;
@@ -17,6 +20,9 @@ for iobj = 1:nobjs
         case 'forth'
             if maxesactvobj.HistoryIndex+1 <= numel(maxesactvobj.History)
                 maxesactvobj.ImageData = maxesactvobj.History(maxesactvobj.HistoryIndex+1).Data;
+                if isfield(maxesactvobj.Parent.Data,'PickData')
+                    maxesactvobj.Parent.Data.PickData = maxesactvobj.History(maxesactvobj.HistoryIndex+1).PickData;
+                end
                 message = 'Forth';
             else
                 dosethistory = false;

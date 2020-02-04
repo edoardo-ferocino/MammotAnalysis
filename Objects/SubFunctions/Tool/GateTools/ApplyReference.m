@@ -17,6 +17,10 @@ mtoolobj.Parent.StartWait;
 IrfCurve=IrfFigObj.Data.PickData;
 RefCurve = mtoolobj.Parent.Data.ReferenceCurve;
 Data = squeeze(mtoolobj.Parent.Data.PickData);
+if any(isnan(IrfCurve(:)))||any(isnan(RefCurve(:)))||any(isnan(Data(:)))
+    DisplayError('Encountered NaN values','Contact developer');
+    return
+end
 [nr,nc,~]=size(Data);
 InterpStep = 0.1;
 Wavelengths = MPOBJ.Wavelengths;

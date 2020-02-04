@@ -19,6 +19,22 @@ else
     maxesactvobj.Parent.Data.TotalReferenceMask = TotalReferenceMask;
 end
 dataout = TotalReferenceMask.*datain;
+
+if isfield(maxesactvobj.Parent.Data,'PickData')
+    OrigPickData = maxesactvobj.Parent.Data.PickData;
+    lambda = regexpi(maxesactvobj.Name,'\lambda\s=*\s(\d)+','tokens');
+    channel = regexpi(maxesactvobj.Name,'Channel ([0-9]?)','tokens');
+    if ~isempty(lambda)
+        lambda=lambda{1};lambda=lambda{1};lambda=str2double(lambda);
+        maxesactvobj.Parent.Data.PickData(maxesactvobj.Parent.Wavelengths==lambda).SummedChannelsData = TotalReferenceMask.*OrigPickData(maxesactvobj.Parent.Wavelengths==lambda).SummedChannelsData;
+    elseif ~isempty(channel)
+        channel=channel{1};channel=channel{1};channel=str2double(channel);
+        maxesactvobj.Parent.Data.PickData(:,:,channel,:) = TotalReferenceMask.*OrigPickData(:,:,channel,:);
+    else
+        maxesactvobj.Parent.Data.PickData = TotalReferenceMask.*maxesactvobj.Parent.Data.PickData;
+    end
+end
+
 if nargout>1
     varargout{1} =  TotalReferenceMask;
 end

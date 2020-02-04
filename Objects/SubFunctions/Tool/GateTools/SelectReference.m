@@ -27,7 +27,7 @@ switch toolname{1}
         message = PickCurveOnImage(mtoolobj);
 end
 end
-function PickData = PickAreaOnImage(shapeobj,~,maxesobj)
+function PickAreaOnImage(shapeobj,~,maxesobj)
 PickData = squeeze(maxesobj.Parent.Data.PickData);
 PickData = PickData.*shapeobj.createMask;
 PickData(PickData==0)=nan;
@@ -36,6 +36,7 @@ mfigure('Name',['Average curve of ',maxesobj.Name,' for gate reference. ',maxeso
 numbin = size(PickData,1);
 semilogy(1:numbin,PickData);
 xlim([1 numbin]);
+PickData(isnan(PickData))=0;
 maxesobj.Parent.Data.ReferenceCurve = PickData;
 end
 function message = PickCurveOnImage(mtoolobj)

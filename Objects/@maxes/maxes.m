@@ -98,6 +98,11 @@ classdef maxes < handle
             maxesobj.History.Message = {'Original Data'};
             maxesobj.History.ToolName = 'originaldata';
             maxesobj.History.Roi = [];
+            if isfield(maxesobj.Parent.Data,'PickData')
+               maxesobj.History.PickData = maxesobj.Parent.Data.PickData;
+            else
+               maxesobj.History.PickData = [];
+            end
             addlistener(maxesobj,'ToolApplied',@maxesobj.UpdateHistory);
             set(maxesobj.Image,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
             set(maxesobj.axes,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
@@ -145,6 +150,12 @@ classdef maxes < handle
                 maxesobj.HistoryIndex = numel(maxesobj.History)+1;
                 maxesobj.History(maxesobj.HistoryIndex,1) = event.CustomData;
                 maxesobj.History(maxesobj.HistoryIndex,1).Roi = maxesobj.Tool.Roi;
+                if ~isfield(maxesobj.Parent.Data,'PickData')
+                    PickData = [];
+                else
+                    PickData = maxesobj.Parent.Data.PickData;
+                end
+                maxesobj.History(maxesobj.HistoryIndex,1).PickData = PickData;
             end
             if strcmpi(event.CustomData.ToolName,'historyback')
                 maxesobj.HistoryIndex = maxesobj.HistoryIndex-1;
