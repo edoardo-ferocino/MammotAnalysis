@@ -20,7 +20,7 @@ Data = squeeze(mtoolobj.Parent.Data.PickData);
 [nr,nc,~]=size(Data);
 InterpStep = 0.1;
 Wavelengths = MPOBJ.Wavelengths;
-NumGate = str2double(MPOBJ.Graphical.NumGate.String);
+NumGate = str2double(MPOBJ.Graphical.NumGates.String);
 NumBin = size(RefCurve,1);
 if isfield(MPOBJ.Data,'TRSSetFilePath')
     TrsSet = TRSread(MPOBJ.Data.TRSSetFilePath);

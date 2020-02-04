@@ -213,6 +213,11 @@ classdef mfigure < handle
             end
         end
         function Exit(mfigobj,~,~)
+            MPOBJ=mfigobj.GetMainPanel;
+            sett = {'FractFirst' 'FractLast' 'BkgFirst' 'BkgLast' 'NumGates'}';
+            val = cellfun(@(is) num2cell(str2double(MPOBJ.Graphical.(is).String)),sett);
+            Data = cell2struct(val,sett); %#ok<PROPLC>
+            save('.\Settings\sett.mat','Data');
             allmfigobjs = mfigobj.GetAllFigs('all');
             allmfigobjs.Close;
             run('.\utilities\Uninstaller.m');
