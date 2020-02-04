@@ -6,8 +6,11 @@ if ~isfield(MPOBJ.Data,'DatFilePath')
 end
 mselectfigobj = mtoolobj.Parent.SelectMultipleFigures([],[],'select','AllChannels, all lambdas, bkg free IRF plot');%here, it selects only one compare figure
 waitfor(mselectfigobj.Figure,'Visible','off');
-if strcmpi(mselectfigobj.Data.ExitStatus,'Exit'),return;end
-allmfigobjs = mselectfigobj.GetAllFigs;IrfFigObj=allmfigobjs(vertcat(allmfigobjs.Selected));
+if strcmpi(mselectfigobj.Data.ExitStatus,'Exit')
+    return;
+elseif strcmpi(mselectfigobj.Data.ExitStatus,'Ok')
+    IrfFigObj = mselectfigobj.Data.SelectedFigure;
+end
 IrfFigObj.Selected = false;
 
 mtoolobj.Parent.StartWait;
@@ -41,7 +44,7 @@ for iw = 1:numel(Wavelengths)
     Wave(iw).DefaultGate = 8;
     Wave(iw).Name = Wavelengths(iw);
     Wave(iw).Roi = Roi;
-    Wave(iw).RefCurve = RefCurve(Roi); 
+    Wave(iw).RefCurve = RefCurve(Roi);
     Wave(iw).Irf = IrfCurve(Roi);
     Wave(iw).Data = Data(:,:,Roi);
     Wave(iw).RefCurve = interp1(Wave(iw).Roi,Wave(iw).RefCurve,Wave(iw).Roi(1):InterpStep:Wave(iw).Roi(end));

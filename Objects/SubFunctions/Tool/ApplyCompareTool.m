@@ -9,10 +9,14 @@ switch toolname{1}
     case 'existent'
         mselectfigobj = mtoolobj(1).Parent.SelectMultipleFigures([],[],'select');%here, it selects only one compare figure
         waitfor(mselectfigobj.Figure,'Visible','off');
-        allmfigobjs = mselectfigobj.GetAllFigs;
-        ID = regexpi(allmfigobjs(vertcat(allmfigobjs.Selected)).Tag,'(\d+)','match');
+        if strcmpi(mselectfigobj.Data.ExitStatus,'Exit')
+            return;
+        elseif strcmpi(mselectfigobj.Data.ExitStatus,'Ok')
+            selfigmobj = mselectfigobj.Data.SelectedFigure;
+        end
+        ID = regexpi(selfigmobj.Tag,'(\d+)','match');
         ID = str2double(ID{1});
-        allmfigobjs(vertcat(allmfigobjs.Selected)).Selected = false;
+        selfigmobj.Selected = false;
 end
 mfigobj=mfigure('Name',['Compare figures ' num2str(ID)],'Tag',['comparefigure',num2str(ID)],'Category','Compare');
 tlh=findobj(mfigobj.Figure,'Type','tiledlayout');

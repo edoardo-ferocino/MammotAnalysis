@@ -21,11 +21,11 @@ if isempty(treeh)
     treemfigobj.Figure.Position(3:4)= treeh.Position(3:4) + [50 50];
     mfigobj.StopWait
     dbh=uibutton(treemfigobj.Figure,'Position',[treeh.Position(1) treeh.Position(2)+treeh.Position(4) 60 22] ...
-    ,'Text','Deselect','ButtonPushedFcn',{@Deselect,allmfigobjs,treeh,operation},'Tag','Deselect');
-obh=uibutton(treemfigobj.Figure,'Position',[treeh.Position(1)+dbh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
-    ,'Text','Ok','ButtonPushedFcn',{@OkAndClose,treemfigobj});
-uibutton(treemfigobj.Figure,'Position',[obh.Position(1)+obh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
-    ,'Text','Exit','ButtonPushedFcn',{@Exit,treemfigobj});
+        ,'Text','Deselect','ButtonPushedFcn',{@Deselect,allmfigobjs,treeh,operation},'Tag','Deselect');
+    obh=uibutton(treemfigobj.Figure,'Position',[treeh.Position(1)+dbh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
+        ,'Text','Ok','ButtonPushedFcn',{@OkAndClose,treemfigobj,treeh});
+    uibutton(treemfigobj.Figure,'Position',[obh.Position(1)+obh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
+        ,'Text','Exit','ButtonPushedFcn',{@Exit,treemfigobj,treeh});
 end
 treeh.SelectionChangedFcn = {@GetSelection,allmfigobjs,operation};
 dbh=findobj(treemfigobj.Figure,'type','uibutton','Tag','Deselect');
@@ -70,11 +70,12 @@ function Deselect(~,~,allmfigobjs,treeh,operation)
 arrayfun(@(ifs)SetSelectToValue(allmfigobjs(ifs),false,operation),1:numel(allmfigobjs));
 treeh.SelectedNodes = [];
 end
-function OkAndClose(treeh,~,mfigobj)
+function OkAndClose(~,~,mfigobj,treeh)
 mfigobj.Data.ExitStatus = 'Ok';
-close(treeh.Parent);
+mfigobj.Data.SelectedFigure = treeh.SelectedNodes.NodeData;
+close(mfigobj.Figure);
 end
-function Exit(treeh,~,mfigobj)
+function Exit(~,~,mfigobj,~)
 mfigobj.Data.ExitStatus = 'Exit';
-close(treeh.Parent);
+close(mfigobj.Figure);
 end

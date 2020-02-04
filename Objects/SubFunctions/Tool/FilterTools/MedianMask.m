@@ -2,17 +2,19 @@ function [dataout,varargout] = MedianMask(datain,maxesactvobj)
 if isfield(maxesactvobj.Parent.Data,'TotalReferenceMask')
     TotalReferenceMask =  maxesactvobj.Parent.Data.TotalReferenceMask;
 else
-    mselectfigobj = maxesactvobj.Parent.SelectMultipleFigures([],[],'select');
+    mselectfigobj = maxesactvobj.Parent.SelectMultipleFigures([],[],'select','Any figure obtained from PlotScan');
     waitfor(mselectfigobj.Figure,'Visible','off');
     if strcmpi(mselectfigobj.Data.ExitStatus,'Exit')
         return;
+    elseif strcmpi(mselectfigobj.Data.ExitStatus,'Ok')
+        selfigmobj = mselectfigobj.Data.SelectedFigure;
     end
-    allmfigobjs = mselectfigobj.GetAllFigs;
-    if ~isfield(allmfigobjs(vertcat(allmfigobjs.Selected)).Data,'TotalReferenceMask')
+    if ~isfield(selfigmobj.Data,'TotalReferenceMask')
+        selfigmobj.Selected = false;
         [~,TotalReferenceMask]=MedianMask(datain,maxesactvobj);
-        allmfigobjs(vertcat(allmfigobjs.Selected)).Selected = false;
     else
-        TotalReferenceMask=allmfigobjs(vertcat(allmfigobjs.Selected)).Data.TotalReferenceMask;
+        TotalReferenceMask=selfigmobj.Data.TotalReferenceMask;
+        selfigmobj.Selected = false;
     end
     maxesactvobj.Parent.Data.TotalReferenceMask = TotalReferenceMask;
 end

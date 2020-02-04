@@ -167,6 +167,19 @@ classdef mfigure < handle
                     mfigobj.Axes.ToogleSelect('off');
                 end
             end
+            allfigsobjs = mfigobj.GetAllFigs;
+            if sum(vertcat(allfigsobjs.Selected))>1
+                for ifigs = 1:numel(allfigsobjs)
+                    allfigsobjs(ifigs).OtherFiguresSelectedH.BackgroundColor = 'yellow';
+                    allfigsobjs(ifigs).OtherFiguresSelectedH.Title = num2str(sum(vertcat(allfigsobjs.Selected)));
+                end
+            else
+                for ifigs = 1:numel(allfigsobjs)
+                    allfigsobjs(ifigs).OtherFiguresSelectedH.BackgroundColor=allfigsobjs(ifigs).Figure.Color;
+                    allfigsobjs(ifigs).OtherFiguresSelectedH.Title = char.empty;
+                end
+            end
+            
         end
         function out = get.Selected(mfigobj)
             % Get the selection of figure

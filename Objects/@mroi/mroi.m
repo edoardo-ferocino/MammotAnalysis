@@ -26,14 +26,13 @@ classdef mroi < handle
             persistent ID;
             mroiobj.Tool=mtoolobj;
             maxesobj = mtoolobj.Axes;
-            axh=maxesobj.axes;
             if strcmpi(shape,'entireimage')
                 mroiobj.Name = 'Entire image';
                 shape = 'Rectangle';
                 shape2copy.Position = [0.5 0.5 size(maxesobj.ImageData,2) size(maxesobj.ImageData,1)];
             end
             shape(1) = upper(shape(1));
-            Shape = images.roi.(shape)(axh);
+            Shape = images.roi.(shape)(maxesobj.axes);
             Shape.FaceAlpha = 0;
             Shape.Color = rand(1,3);
             if strcmpi(type,'border')
@@ -53,13 +52,13 @@ classdef mroi < handle
             end
             mroiobj.ID = ID;
             if isempty(shape2copy)
-                addlistener(Shape,'DrawingFinished',@(src,event)mroiobj.GetData(src,event,maxesobj));
+                addlistener(Shape,'DrawingFinished',@(src,event)mroiobj.GetData(src,event,maxesobj,true));
                 draw(Shape)
             else
                 Shape.Position = shape2copy.Position;
-                mroiobj.GetData(Shape,[],maxesobj);
+                mroiobj.GetData(Shape,[],maxesobj,true);
             end
-            addlistener(Shape,'ROIMoved',@(src,event)mroiobj.GetData(src,event,maxesobj));
+            addlistener(Shape,'ROIMoved',@(src,event)mroiobj.GetData(src,event,maxesobj,true));
             addlistener(Shape,'ObjectBeingDestroyed',@(src,event)mroiobj.CleanToolRoiState(src,event,maxesobj));
             mroiobj.Shape = Shape;
             mroiobj.Type = type;
@@ -68,8 +67,8 @@ classdef mroi < handle
             end
         end
     end
-    methods (Access = private)
-        function GetData(mroiobj,shapeobj,~,maxesobj)
+    methods (Access = public)
+        function GetData(mroiobj,shapeobj,~,maxesobj,isnotify)
             %Get stats within roi
             shapeobj.Selected = false;
             ImageData = maxesobj.ImageData;
@@ -95,7 +94,8 @@ classdef mroi < handle
                      Roi.FitType = 'Mua';
                  end
                else
-                 Roi.Lambda = double.empty;  
+                 Roi.Lambda = 0;  
+                 Roi.FitType = 'Spectral';
                end
                Labels = {'Session' 'Breast' 'View' 'Patient'};
                for il = 1:numel(Labels)
@@ -107,13 +107,15 @@ classdef mroi < handle
             else
                Labels = {'Session' 'Breast' 'View' 'Patient'};
                for il = 1:numel(Labels)
-                   Roi.(Labels{il}) = char.empty;
+                   Roi.(Labels{il}) = 'none';
                end
-               Roi.Lambda = double.empty; 
-               Roi.FitType = char.empty;
+               Roi.Lambda = 0; 
+               Roi.FitType = 'none';
             end
             mroiobj.RoiValues = Roi;
-            notify(mroiobj,'SyncronousRoiMovement');
+            if isnotify
+                notify(mroiobj,'SyncronousRoiMovement');
+            end
         end
     end
     methods (Hidden = true)
