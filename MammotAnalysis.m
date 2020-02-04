@@ -1,4 +1,4 @@
-clearvars, close all force
+clear('MainPanel'); close all force
 run('.\utilities\Installer.m');
 MainPanel = mfigure('Tag','MainPanel','Name','Main panel','MenuBar','none','Toolbar','none','NumberTitle','off','WindowState','maximized','Units','normalized','Category','MainPanel');
 MainPanel.Data.MinCountRateTresh = 0;

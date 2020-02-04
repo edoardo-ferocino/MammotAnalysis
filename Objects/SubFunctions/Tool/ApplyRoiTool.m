@@ -2,6 +2,7 @@ function message = ApplyRoiTool(mtoolobj,completetoolname,toolname,shape2copy)
 if ~exist('shape2copy','var')
     shape2copy = [];
 end
+newcolor = [];
 nobjs = numel(mtoolobj);
 dosetstatus = false;
 dosethistory = true;
@@ -37,6 +38,8 @@ for iobj = 1:nobjs
             else
                 dosetstatus = false;
             end
+        case 'changecolor'
+            [message,newcolor] = ChangeRoiColor(mtoolactvobj,newcolor);
         case 'movetogether'
             message = MoveTogether(mtoolactvobj,mtoolobj);
             dosetstatus = true;

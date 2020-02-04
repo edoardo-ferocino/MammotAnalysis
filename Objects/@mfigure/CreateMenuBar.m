@@ -52,8 +52,8 @@ if ~strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
     uimenu(nrmh,'Text','&Internal','Tag',[nrmh.Tag mfigobj.spacer 'Internal']);
     uimenu(nrmh,'Text','&Other','Tag',[nrmh.Tag mfigobj.spacer 'Other']);
     uimenu(rmh,'Text','&Show','Tag',[rmh.Tag mfigobj.spacer 'Show'],'Accelerator','q');
+    uimenu(rmh,'Text','&Change Color','Tag',[rmh.Tag mfigobj.spacer 'ChangeColor']);
     uimenu(rmh,'Text','&Move together','Tag',[rmh.Tag mfigobj.spacer 'movetogether']);
-    %     uimenu(rmh,'Text','&Interrupt move together','Tag',[rmh.Tag mfigobj.spacer 'stopmovetogether']);
     %% Border tools
     bmh=uimenu(mfigobj.Figure,'Text','Define &border','Tag',[mfigobj.Tag mfigobj.spacer 'Border']);
     sbmh=uimenu(bmh,'Text','&Shape','Tag',[bmh.Tag mfigobj.spacer 'Shape']);
@@ -106,6 +106,13 @@ uimenu(smh,'Text','Figure from &list','Tag',[smh.Tag mfigobj.spacer 'OpenFigures
 amh=uimenu(mfigobj.Figure,'Text','&Action','Tag',[mfigobj.Tag mfigobj.spacer 'Action']);
 uimenu(amh,'Text','Show Main &Panel','Tag',[amh.Tag mfigobj.spacer 'ShowMainPanel'],'Accelerator','m');
 uimenu(amh,'Text','&Exit','Tag',[amh.Tag mfigobj.spacer 'Exit'],'Accelerator','e');
+%% Figures tools
+fmh=uimenu(mfigobj.Figure,'Text','&Figures','Tag',[mfigobj.Tag mfigobj.spacer 'Figures']);
+uimenu(fmh,'Text','&Save','Tag',[fmh.Tag mfigobj.spacer 'Save']);
+uimenu(fmh,'Text','&Load','Tag',[fmh.Tag mfigobj.spacer 'Load']);
+ffmh=uimenu(fmh,'Text','Format','Tag',[fmh.Tag mfigobj.spacer 'Format']);
+uimenu(ffmh,'Text','png','Tag',[ffmh.Tag mfigobj.spacer 'png']);
+uimenu(ffmh,'Text','svg','Tag',[ffmh.Tag mfigobj.spacer 'svg']);
 %% Add menus to mfigure object
 allmh = findobj(mfigobj.Figure,'type','uimenu');
 mfigobj.Menu = allmh;

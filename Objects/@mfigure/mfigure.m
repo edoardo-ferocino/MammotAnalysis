@@ -206,6 +206,18 @@ classdef mfigure < handle
             evalin('base','clear ''MainPanel''');
         end
     end
+    methods (Static)
+        function Load(~,~,~)
+            [FileName,FilePath,FilterIndex]=uigetfilecustom('*.fig');
+            if FilterIndex == 0, return; end
+            if iscell(FileName)
+                cellfun(@(ifn) openfig(fullfile(FilePath,ifn)),FileName);
+            else
+                openfig(fullfile(FilePath,FileName));
+            end
+        end
+        
+    end
     methods (Access = private)
         CreateMenuBar(mfigobj);
         CreateMenuSelectFunctions(mfigobj);
