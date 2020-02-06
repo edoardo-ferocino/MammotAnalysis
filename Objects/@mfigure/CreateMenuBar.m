@@ -84,7 +84,7 @@ if ~strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
     poiimh=uimenu(poimh,'Text','&Info','Tag',[poimh.Tag mfigobj.spacer 'Info']);
     uimenu(poiimh,'Text','&Activated','Tag',[poiimh.Tag mfigobj.spacer 'Activated']);
     %% Gate tools
-    gmh=uimenu(mfigobj.Figure,'Text','&Gate tools','Tag',[mfigobj.Tag mfigobj.spacer 'Gate'],'Accelerator','g');
+    gmh=uimenu(mfigobj.Figure,'Text','&Gate tools','Tag',[mfigobj.Tag mfigobj.spacer 'Gate']);
     gsrmh=uimenu(gmh,'Text','&Select Reference','Tag',[gmh.Tag mfigobj.spacer 'Reference']);
     gssrmh=uimenu(gsrmh,'Text','&Shape','Tag',[gsrmh.Tag mfigobj.spacer 'Shape']);
     uimenu(gssrmh,'Text','&Rectangle','Tag',[gssrmh.Tag mfigobj.spacer 'Rectangle']);
@@ -93,6 +93,14 @@ if ~strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
     uimenu(gsrmh,'Text','&Point','Tag',[gsrmh.Tag mfigobj.spacer 'Point']);
     uimenu(gmh,'Text','&Apply Reference','Tag',[gmh.Tag mfigobj.spacer 'Apply']);
     uimenu(gmh,'Text','&Navigate','Tag',[gmh.Tag mfigobj.spacer 'Navigate']);
+    %% Perturbative tools
+    pmh=uimenu(mfigobj.Figure,'Text','&Perturbative','Tag',[mfigobj.Tag mfigobj.spacer 'Perturbative']);
+    ilpmh=uimenu(pmh,'Text','&Identify lesion','Tag',[pmh.Tag mfigobj.spacer 'IdentifyLesion']);
+    uimenu(ilpmh,'Text','&Manual','Tag',[ilpmh.Tag mfigobj.spacer 'Manual']);
+    uimenu(ilpmh,'Text','&Auto','Tag',[ilpmh.Tag mfigobj.spacer 'Auto']);
+    uimenu(pmh,'Text','&Generate DAT','Tag',[pmh.Tag mfigobj.spacer 'DAT']);
+    uimenu(pmh,'Text','&Generate Multicurve','Tag',[pmh.Tag mfigobj.spacer 'Multicurve']);
+    uimenu(pmh,'Text','&Generate IRF','Tag',[pmh.Tag mfigobj.spacer 'IRF']);
     %% Separator
     uimenu(mfigobj.Figure,'Text','|','Tag',[mfigobj.Tag mfigobj.spacer 'Separator'],'Enable','off');
 end

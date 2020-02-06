@@ -38,5 +38,4 @@ end
 if nargout>1
     varargout{1} =  TotalReferenceMask;
 end
-maxesactvobj.CLim = GetPercentile(dataout,[maxesactvobj.LowPercentile maxesactvobj.HighPercentile]);
 end

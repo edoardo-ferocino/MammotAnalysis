@@ -1,9 +1,9 @@
-function PlotGatePage(Wave,SubH,iw,ig,mfigobj)
+function PlotGatePage(Wave,SubH,iw,ig,mtoolobj)
 Imh=findobj(SubH,'type','image');
 if isempty(Imh)
     imagesc(Wave(iw).Gate(ig).Data);
 else
-    Imh.CData = Wave(iw).Gate(ig).Data;
+    mtoolobj.Axes.ImageData = Wave(iw).Gate(ig).Data;
 end
 %          title({num2str(Wave(iw).Name) ...
 %              [...

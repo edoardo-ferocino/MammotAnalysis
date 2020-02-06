@@ -12,7 +12,7 @@ else
     MainPanel.Data = Data;
     clear Data;
 end
-MainPanel.Data.MinCountRateTresh = 0;
+MainPanel.Data.MinCountRateTresh = (150000-100000)*8*0.2;
 MainPanel.Data.MedianPercentageTreshold = (1-0.05);
 MainPanel.Data.CalcWidthLevel = 0.5;
 MainPanel.Figure.CloseRequestFcn = @MainPanel.Exit;

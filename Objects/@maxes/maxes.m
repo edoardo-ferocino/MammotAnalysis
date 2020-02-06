@@ -23,7 +23,6 @@ classdef maxes < handle
     properties (Hidden = true)
         HistoryIndex = 1;       % index for navigation within history
         PreviousToolName = '';  % name of the previous tool applied
-        ScaleFactor = 1;
     end
     properties (Constant, Hidden = true)
         HighPercentile = 95;     % higher limit of percentile
@@ -114,6 +113,7 @@ classdef maxes < handle
         function set.ImageData(maxesobj,newdata)    % set image data
             if isempty(maxesobj.Image), return; end
             maxesobj.Image.CData = newdata;
+            maxesobj.CLim = GetPercentile(newdata,[maxesobj.LowPercentile maxesobj.HighPercentile]);
         end
         function out = get.ImageData(maxesobj)      % get image data
             if isempty(maxesobj.Image),out = false; return; end

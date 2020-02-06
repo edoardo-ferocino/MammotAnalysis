@@ -11,19 +11,23 @@ SubID=find(mtoolobj.Parent.Wavelengths==lambda);
 SubH = mtoolobj.Axes.axes;
 ContainerH = uipanel(mtoolobj.Parent.Figure,'OuterPosition',[SubH.OuterPosition(1)+SubH.OuterPosition(3)/4 SubH.Position(2)+0.9*SubH.Position(4) 0.07 0.08]);
 DecreasePushH = uicontrol(ContainerH,'Style','pushbutton','String','Decrease','Units','normalized',...
-    'Position',[0 0 0.5 1/2],'Callback',{@Clicked,SubH,SubID,'down',Wave});
+    'Position',[0 0 0.5 1/2],'Callback',{@Clicked,SubH,SubID,'down',Wave,mtoolobj});
 uicontrol(ContainerH,'Style','pushbutton','String','Increase','Units','normalized',...
-    'Position',DecreasePushH.Position+[0 1/2 0 0],'Callback',{@Clicked,SubH,SubID,'up',Wave});
+    'Position',DecreasePushH.Position+[0 1/2 0 0],'Callback',{@Clicked,SubH,SubID,'up',Wave,mtoolobj});
 uicontrol(ContainerH,'Style','edit','String',num2str(Wave(SubID).DefaultGate),'Units','normalized',...
-    'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0 0 0],'Callback',{@GotoPage,SubH,SubID,Wave},'Tag','GateID');
+    'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0 0 0],'Callback',{@GotoPage,SubH,SubID,Wave,mtoolobj},'Tag','GateID');
 uicontrol(ContainerH,'Style','text','String','Goto gate #','Units','normalized',...
     'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0.5 0 0]);
-SubH.UserData.Graphicals = ContainerH;
+if ~isfield(mtoolobj.Parent.Data,'Graphicals')
+    mtoolobj.Parent.Data.Graphicals = ContainerH;
+else
+    mtoolobj.Parent.Data.Graphicals = vertcat(mtoolobj.Parent.Data.Graphicals,ContainerH);
+end
 SubH.UserData.WaveID = SubID;
 SubH.UserData.MinVal = 1;SubH.UserData.MaxVal = Wave(SubID).NumGate;
 SubH.UserData.ActualGateVal = Wave(SubID).DefaultGate;
 end
-function Clicked(src,~,SubH,SubID,type,Wave)
+function Clicked(src,~,SubH,SubID,type,Wave,mtoolobj)
 if strcmpi(type,'up')
     delta = 1;
     if SubH.UserData.ActualGateVal >=SubH.UserData.MaxVal, delta = 0; end
@@ -40,12 +44,12 @@ end
 if SubH.UserData.ActualGateVal<=SubH.UserData.MinVal
     SubH.UserData.ActualGateVal = SubH.UserData.MinVal;
 end
-PlotGatePage(Wave,SubH,SubID,SubH.UserData.ActualGateVal);
+PlotGatePage(Wave,SubH,SubID,SubH.UserData.ActualGateVal,mtoolobj);
 ContH=ancestor(src,'uicontainer');
 GateIDH=findobj(ContH,'Tag','GateID');
 GateIDH.String = num2str(SubH.UserData.ActualGateVal);
 end
-function GotoPage(src,~,SubH,SubID,Wave)
+function GotoPage(src,~,SubH,SubID,Wave,mtoolobj)
 PageID = str2double(src.String);
 SubH.UserData.ActualGateVal = PageID;
 % needed if the user is too fast in clicking
@@ -55,5 +59,5 @@ end
 if SubH.UserData.ActualGateVal<=SubH.UserData.MinVal
     SubH.UserData.ActualGateVal = SubH.UserData.MinVal;
 end
-PlotGatePage(Wave,SubH,SubID,SubH.UserData.ActualGateVal);
+PlotGatePage(Wave,SubH,SubID,SubH.UserData.ActualGateVal,mtoolobj);
 end

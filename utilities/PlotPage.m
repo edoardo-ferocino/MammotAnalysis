@@ -12,7 +12,6 @@ else
     Category = 'Spectral';
 end
 mfigobj = mfigure('Name',FigureName,'Category',Category,'WindowState','maximized');
-mfigobj.ScaleFactor = 2; % to improve
 mfigobj.Data.Fit = Fit;
 mfigobj.Data.DataFilePath = Fit.DataFilePath;
 mfigobj.Data.FileName = Fit.FileName;

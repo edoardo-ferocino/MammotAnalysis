@@ -29,7 +29,6 @@ for iobj = 1:nobjs
             end
             dosetstatus = false;
     end
-    maxesactvobj.CLim = GetPercentile(maxesactvobj.ImageData,[maxesactvobj.LowPercentile maxesactvobj.HighPercentile]);
     if dosetstatus
         mtoolactvobj.Status.(completetoolname) = 1;
     end

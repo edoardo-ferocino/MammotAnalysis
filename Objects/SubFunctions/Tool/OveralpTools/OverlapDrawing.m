@@ -43,7 +43,6 @@ if isempty(Overlap)
         [XC2,YC2]=GetCenter(InterpolatedBreasIm);
     else
         YC2 = TrimCoord/pixels_per_mm*PixelResolution;
-        XC2 = 1/pixels_per_mm*PixelResolution;
         XC2 = 0;
     end
     BufferMat=zeros(sx1+2*sx2,sy1+2*sy2);
@@ -89,10 +88,5 @@ mtoolobj.Axes.axes.YTickLabel=cellstr(num2str(mtoolobj.Axes.axes.YTick'*pixels_p
             errordlg({['Error reading:' fullfile(Path,[FileName,'_info.txt'])],'No "Border" entry found'},'Error');
             return
         end
-        %hold on
-        %AxH = ancestor(object2attach,'axes');
-        %plot(AxH,TrimmCoord,1,'Marker','square','MarkerFaceColor','red','MarkerSize',5);
-        %%text(AxH,TriggCoord,5,num2str(TriggCoord),'FontSize',15);
-        %hold off
     end
 end

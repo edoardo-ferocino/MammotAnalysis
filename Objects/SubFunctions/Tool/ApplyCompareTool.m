@@ -7,7 +7,7 @@ switch toolname{1}
     case 'new'
         ID=ID+1;
     case 'existent'
-        mselectfigobj = mtoolobj(1).Parent.SelectMultipleFigures([],[],'select');%here, it selects only one compare figure
+        mselectfigobj = mtoolobj(1).Parent.SelectMultipleFigures([],[],'select','The compare figure');%here, it selects only one compare figure
         waitfor(mselectfigobj.Figure,'Visible','off');
         if strcmpi(mselectfigobj.Data.ExitStatus,'Exit')
             return;

@@ -31,8 +31,11 @@ treeh.SelectionChangedFcn = {@GetSelection,allmfigobjs,operation};
 dbh=findobj(treemfigobj.Figure,'type','uibutton','Tag','Deselect');
 dbh.ButtonPushedFcn = {@Deselect,allmfigobjs,treeh,operation};
 delete(treeh.Children);
+[~,order]=sort({allmfigobjs.Name});
+allmfigobjs=allmfigobjs(order);
 allcategories = arrayfun(@(iaf)allmfigobjs(iaf).Category,1:numel(allmfigobjs),'UniformOutput',false);
 singlecategories = unique(allcategories);
+singlecategories=sort(singlecategories);
 categorynodes = cellfun(@(sc) uitreenode(treeh,'Text',sc),singlecategories);
 for icn = 1:numel(categorynodes)
     categorynodes(icn).NodeData = 'categorynode';

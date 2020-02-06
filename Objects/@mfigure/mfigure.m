@@ -32,7 +32,7 @@ classdef mfigure < handle
         Menu;                     %figure menus handle
         MainMenu;                 %main menus handle
         SubMenu;                  %submenus handle
-        ScaleFactor = 1;
+        ScaleFactor = 2;
         OtherFiguresSelectedH;
     end
     properties (Dependent)

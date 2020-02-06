@@ -4,7 +4,7 @@ if ~isfield(MPOBJ.Data,'DatFilePath')
     DisplayError('No data file','Please read the Irf file');
     return
 end
-mselectfigobj = mtoolobj.Parent.SelectMultipleFigures([],[],'select','AllChannels, all lambdas, bkg free IRF plot');%here, it selects only one compare figure
+mselectfigobj = mtoolobj.Parent.SelectMultipleFigures([],[],'select','IRF bkg free, all lambdas&channels');%here, it selects only one compare figure
 waitfor(mselectfigobj.Figure,'Visible','off');
 if strcmpi(mselectfigobj.Data.ExitStatus,'Exit')
     message = 'aborted';
@@ -67,13 +67,13 @@ for iw = 1:numel(Wavelengths)
     for ig = 1:NumGate
         Wave(iw).Gate(ig).Curves = Wave(iw).InterpData(:,:,Wave(iw).GateRoi(ig,1):Wave(iw).GateRoi(ig,2));
         Wave(iw).Gate(ig).Data = sum(Wave(iw).Gate(ig).Curves,3);
-        Wave(iw).Limits(ig,:) = GetPercentile(Wave(iw).Gate(ig).Data,[mtoolobj.Axes.LowPercentile mtoolobj.Axes.HighPercentile]);
+%         Wave(iw).Limits(ig,:) = GetPercentile(Wave(iw).Gate(ig).Data,[mtoolobj.Axes.LowPercentile mtoolobj.Axes.HighPercentile]);
     end
-    Wave(iw).Limits = [min(Wave(iw).Limits(:,1)) max(Wave(iw).Limits(:,2))];
-    Wave(iw).OverallLimits = [min(Wave(iw).Limits(1),Wave(iw).OverallLimits(1)) max(Wave(iw).Limits(2),Wave(iw).OverallLimits(2))];
+%     Wave(iw).Limits = [min(Wave(iw).Limits(:,1)) max(Wave(iw).Limits(:,2))];
+%     Wave(iw).OverallLimits = [min(Wave(iw).Limits(1),Wave(iw).OverallLimits(1)) max(Wave(iw).Limits(2),Wave(iw).OverallLimits(2))];
 end
 mtoolobj.Parent.StopWait;
-PlotGates(Wave,mtoolobj.Parent.Data.FileName);
+PlotGates(Wave,mtoolobj.Parent.Data.FileName,mtoolobj);
 message = 'Computed gates from reference';
 end
 function Roi = CalcGates(Curve,NumGate,Name)

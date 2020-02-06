@@ -59,6 +59,8 @@ classdef mtool < handle
                     ApplyGateTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
                 case 'figures'
                     ApplyFiguresTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
+                case 'perturbative'
+                    ApplyPerturbativeTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
             end
             notify(mtoolobjs(1).Parent,'AxesSelection');
         end

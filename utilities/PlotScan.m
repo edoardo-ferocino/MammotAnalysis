@@ -134,13 +134,16 @@ for infile = 1:MPOBJ.Data.DatFileNumel
     %% "Save" figures
     for ifigs = 1:numel(mfigobjs)
         %     mfigobjs(ifigs).Data.VisualDatData = RawVisualData;
-        %     mfigobjs(ifigs).Data.ActualDatData = RawData;
+        mfigobjs(ifigs).Data.DatInfo.RawData = RawData;
         %     mfigobjs(ifigs).Data.Numel2Pad = size(RawData,1)-size(RawVisualData,1);
         %     mfigobjs(ifigs).Data.CompiledHeaderData = CH;
         %     mfigobjs(ifigs).Data.HeaderData = H;
         %     mfigobjs(ifigs).Data.SubHeaderData = SUBH;
         %     mfigobjs(ifigs).Data.DataType = DataType;
         %     mfigobjs(ifigs).Data.DataSize = DataSize;
+        mfigobjs(ifigs).Data.DatInfo.H = H;
+        mfigobjs(ifigs).Data.DatInfo.SUBH = SUBH;
+        mfigobjs(ifigs).Data.DatInfo.CH = CH;
         mfigobjs(ifigs).Data.DataFilePath=MPOBJ.Data.DatFilePath{infile};
         %     mfigobjs(ifigs).Data.InfoData.Name = CH.LabelName;
         %     mfigobjs(ifigs).Data.InfoData.Value = CH.LabelContent;
