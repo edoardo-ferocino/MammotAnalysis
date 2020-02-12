@@ -58,10 +58,16 @@ end
 %create rgb image of breast with pink colors and set the "black"
 %color
 map=pink(255);map(1,:) = [ 0 0 0];
-rgb=ind2rgb(InterpolatedBreasIm,map);
 %color in red the pixels correspondinf to the scanner image ('matched')
 indexes=matched>0;
-rgb=padarray(rgb,[abs(size(indexes,1)-size(rgb,1)),0,0],0,'post');
+
+if size(indexes,1)>size(InterpolatedBreasIm,1)
+    InterpolatedBreasIm=padarray(InterpolatedBreasIm,[size(indexes,1)-size(InterpolatedBreasIm,1),0],0,'post');
+else
+    InterpolatedBreasIm=InterpolatedBreasIm(1:size(indexes,1),:);
+end
+
+rgb=ind2rgb(InterpolatedBreasIm,map);
 rgb([indexes,indexes,indexes])=0; %set the rgb image to 0 in the selected values
 rgb(indexes)=255; %set the red pixel to 255 in the selected values
 %rgb = imresize(rgb,[sxb syb],'Method','nearest');
