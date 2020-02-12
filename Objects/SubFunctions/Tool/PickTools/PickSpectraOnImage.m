@@ -73,7 +73,7 @@ elseif ~isempty(isoptprops)
     ScatteringSpectra = interp1(mfigobj.Wavelengths,ScatteringSpectra,fitlambda)';
     Lambda = fitlambda;IndipAbsorptionSpectra = [];
 end
-tiledlayout(2,1)
+tiledlayout(2,1,'Padding','none','TileSpacing','none');
 nexttile
 plot(Lambda,AbsorptionSpectra,'LineWidth',2);
 if ~isempty(isspectral)

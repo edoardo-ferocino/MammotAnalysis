@@ -22,7 +22,7 @@ else
     [nsub]=numSubplots(numel(Fit.Params)-2);
 end
 % subH=subplot1(nsub(1),nsub(2));
-tiledlayout(nsub(1),nsub(2),'TileSpacing','compact','Padding','compact');
+tiledlayout(nsub(1),nsub(2),'TileSpacing','none','Padding','none');
 isubp = 1;
 for ipage = 1:numel(Page)
     for ifit = 1:numel(Fit.Params)

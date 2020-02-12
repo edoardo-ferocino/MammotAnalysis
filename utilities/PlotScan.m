@@ -65,7 +65,7 @@ for infile = 1:MPOBJ.Data.DatFileNumel
             % Wavelenghts count rate
             mfigobjs(end+1)=mfigure('Name',['Count rate (bkg free) per lambda (all channels) - ' FileName],'WindowState','maximized','Category','Wavelengths');
             nSub = numSubplots(numel(Wavelengths));
-            tiledlayout(nSub(1),nSub(2));
+            tiledlayout(nSub(1),nSub(2),'Padding','none','TileSpacing','none');
             %subplot1(nSub(1),nSub(2));
             ActCounts = BkgSubtract(RawVisualData,str2double(MPOBJ.Graphical.BkgFirst.String):str2double(MPOBJ.Graphical.BkgLast.String),'noneg');
             TotalReferenceMask = true(NumRows,NumCols);
@@ -115,7 +115,7 @@ for infile = 1:MPOBJ.Data.DatFileNumel
         CountRateAllLamdasAllChannels=sum(CountRateAllLambdas,3);
         imagesc(CountRateAllLamdasAllChannels);
         title('Count Rate (all \lambda, all channels)');
-        mfigobjs(end).Data.PickData = RawVisualData;
+        mfigobjs(end).Data.PickData = sum(RawVisualData,3);
         
         if MPOBJ.Graphical.OnlinePlot.Value
             dir_info=dir([fullfile(Path,FileName),'.DAT']);

@@ -6,7 +6,7 @@ if isfield(mfigobj.Data,'Graphicals')
 end
 Wavelengths = mfigobj.Wavelengths;
 nSub = numSubplots(numel(Wavelengths));
-tiledlayout(nSub(1),nSub(2),'Padding','compact','TileSpacing','compact');
+tiledlayout(nSub(1),nSub(2),'Padding','none','TileSpacing','none');
 for iw = 1:numel(Wavelengths)
     ah=nexttile;
     PlotGatePage(Wave,ah,iw,Wave(iw).DefaultGate,mtoolobj);

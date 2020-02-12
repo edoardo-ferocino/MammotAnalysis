@@ -48,7 +48,7 @@ for infile = 1:MPOBJ.Data.IrfFileNumel
     % Wavelenghts count rate
     mfigobjs(end+1)=mfigure('Name',['Curves (bkg free) per lambda (all channels) - ' FileName],'WindowState','maximized','Category','Irf');
     nSub = numSubplots(numel(Wavelengths));
-    tiledlayout(nSub(1),nSub(2));
+    tiledlayout(nSub(1),nSub(2),'Padding','none','TileSpacing','none');
     %subplot1(nSub(1),nSub(2));
     ActAllChannelsCurves = IrfBkgSubtract(RawIrf,str2double(MPOBJ.Graphical.BkgFirst.String):str2double(MPOBJ.Graphical.BkgLast.String),'noneg');
     for iw = 1:numel(Wavelengths)
