@@ -29,6 +29,7 @@ for infile = 1:MPOBJ.Data.DatFileNumel
             RawData = permute(RawData,[1 2 4 3]);
         end
         RawData=flip(RawData,2);
+        SUBH=flip(SUBH,2);
         isVisual = sum(RawData,[2 3 4],'omitnan') ~= 0;
         RawVisualData = RawData(isVisual,:,:,:);
         NumRows = size(RawVisualData,1);NumCols = size(RawVisualData,2);
