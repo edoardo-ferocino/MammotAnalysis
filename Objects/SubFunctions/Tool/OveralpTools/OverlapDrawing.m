@@ -2,11 +2,11 @@ function Overlap = OverlapDrawing(mtoolobj,Overlap)
 PixelResolution=5;
 if isempty(Overlap)
     [FilePath,FileName,~] = fileparts(mtoolobj.Parent.Data.DataFilePath);
-    FullPathPicture = [fullfile(FilePath,'Scan',FileName) '.png'];
+    FullPathPicture = [fullfile(fileparts(FilePath),'Scan',FileName) '.png'];
     if ~isfile(FullPathPicture)
-        [FileName,FilePath,FilterIndex]=uigetfilecustom({'*.png','Scan'});
+        [FileName,PictFilePath,FilterIndex]=uigetfilecustom(fullfile(fileparts(FilePath),'Scan','*.png'),'Select SCAN file');
         if FilterIndex==0, return; end
-        FullPathPicture = [FilePath,FileName];
+        FullPathPicture = [PictFilePath,FileName];
     end
     ScannedImage = imread(FullPathPicture);
     thresold=100;
@@ -22,7 +22,8 @@ if isempty(Overlap)
     % select the reference center in the scanner image (interp1)
     [XC1,YC1]=GetCenter(InterpolatedScannedImage);
     % open image of the breast and interpolate to PixelResoltution
-    TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DataFilePath,mtoolobj.Axes.ImageData);
+    TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DataFilePath,mtoolobj.Axes.ImageData,mtoolobj.Parent.Data.Border);
+    if isempty(TrimCoord), return; end
 end
 TName = [tempname,'.tiff'];
 imwrite(uint8((255)*mat2gray(mtoolobj.Axes.ImageData,mtoolobj.Axes.CLim)), TName);
@@ -79,17 +80,17 @@ mtoolobj.Axes.ImageData = rgb;
 mtoolobj.Axes.axes.XTickLabel=cellstr(num2str(mtoolobj.Axes.axes.XTick'*pixels_per_mm/PixelResolution*mtoolobj.Parent.ScaleFactor));
 mtoolobj.Axes.axes.YTickLabel=cellstr(num2str(mtoolobj.Axes.axes.YTick'*pixels_per_mm/PixelResolution*mtoolobj.Parent.ScaleFactor));
 
-    function TrimmCoord=ShowTrimmerPoint(DatFilePath,Data)
+    function TrimmCoord=ShowTrimmerPoint(DatFilePath,Data,Border)
         TrimmCoord = [];
         [Path,FileName,~]=fileparts(DatFilePath);
         InfoFilePath = fullfile(Path,[FileName,'_info.txt']);
         if ~isfile(InfoFilePath)
-            [FileName,Path,FilterIndex]=uigetfilecustom({'*.txt;','Select info file'});
+            [FileName,Path,FilterIndex]=uigetfilecustom(fullfile(fileparts(Path),'Data','*.txt'),'Select INFO file');
             if FilterIndex == 0, return, end
             InfoFilePath = [Path,FileName];
         end
         InfoScan=readtable(InfoFilePath);
-        TrimmCoord = find(Data(1,:)~=0,1,'last')-InfoScan.Var2(contains(InfoScan.Var1,'border'));
+        TrimmCoord = Border-InfoScan.Var2(contains(InfoScan.Var1,'border'));
         if isempty(TrimmCoord)
             errordlg({['Error reading:' fullfile(Path,[FileName,'_info.txt'])],'No "Border" entry found'},'Error');
             return

@@ -136,6 +136,8 @@ for infile = 1:MPOBJ.Data.DatFileNumel
     for ifigs = 1:numel(mfigobjs)
         %     mfigobjs(ifigs).Data.VisualDatData = RawVisualData;
         mfigobjs(ifigs).Data.DatInfo.RawData = RawData;
+        tempdata=sum(RawData,[3 4]);
+        mfigobjs(ifigs).Data.Border = find(tempdata(1,:)~=0,1,'last');
         %     mfigobjs(ifigs).Data.Numel2Pad = size(RawData,1)-size(RawVisualData,1);
         %     mfigobjs(ifigs).Data.CompiledHeaderData = CH;
         %     mfigobjs(ifigs).Data.HeaderData = H;

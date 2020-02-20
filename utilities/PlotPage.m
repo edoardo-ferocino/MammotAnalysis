@@ -35,6 +35,7 @@ for ipage = 1:numel(Page)
             isubp = isubp+1;
             PlotVar = UnstuckedRealPage.(Fit.Params(ifit).Name).Variables;
             VisualPlotVar = PlotVar(sum(PlotVar,2,'omitnan')~=0,:);
+            mfigobj.Data.Border = find(VisualPlotVar(1,:)~=0,1,'last');
             imagesc(VisualPlotVar);
             if strcmpi(Fit.Type,'OptProps')
                 titlename = [Fit.Params(ifit).Name ', \lambda = ',num2str(SelWave(ipage))];
