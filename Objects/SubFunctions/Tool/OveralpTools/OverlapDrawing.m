@@ -26,7 +26,7 @@ if isempty(Overlap)
     if isempty(TrimCoord), return; end
 end
 TName = [tempname,'.tiff'];
-imwrite(uint8((255)*mat2gray(mtoolobj.Axes.ImageData,mtoolobj.Axes.CLim)), TName);
+imwrite(uint16(double(intmax('uint16'))*mat2gray(mtoolobj.Axes.ImageData,mtoolobj.Axes.CLim)), TName);
 BreastIm = imread(TName);
 delete(TName);
 [sxb,syb]=size(BreastIm);
@@ -58,7 +58,7 @@ end
 % 'interp2' is the image of the breast
 %create rgb image of breast with pink colors and set the "black"
 %color
-map=pink(255);map(1,:) = [ 0 0 0];
+map=pink(double(intmax('uint16')));map(1,:) = [ 0 0 0];
 %color in red the pixels correspondinf to the scanner image ('matched')
 indexes=matched>0;
 
@@ -70,7 +70,7 @@ end
 
 rgb=ind2rgb(InterpolatedBreasIm,map);
 rgb([indexes,indexes,indexes])=0; %set the rgb image to 0 in the selected values
-rgb(indexes)=255; %set the red pixel to 255 in the selected values
+rgb(indexes)=double(intmax('uint16')); %set the red pixel to 255 in the selected values
 %rgb = imresize(rgb,[sxb syb],'Method','nearest');
 % FigureName = ['Overlapped - ' mtoolobj.Parent.Name];
 % mfigobj = mfigure('Name',FigureName,'WindowState','maximized','Category','Overlapped');

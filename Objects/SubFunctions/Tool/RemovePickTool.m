@@ -7,6 +7,8 @@ for iobj = 1:nobjs
     mtoolactvobj = mtoolobj(iobj);
     dch=datacursormode(mtoolactvobj.Parent.Figure);
     dch.Enable = 'off';
+    dch.UpdateFcn = [];
+    dch.DisplayStyle = 'datatip';
     if strcmpi(toolname{1},'info')
        poiimh=mtoolobj.Parent.Menu(arrayfun(@(im) strcmpi(mtoolobj.GetToolName(mtoolobj.Parent.Menu(im)),'pickonimageinfo'),1:mtoolobj.Parent.nMenu));
        for imh=1:numel(poiimh.Children)
