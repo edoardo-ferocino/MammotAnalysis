@@ -10,10 +10,10 @@ if exist(TempPath,'file')
         case 2
             Filter = varargin{1};Title = varargin{2};
     end
-    if isfolder(fileparts(Filter))
-        [FileName,PathName,FilterIndex] = uigetfile(Filter,Title,'MultiSelect','on');
-    else
+    if iscell(Filter)
         [FileName,PathName,FilterIndex] = uigetfile(Filter,Title,PathName,'MultiSelect','on');
+    elseif isfolder(fileparts(Filter))
+        [FileName,PathName,FilterIndex] = uigetfile(Filter,Title,'MultiSelect','on');
     end
 else
     [FileName,PathName,FilterIndex] = uigetfile(varargin{:},'MultiSelect','on');
