@@ -85,6 +85,7 @@ classdef mroi < handle
             Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
             Roi.Max = max(RoiData(:));
             Roi.Min = min(RoiData(:));
+            Labels = {'Session' 'Breast' 'View' 'Patient'};
             if isfield(mroiobj.Tool.Parent.Data,'Fit')
                if ~strcmpi(mroiobj.Tool.Parent.Data.Fit.Type,'spectral')
                  Roi.Lambda = str2double(cell2mat(regexpi(maxesobj.Name,'(\d)+','match')));
@@ -97,7 +98,6 @@ classdef mroi < handle
                  Roi.Lambda = 0;  
                  Roi.FitType = 'Spectral';
                end
-               Labels = {'Session' 'Breast' 'View' 'Patient'};
                for il = 1:numel(Labels)
                    logicalpos = strcmpi({mroiobj.Tool.Parent.Data.Fit.Filters.Name},Labels(il));
                    if any(logicalpos)
@@ -105,7 +105,6 @@ classdef mroi < handle
                    end
                end
             else
-               Labels = {'Session' 'Breast' 'View' 'Patient'};
                for il = 1:numel(Labels)
                    Roi.(Labels{il}) = 'none';
                end

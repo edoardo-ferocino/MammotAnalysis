@@ -97,7 +97,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     FitData(:,XColID).Variables = flip(FitData(:,XColID).Variables);
     Fit.Params = Params;Fit.Type = Type;Fit.Filters = Filters;Fit.Data = FitData;
     Fit.DataFilePath = MPOBJ.Data.FitFilePath{infile};
-    SetFitFilters(Fit,MPOBJ.Data.FitFilePath{infile});
+    SetFitFilters(Fit,MPOBJ.Data.FitFilePath{infile},MPOBJ.Graphical.AutoRunFit.Value);
 end
 MPOBJ.SelectMultipleFigures([],[],'show');
 MPOBJ.StopWait;

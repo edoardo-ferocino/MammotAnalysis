@@ -1,4 +1,4 @@
-function SetFitFilters(Fit,FitFilePath)
+function SetFitFilters(Fit,FitFilePath,AutoRun)
 [~,FileName,~]=fileparts(FitFilePath);
 FigFilterName = ['Select filters - ' FileName];
 mfigobj = mfigure('Name',FigFilterName,'NumberTitle','off','Toolbar','None','MenuBar','none','Category','Filters');
@@ -15,4 +15,7 @@ for ifil = 1:numel(Filters)
 end
 uicontrol(mfigobj.Figure,'Style','pushbutton','Units','Normalized','Position',[0.92 0.92 0.08 0.08],'String','Run','Callback',{@RunFit,poph,Fit,mfigobj});
 mfigobj.Show('off');
+if AutoRun
+  RunFit([],[],poph,Fit,mfigobj);
+end
 end
