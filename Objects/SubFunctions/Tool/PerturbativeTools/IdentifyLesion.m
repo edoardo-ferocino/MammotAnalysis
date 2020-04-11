@@ -27,10 +27,9 @@ for ir = 1:nroi
     dth = dch.createDatatip(sh);
     dth.Position = [flip(LesPos) val];
     dth.Draggable = Draggable;
+    delete(findobj(mfigobj.Figure,'tag','ok'));
     if strcmpi(type,'manual')
-        if isempty(findobj(mfigobj.Figure,'tag','ok'))
-            uicontrol(mfigobj.Figure,'Style','pushbutton','String','Ok','Units','normalized','Position',[0.95 0 0.05 0.05],'Callback',{@SetMin,mtoolobj,dth},'tag','ok');
-        end
+       uicontrol(mfigobj.Figure,'Style','pushbutton','String','Ok','Units','normalized','Position',[0.95 0 0.05 0.05],'Callback',{@SetMin,mtoolobj,dth},'tag','ok');
     else
        delete(findobj(mfigobj.Figure,'tag','ok'));
        mtoolobj.Parent.Data.Pert.LesionPosition = LesPos;
@@ -43,4 +42,5 @@ end
 function SetMin(~,~,mtoolobj,dch)
     LesPos = dch.Position(1:2);
     mtoolobj.Parent.Data.Pert.LesionPosition = flip(LesPos);
+    msgbox('Done!');
 end
