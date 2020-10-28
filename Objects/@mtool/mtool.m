@@ -5,7 +5,6 @@ classdef mtool < handle
         Axes maxes;                 % Axes object
     end
     properties (Hidden = true)
-        DefaultStatus;              % Status of tools
         Status;                     % Actual status of tools
     end
     properties
@@ -21,9 +20,8 @@ classdef mtool < handle
             mtoolobj.Axes = maxesobj;
             for im = 1:mfigobj.nSubMenu
                 toolname = mtoolobj.GetToolName(mfigobj.SubMenu(im));
-                mtoolobj.DefaultStatus.(toolname) = 0;
+                mtoolobj.Status.(toolname) = 0;
             end
-            mtoolobj.Status = mtoolobj.DefaultStatus;
         end
     end
     methods
@@ -61,6 +59,8 @@ classdef mtool < handle
                     ApplyFiguresTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
                 case 'perturbative'
                     ApplyPerturbativeTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
+                case 'fit'
+                    ApplyFitTool(mtoolobjs,completetoolname,splittedtoolname(2:end));
             end
             notify(mtoolobjs(1).Parent,'AxesSelection');
         end

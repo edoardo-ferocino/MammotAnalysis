@@ -9,9 +9,10 @@ for iobj = 1:nobjs
     mtoolactvobj = mtoolobj(iobj);
     switch toolname{1}
         case 'save'
-            [FileName,FilePath,FilterIndex]=uiputfilecustom('*.fig',mfigobjs(iobj).Name);
-            if FilterIndex == 0, return; end
-            savefig(mfigobjs(iobj).Figure,fullfile(FilePath,FileName))
+            mfigobjs(iobj).Save;
+        case 'load'
+            mfigobjs(iobj).Load;
+            nobjs = 1;
     end
     if dosetstatus==true
         mtoolactvobj.Status.(completetoolname) = 1;
@@ -20,7 +21,7 @@ for iobj = 1:nobjs
         history.roi = mtoolactvobj.Roi;
         history.data = maxesactvobj.ImageData;
         history.toolname = completetoolname;
-        history.message = message;
+        history.message = 'Figure saved';
         notify(maxesactvobj,'ToolApplied',historyeventdata(history));
     end
 end

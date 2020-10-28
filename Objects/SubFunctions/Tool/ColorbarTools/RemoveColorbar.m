@@ -1,5 +1,6 @@
 function RemoveColorbar(maxesobj)
-dch=findobj('Tag',[maxesobj.Parent.Tag maxesobj.Name 'down']);
-uch=findobj('Tag',[maxesobj.Parent.Tag maxesobj.Name 'up']);
-delete([dch uch]);
+delete(maxesobj.Graphical.dch);
+delete(maxesobj.Graphical.uch);
+maxesobj.Graphical = rmfield(maxesobj.Graphical,'dch');
+maxesobj.Graphical = rmfield(maxesobj.Graphical,'uch');
 end

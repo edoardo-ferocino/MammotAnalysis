@@ -1,8 +1,8 @@
 function PlotGates(Wave,FileName,mtoolobj)
 mfigobj=mfigure('Name',['Gates - ',FileName],'WindowState','maximized','Category','Gates');
 mfigobj.StartWait;
-if isfield(mfigobj.Data,'Graphicals')
-    delete(mfigobj.Data.Graphicals);
+if isfield(mfigobj.Graphicals,'NaviGates')
+    delete(mfigobj.Graphicals.NaviGates);
 end
 Wavelengths = mfigobj.Wavelengths;
 nSub = numSubplots(numel(Wavelengths));

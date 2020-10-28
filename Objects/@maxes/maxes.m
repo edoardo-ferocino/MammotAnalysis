@@ -5,6 +5,7 @@ classdef maxes < handle
     end
     properties
         History;                % History struct for the axes
+        Graphical;              % Graphical objects;
     end
     properties (Dependent)
         ImageData;              % Data of the image
@@ -33,7 +34,7 @@ classdef maxes < handle
             % Creation of maxesobj
             maxesobj.Parent = mfigobj;
             maxesobj.axes = axesh;
-            maxesobj.Image = findobj(axesh,'type','image');
+            maxesobj.Image = findobj(axesh.Children,'type','image');
             if isempty(maxesobj.Image)
                 maxesobj.Tool = mtool(maxesobj,maxesobj.Parent);
                 return;
@@ -64,7 +65,13 @@ classdef maxes < handle
                 case 'SO2'
                     colorbartitle = '%';
                 otherwise
-                    colorbartitle = 'tbd';
+                    if contains(maxesobj.Parent.Name,'Counts','IgnoreCase',true)
+                        colorbartitle = 'ph';
+                    elseif contains(maxesobj.Parent.Name,'Count rate','IgnoreCase',true)
+                        colorbartitle = 'ph/s';
+                    else
+                        colorbartitle = 'tbd';
+                    end
             end
             if contains(maxesobj.Name,'absorption','IgnoreCase',true)
                 maxesobj.Name = regexprep(maxesobj.Name,'absorption','\\mu_{a}','ignorecase');

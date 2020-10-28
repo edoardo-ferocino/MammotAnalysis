@@ -48,7 +48,7 @@ for ipage = 1:numel(Page)
 end
 %delete(subH((numel(Fit.Params)-2)*numel(Page)+1:end));
 mfigobj.AddAxesToFigure;
-mfigobj.Show('off');
+mfigobj.Hide;
 mfigobj.SelectMultipleFigures([],[],'show');
 warning('on','MATLAB:table:ModifiedVarnames');
 end

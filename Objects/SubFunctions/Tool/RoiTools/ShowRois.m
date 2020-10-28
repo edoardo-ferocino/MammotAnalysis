@@ -1,7 +1,7 @@
 function message = ShowRois(mtoolobj)
 mtoolobj(1).Parent.StartWait;
-showroimfigobj=mfigure('Name','Show rois','Tag','ShowRoi','FigType','Side','Uifigure','true','Category','ShowRoi');
-delete(setdiff(findobj(showroimfigobj.Figure),vertcat(showroimfigobj.Figure,showroimfigobj.OtherFiguresSelectedH)));
+showroimfigobj=mfigure('Name','Show rois','Tag','ShowRoi','Uifigure','true','Category','ShowRoi');
+delete(setdiff(findobj(showroimfigobj.Figure),vertcat(showroimfigobj.Figure,showroimfigobj.Graphical.MultiSelFigPanel,showroimfigobj.Graphical.MultiSelAxPanel)));
 AllData = table.empty;AllStyles = matlab.ui.style.Style.empty;
 nobjs = numel(mtoolobj);
 for iobj = 1:nobjs

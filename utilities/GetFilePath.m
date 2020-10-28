@@ -1,6 +1,7 @@
-function GetFilePath(pushbuttonobj,~,type)
-mfigobj = ancestor(pushbuttonobj,'figure');
-mfigobj = mfigobj.UserData.mfigobj;
+function GetFilePath(~,~,type)
+global MPFOBJ
+mfigobj = MPFOBJ;
+mfigobj.StartWait;
 switch type
     case 'fit'
         Filter = {'*.txt','FIT output'};
@@ -22,8 +23,7 @@ switch type
         return;
 end
 [FileName,PathName,FilterIndex]=uigetfilecustom(Filter);
-if FilterIndex == 0, return, end
-mfigobj.StartWait;
+if FilterIndex == 0, mfigobj.StopWait; return, end
 if ~iscell(FileName)
     FileName = cellstr(FileName);
 end

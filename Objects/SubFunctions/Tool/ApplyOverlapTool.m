@@ -1,4 +1,4 @@
-function ApplyOverlapTool(mtoolobj,completetoolname,toolname)
+function ApplyOverlapTool(mtoolobj,completetoolname,~)
 nobjs = numel(mtoolobj);
 dosetstatus = false;
 dosethistory = true;

@@ -1,9 +1,9 @@
 function GetKeyboardShortcut(mfigobj,~,~)
 % Respond to pressing of the keyboard
-
 if ~isnan(str2double(mfigobj.Figure.CurrentCharacter))
     selectedaxes = str2double(mfigobj.Figure.CurrentCharacter);
     if selectedaxes<=mfigobj.nAxes
+        selectedaxes = mfigobj.nAxes - selectedaxes + 1;
         mfigobj.Axes(selectedaxes).ToogleSelect;
     end
 elseif ischar(mfigobj.Figure.CurrentCharacter)

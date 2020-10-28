@@ -13,8 +13,8 @@ for iobj = 1:nobjs
                 message = 'Point Reference choice disabled';
             end
         case 'navigate'
-            delete(mtoolactvobj.Parent.Data.Graphicals);
-            mtoolactvobj.Parent.Data=rmfield(mtoolactvobj.Parent.Data,'Graphicals');
+            delete(mtoolactvobj.Parent.Graphicals.NaviGates);
+            mtoolactvobj.Parent.Graphicals=rmfield(mtoolactvobj.Parent.Graphicals,'NaviGates');
             message = 'Navigate tools deleted';
     end
     if dosetstatus

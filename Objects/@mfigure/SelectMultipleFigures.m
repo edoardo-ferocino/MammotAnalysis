@@ -11,7 +11,11 @@ if strcmpi(operation,'show')
 else
     treemfigobj.Figure.Name = ['Multiple figure selection. ',helpname];
 end
-treeh=findobj(treemfigobj.Figure,'type','uitree');
+if ~isfield(treemfigobj.Graphical,'treeh')
+    treeh = [];
+else
+    treeh = treemfigobj.Graphical.treeh;
+end
 if isempty(treeh)
     mfigobj.StartWait
     treeh = uitree(treemfigobj.Figure);
@@ -26,10 +30,10 @@ if isempty(treeh)
         ,'Text','Ok','ButtonPushedFcn',{@OkAndClose,treemfigobj,treeh});
     uibutton(treemfigobj.Figure,'Position',[obh.Position(1)+obh.Position(3) treeh.Position(2)+treeh.Position(4) 60 22] ...
         ,'Text','Exit','ButtonPushedFcn',{@Exit,treemfigobj,treeh});
+    treemfigobj.Graphical.dbh = dbh;
 end
 treeh.SelectionChangedFcn = {@GetSelection,allmfigobjs,operation};
-dbh=findobj(treemfigobj.Figure,'type','uibutton','Tag','Deselect');
-dbh.ButtonPushedFcn = {@Deselect,allmfigobjs,treeh,operation};
+treemfigobj.Graphical.dbh.ButtonPushedFcn = {@Deselect,allmfigobjs,treeh,operation};
 delete(treeh.Children);
 [~,order]=sort({allmfigobjs.Name});
 allmfigobjs=allmfigobjs(order);
@@ -42,6 +46,7 @@ for icn = 1:numel(categorynodes)
     arrayfun(@(iaf) uitreenode(categorynodes(icn),'Text',allmfigobjs(iaf).Name,'NodeData',allmfigobjs(iaf)),find(strcmpi(allcategories,categorynodes(icn).Text)));
 end
 expand(treeh,'all');
+treemfigobj.Graphical.treeh = treeh;
 end
 function GetSelection(treeh,event,allmfigobjs,operation)
 actnode = setdiff(event.SelectedNodes,event.PreviousSelectedNodes);
@@ -76,9 +81,9 @@ end
 function OkAndClose(~,~,mfigobj,treeh)
 mfigobj.Data.ExitStatus = 'Ok';
 mfigobj.Data.SelectedFigure = treeh.SelectedNodes.NodeData;
-close(mfigobj.Figure);
+mfigobj.Hide;
 end
 function Exit(~,~,mfigobj,~)
 mfigobj.Data.ExitStatus = 'Exit';
-close(mfigobj.Figure);
+mfigobj.Hide;
 end

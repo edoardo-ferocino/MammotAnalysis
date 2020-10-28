@@ -75,6 +75,7 @@ classdef mroi < handle
             RoiData = ImageData.*shapeobj.createMask;
             RoiData(RoiData==0) = NaN;
             Roi.ID = mroiobj.ID;
+            Roi.FileName = maxesobj.Parent.Data.FileName;
             Roi.FigureName = maxesobj.Parent.Name;
             Roi.AxesName = maxesobj.Name;
             Roi.Name = mroiobj.Name;

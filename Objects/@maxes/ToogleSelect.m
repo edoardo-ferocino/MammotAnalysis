@@ -35,5 +35,6 @@ for iobj = 1:numel(maxesobj)
         end
     end
 end
+
 notify(maxesobj(1).Parent,'AxesSelection');
 end

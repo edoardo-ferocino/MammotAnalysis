@@ -18,10 +18,10 @@ uicontrol(ContainerH,'Style','edit','String',num2str(Wave(SubID).DefaultGate),'U
     'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0 0 0],'Callback',{@GotoPage,SubH,SubID,Wave,mtoolobj},'Tag','GateID');
 uicontrol(ContainerH,'Style','text','String','Goto gate #','Units','normalized',...
     'Position',DecreasePushH.Position+[DecreasePushH.Position(3) 0.5 0 0]);
-if ~isfield(mtoolobj.Parent.Data,'Graphicals')
-    mtoolobj.Parent.Data.Graphicals = ContainerH;
+if ~isfield(mtoolobj.Parent.Graphicals,'NaviGates')
+    mtoolobj.Parent.Graphicals.NaviGates = ContainerH;
 else
-    mtoolobj.Parent.Data.Graphicals = vertcat(mtoolobj.Parent.Data.Graphicals,ContainerH);
+    mtoolobj.Parent.Graphicals.NaviGates = vertcat(mtoolobj.Parent.Graphicals.NaviGates,ContainerH);
 end
 SubH.UserData.WaveID = SubID;
 SubH.UserData.MinVal = 1;SubH.UserData.MaxVal = Wave(SubID).NumGate;

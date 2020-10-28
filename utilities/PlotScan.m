@@ -5,6 +5,7 @@ if ~isfield(MPOBJ.Data,'DatFilePath')
 end
 %% StartWait
 MPOBJ.StartWait;
+drawnow
 %% Read data
 for infile = 1:MPOBJ.Data.DatFileNumel
     clearvars('-except','MPOBJ','infile');
@@ -19,9 +20,9 @@ for infile = 1:MPOBJ.Data.DatFileNumel
     while(OnlinePlotCond)
         if MPOBJ.Graphical.OnlinePlot.Value
             copyfile([fullfile(Path,FileName),'.DAT'],[TempFilePath,'.DAT']);
-            [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead(fullfile(Path,FileName),'ForceReading',true,'Datatype','uint32');
+            [RawData,H,CH,SUBH,~,~,DataSize,~]=DatRead(fullfile(Path,FileName),'ForceReading',true,'Datatype','uint32');
         else
-            [RawData,H,CH,SUBH,~,~,DataSize,DataType]=DatRead(fullfile(Path,FileName),'ForceReading',true);
+            [RawData,H,CH,SUBH,~,~,DataSize,~]=DatRead(fullfile(Path,FileName),'ForceReading',true);
         end
         [~,~,NumChan,NumBin]=size(RawData);
         if NumBin == 1
@@ -54,10 +55,8 @@ for infile = 1:MPOBJ.Data.DatFileNumel
             mfigobjs = mfigure('Name',['Count rate per channel (all lambda) - ' FileName],'WindowState','maximized','Category','Channels');
             nsub = numSubplots(NumChan);
             tiledlayout(nsub(1),nsub(2),'Padding','compact','TileSpacing','none');
-            %subplot1(nsub(1),nsub(2));
             for ich = 1 : NumChan
                 nexttile
-                %subplot1(ich);
                 imagesc(CountRateAllLambdas(:,:,ich));
                 title(['Channel ',num2str(ich)]);
             end
@@ -67,7 +66,6 @@ for infile = 1:MPOBJ.Data.DatFileNumel
             mfigobjs(end+1)=mfigure('Name',['Count rate (bkg free) per lambda (all channels) - ' FileName],'WindowState','maximized','Category','Wavelengths');
             nSub = numSubplots(numel(Wavelengths));
             tiledlayout(nSub(1),nSub(2),'Padding','none','TileSpacing','none');
-            %subplot1(nSub(1),nSub(2));
             ActCounts = BkgSubtract(RawVisualData,str2double(MPOBJ.Graphical.BkgFirst.String):str2double(MPOBJ.Graphical.BkgLast.String),'noneg');
             TotalReferenceMask = true(NumRows,NumCols);
             for iw = 1:numel(Wavelengths)
@@ -91,7 +89,6 @@ for infile = 1:MPOBJ.Data.DatFileNumel
                 Wave(iw).MedianBar = median(Wave(iw).Bar,'all','omitnan');
                 Wave(iw).BarMask = Wave(iw).Bar>(Wave(iw).MedianBar*MedianPercentageTreshold);
                 nexttile;
-                %subplot1(iw);
                 imagesc(Wave(iw).CountRateAllChan);
                 ReferenceMask = Wave(iw).BarMask;
                 TotalReferenceMask = and(TotalReferenceMask,ReferenceMask);
@@ -134,28 +131,18 @@ for infile = 1:MPOBJ.Data.DatFileNumel
     end
     %% "Save" figures
     for ifigs = 1:numel(mfigobjs)
-        %     mfigobjs(ifigs).Data.VisualDatData = RawVisualData;
         mfigobjs(ifigs).Data.DatInfo.RawData = RawData;
         tempdata=sum(RawData,[3 4]);
         mfigobjs(ifigs).Data.Border = find(tempdata(1,:)~=0,1,'last');
-        %     mfigobjs(ifigs).Data.Numel2Pad = size(RawData,1)-size(RawVisualData,1);
-        %     mfigobjs(ifigs).Data.CompiledHeaderData = CH;
-        %     mfigobjs(ifigs).Data.HeaderData = H;
-        %     mfigobjs(ifigs).Data.SubHeaderData = SUBH;
-        %     mfigobjs(ifigs).Data.DataType = DataType;
-        %     mfigobjs(ifigs).Data.DataSize = DataSize;
         mfigobjs(ifigs).Data.DatInfo.H = H;
         mfigobjs(ifigs).Data.DatInfo.SUBH = SUBH;
         mfigobjs(ifigs).Data.DatInfo.CH = CH;
         mfigobjs(ifigs).Data.DataFilePath=MPOBJ.Data.DatFilePath{infile};
-        %     mfigobjs(ifigs).Data.InfoData.Name = CH.LabelName;
-        %     mfigobjs(ifigs).Data.InfoData.Value = CH.LabelContent;
-        %     mfigobjs(ifigs).Data.TrsSet = TrsSet;
         mfigobjs(ifigs).Data.TotalReferenceMask = TotalReferenceMask;
         mfigobjs(ifigs).Data.FileName = FileName;
         mfigobjs(ifigs).ScaleFactor = abs(CH.LoopDelta(1));
         mfigobjs(ifigs).AddAxesToFigure;
-        mfigobjs(ifigs).Show('off');
+        mfigobjs(ifigs).Hide;
     end
 end
 MPOBJ.SelectMultipleFigures([],[],'show');

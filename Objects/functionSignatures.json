@@ -8,7 +8,6 @@
 			{"name":"Uifigure", "kind":"namevalue", "type":["char","choices={'true','false'}"]},
             {"name":"Category", "kind":"namevalue", "type":["char","choices={'None','Counts','Spectral','Compare','Gated'}"]},
             {"name":"Volatile", "kind":"namevalue", "type":["char","choices={'true','false'}"]},
-            {"name":"FigType", "kind":"namevalue", "type":["char","choices={'Side','Data'}"]},
             {"name":"opts", "kind":"properties", "type":["matlab.ui.Figure"]}
         ]
     },

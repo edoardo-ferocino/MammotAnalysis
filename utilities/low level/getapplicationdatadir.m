@@ -47,7 +47,7 @@ else
     appDir = fullfile(allAppDir, ['~' appicationName],[]);
 end
 if doCreate
-    [success, msg, msgID] = mkdir(appDir); %#ok<NASGU>
+    [success, msg, ~] = mkdir(appDir);
     if success ~= 1
         error('getapplicationdatadir:create', ...
             'Unable to create application data directory\n%s\nDetails: %s', ...

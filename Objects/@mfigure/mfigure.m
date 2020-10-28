@@ -6,12 +6,11 @@ classdef mfigure < handle
     properties
         Figure;                 %figure
         Category;               %category of figure (spectral,counts...)
-        FigType;                %figure type: containing data or adjoints
         Name;                   %figure name
         Axes maxes;             %axes object handle (one for each axes)
         Tools mtool;            %tool object handle (one for each axes)
-        Graphical;              % general graphical handles
-        Data;                   % similar to UserData
+        Graphical;              %general graphical handles
+        Data;                   %similar to UserData
     end
     properties (SetAccess = immutable)
         Tag;                    %figure tag. Unique identifier
@@ -20,7 +19,7 @@ classdef mfigure < handle
         spacer = '%';           %spacer for toolnames
         TagBase = 'mfigure';    %tag base name
         SelectedColor = [1 0.87 0.87];  %color for selection
-        MainPanelTag = strcat('mfigure%MainPanel');
+        MainPanelTag = strcat('mfigure%MainPanel'); %identifier for main panel
     end
     properties (Constant)
         Wavelengths = [635 680 785 905 933 975 1060]';
@@ -29,25 +28,25 @@ classdef mfigure < handle
         nMenu=0;                  %numel total menus
         nMainMenu=0;              %numel main menus
         nSubMenu=0;               %numel sub menus
+        nAxes=0;                  %numel axes
+        nTool=0;                  %numel tool objects
         Menu;                     %figure menus handle
         MainMenu;                 %main menus handle
         SubMenu;                  %submenus handle
-        ScaleFactor = 2;
-        OtherFiguresSelectedH;
+        ScaleFactor;              %factor from pixel to mm
     end
     properties (Dependent)
         Selected;               %figure is selected for multiple apply of tools (or shortcut for selecting all axes of a figure)
     end
     properties (Dependent,Hidden = true)
-        nAxes;                  %numel axes
-        nTool;                  %numel tool objects
+        StrictSelected
     end
     methods
         function mfigobj = mfigure(varargin)
             %Object creator
+            global MPFOBJ;
             [figureargs,otherargsstruct]=parseInputs(varargin);
             isuifigure=otherargsstruct.uifigure;
-            isvolatile=otherargsstruct.volatile;
             figh = [];
             if ishandle(figureargs{1})
                 figh = figureargs{1};
@@ -66,9 +65,9 @@ classdef mfigure < handle
             end
             if isempty(figh)
                 if isuifigure
-                    figh=findall(groot, 'HandleVisibility', 'off','-and','Tag',strcat(mfigobj.TagBase,mfigobj.spacer,tag));
+                    figh=findall(groot,'HandleVisibility', 'off','-and','Tag',strcat(mfigobj.TagBase,mfigobj.spacer,tag));
                 else
-                    figh=findobj(groot,'Tag',strcat(mfigobj.TagBase,mfigobj.spacer,tag));
+                    figh=findobj('Tag',strcat(mfigobj.TagBase,mfigobj.spacer,tag));
                 end
             else
                 mfigobj.Figure = figh;
@@ -77,40 +76,62 @@ classdef mfigure < handle
                     figh.(propname)=figureargs{iar+1};
                 end
                 mfigobj.Figure.Tag = strcat(mfigobj.TagBase,mfigobj.spacer,tag);
-                figh.UserData.mfigobj = mfigobj;
+                mfigobj.Tag = mfigobj.Figure.Tag;
+                mfigobj.AddFigObj(mfigobj);
             end
             if isvalid(figh)
                 figure2(figh);
-                mfigobj = figh.UserData.mfigobj;
+                mfigobj = mfigobj.GetFigObj(figh);
             else
                 mfigobj.Figure = figure2(figureargs{:},'uifigure',logic2str(isuifigure));
                 mfigobj.Figure.Tag = strcat(mfigobj.TagBase,mfigobj.spacer,mfigobj.Figure.Tag);
             end
             mfigobj.Tag = mfigobj.Figure.Tag;
-            mfigobj.Figure.UserData.mfigobj = mfigobj;
             mfigobj.Name = mfigobj.Figure.Name;
-            mfigobj.FigType = otherargsstruct.figtype;
             mfigobj.Category = otherargsstruct.category;
-            if ~isvolatile
-                mfigobj.Figure.CloseRequestFcn = @mfigobj.SetFigureInvisible;
-            end
+            mfigobj.Data.Category = mfigobj.Category;
+            mfigobj.Figure.CloseRequestFcn = @ClReq;
             if strcmpi(mfigobj.Tag,mfigobj.MainPanelTag)
                 mfigobj.CreateMenuBar;
                 mfigobj.CreateMenuSelectFunctions;
+                MPFOBJ = mfigobj;
             end
-            if isempty(mfigobj.OtherFiguresSelectedH)
-                mfigobj.OtherFiguresSelectedH=uipanel(mfigobj.Figure,'BorderType','none','Position',[0.97 0.97 0.03 0.03]);
+            mfigobj.Graphical.MultiSelFigPanel = findobj(mfigobj.Figure,'Tag',...
+                    strcat(mfigobj.Tag,mfigobj.spacer,'MultiFigPanel'));
+            if isempty(mfigobj.Graphical.MultiSelFigPanel)
+                mfigobj.Graphical.MultiSelFigPanel=uipanel(mfigobj.Figure,'BorderType','none','Position',[0.97 0.97 0.03 0.03],...
+                    'tag',strcat(mfigobj.Tag,mfigobj.spacer,'MultiFigPanel'));
             end
+            mfigobj.Graphical.MultiSelAxPanel = findobj(mfigobj.Figure,'Tag',...
+                    strcat(mfigobj.Tag,mfigobj.spacer,'MultiAxPanel'));
+            if isempty(mfigobj.Graphical.MultiSelAxPanel)
+                mfigobj.Graphical.MultiSelAxPanel=uipanel(mfigobj.Figure,'BorderType','none','Position',[0 0.97 0.03 0.03],...
+                    'tag',strcat(mfigobj.Tag,mfigobj.spacer,'MultiAxPanel'));
+            end
+            
+            if isfield(MPFOBJ.Graphical,'Pixel2mm')
+                mfigobj.ScaleFactor = str2double(MPFOBJ.Graphical.Pixel2mm.String);
+            end
+            mfigobj.AddFigObj(mfigobj);
         end
-        function Save(mfigobj)
+        function Save(mfigobj,~,~)
             %Save Save figure
             mfigobj.StartWait
-            SaveFig(mfigobj.Figure);
+            SaveFig(mfigobj);
             mfigobj.StopWait
         end
+        function Load(mfigobj,~,~)
+            %Save Save figure
+            mfigobj.StartWait
+            LoadFig;
+            mfigobj.StopWait
+        end
+        
+        
         function AddAxesToFigure(mfigobj)
             %Create Axes and Tool objects
-            if mfigobj.nAxes~=0
+            ah = findobj(mfigobj.Figure,'type','axes');
+            if numel(ah)~=0
                 mfigobj.CreateMenuBar;
                 mfigobj.CreateMenuSelectFunctions;
                 dch=datacursormode(mfigobj.Figure);
@@ -120,9 +141,10 @@ classdef mfigure < handle
                 mfigobj.Figure.ToolBar = 'figure';
                 mfigobj.Figure.ButtonDownFcn = @mfigobj.ToogleSelect;
                 addlistener(mfigobj,'AxesSelection',@mfigobj.UpdateFigureMenu); % Update figure menus checked status
-                ah = findobj(mfigobj.Figure,'type','axes');
                 mfigobj.Axes = maxes.empty;
                 mfigobj.Tools = mtool.empty;
+                mfigobj.nAxes = numel(ah);
+                mfigobj.nTool = numel(ah);
                 for iah = 1:mfigobj.nAxes
                     mfigobj.Axes(iah,1) = maxes(ah(iah),mfigobj);
                     mfigobj.Tools(iah,1) = mfigobj.Axes(iah,1).Tool;
@@ -137,24 +159,14 @@ classdef mfigure < handle
             %Stop wait: restores pointer of figure
             StopWait(mfigobj.Figure)
         end
-        function Restore(mfigobj)
-            %Hard reset of figure
-            mfigobj.Figure.reset
-        end
-        function Show(mfigobj,varargin)
+        function Show(mfigobj)
             %Shows figure
-            if nargin>1
-                status = varargin{1};
-                mfigobj.Figure.Visible = status;
-            else
-                figure2(mfigobj.Figure);
-            end
+            figure2(mfigobj.Figure);
         end
-        function SetAsCurrentFigure(mfigobj)
-            %Set the figure are current
-            set(groot,'CurrentFigure',mfigobj.Figure);
+        function Hide(mfigobj)
+            mfigobj.Figure.Visible = 'off';
         end
-        function set.Selected(mfigobj,newdata)
+        function set.StrictSelected(mfigobj,newdata)
             % Set the selection of figure
             if logical(newdata) == true
                 mfigobj.Figure.Color = mfigobj.SelectedColor;
@@ -167,19 +179,11 @@ classdef mfigure < handle
                     mfigobj.Axes.ToogleSelect('off');
                 end
             end
-            allfigsobjs = mfigobj.GetAllFigs;
-            if sum(vertcat(allfigsobjs.Selected))>1
-                for ifigs = 1:numel(allfigsobjs)
-                    allfigsobjs(ifigs).OtherFiguresSelectedH.BackgroundColor = 'yellow';
-                    allfigsobjs(ifigs).OtherFiguresSelectedH.Title = num2str(sum(vertcat(allfigsobjs.Selected)));
-                end
-            else
-                for ifigs = 1:numel(allfigsobjs)
-                    allfigsobjs(ifigs).OtherFiguresSelectedH.BackgroundColor=allfigsobjs(ifigs).Figure.Color;
-                    allfigsobjs(ifigs).OtherFiguresSelectedH.Title = char.empty;
-                end
-            end
-            
+        end
+        function set.Selected(mfigobj,newdata)
+            % Set the selection of figure
+            mfigobj.StrictSelected = newdata;
+            mfigobj.UpdateMultiSelect
         end
         function out = get.Selected(mfigobj)
             % Get the selection of figure
@@ -189,21 +193,10 @@ classdef mfigure < handle
                 out = false;
             end
         end
-        function naxes=get.nAxes(mfigobj)
-            % Get the number of maxes objs
-            naxes=numel(findobj(mfigobj.Figure,'type','axes'));
-        end
-        function ntools=get.nTool(mfigobj)
-            % Get the number of mtool objs
-            ntools=numel(findobj(mfigobj.Figure,'type','image'));
-        end
         ToogleSelect(mfigobj,varargin); %Tool for toogle selection of figure
         function ShowMainPanel(mfigobj,~,~)
-            mainpanelmfigobj = mfigobj.GetAllFigs('Tag','MainPanel');
-            mainpanelmfigobj.Show;
-        end
-        function mainpanelmfigobj=GetMainPanel(mfigobj)
-            mainpanelmfigobj = mfigobj.GetAllFigs('Tag','MainPanel');
+            MPOBJ = mfigobj.GetMainPanel;
+            MPOBJ.Show;
         end
         function Close(mfigobj)
             nmfigobjs = numel(mfigobj);
@@ -214,10 +207,10 @@ classdef mfigure < handle
         end
         function Exit(mfigobj,~,~)
             MPOBJ=mfigobj.GetMainPanel;
-            sett = {'FractFirst' 'FractLast' 'BkgFirst' 'BkgLast' 'NumGates'}';
+            sett = {'FractFirst' 'FractLast' 'BkgFirst' 'BkgLast' 'NumGates' 'Pixel2mm'}';
             val = cellfun(@(is) num2cell(str2double(MPOBJ.Graphical.(is).String)),sett);
-            Data = cell2struct(val,sett); %#ok<PROPLC>
-            save('.\Settings\sett.mat','Data');
+            Sett = cell2struct(val,sett);
+            save('.\Settings\sett.mat','Sett');
             allmfigobjs = mfigobj.GetAllFigs('all');
             allmfigobjs.Close;
             run('.\utilities\Uninstaller.m');
@@ -225,44 +218,64 @@ classdef mfigure < handle
         end
     end
     methods (Static)
-        function Load(~,~,~)
-            [FileName,FilePath,FilterIndex]=uigetfilecustom('*.fig');
-            if FilterIndex == 0, return; end
-            if iscell(FileName)
-                cellfun(@(ifn) openfig(fullfile(FilePath,ifn)),FileName);
-            else
-                openfig(fullfile(FilePath,FileName));
-            end
+        function MPOBJ=GetMainPanel
+            global MPFOBJ
+            MPOBJ = MPFOBJ;
         end
-        
     end
     methods (Access = private)
         CreateMenuBar(mfigobj);
         CreateMenuSelectFunctions(mfigobj);
-        %CreateToolTips(mfigobj);
         SelectAllAxes(mfigobj,menuobj,event);  % mixed methods
         UpdateFigureMenu(mfigobj,mfig,event); % mixed methods
-        GetKeyboardShortcut(mfigobj,mfig,event) %mixed methods
-        function SetFigureInvisible(mfigobj,~,~)
-            mfigobj.Figure.Visible = 'off';
-        end
         ToolSelection(mfigobj,menuobj,event);  % mixed methods
         [completetoolname,varargout] = GetToolName(mfigobj,menuobj);
+        function HideFig(mfigobj,~,~)
+            mfigobj.Hide;
+        end
     end
     methods (Hidden = true)
         % Methods inherithed by children
-        mfigobj = SelectMultipleFigures(mfigobj,menuobj,event,operation,figurename);  % mixed methods
-        DeselectAll(mfigobj,menuobj,event);  % mixed methods
-        function allmfigobjs=GetAllFigs(mfigobj,varargin)
-            tag2find = char.empty;
-            if nargin>1
-                if strcmpi(varargin{1},'tag')
-                    tag2find = varargin{2};
+        function UpdateMultiSelect(mfigobj)
+            allfigsobjs = mfigobj.GetAllFigs;
+            if sum(vertcat(allfigsobjs.Selected))>1
+                for ifigs = 1:numel(allfigsobjs)
+                    allfigsobjs(ifigs).Graphical.MultiSelFigPanel.BackgroundColor = 'yellow';
+                    allfigsobjs(ifigs).Graphical.MultiSelFigPanel.Title = num2str(sum(vertcat(allfigsobjs.Selected)));
+                end
+            else
+                for ifigs = 1:numel(allfigsobjs)
+                    allfigsobjs(ifigs).Graphical.MultiSelFigPanel.BackgroundColor=allfigsobjs(ifigs).Figure.Color;
+                    allfigsobjs(ifigs).Graphical.MultiSelFigPanel.Title = char.empty;
                 end
             end
-            allfigs=findall(groot,'type','figure','-and','-regexp','Tag',strcat(mfigobj.TagBase,mfigobj.spacer,tag2find));
-            allmfigobjs=arrayfun(@(ifs)allfigs(ifs).UserData.mfigobj,1:numel(allfigs))';
-            if ~isempty(tag2find), return; end
+        end
+        mfigobj = SelectMultipleFigures(mfigobj,menuobj,event,operation,figurename);  % mixed methods
+        DeselectAll(mfigobj,menuobj,event);  % mixed methods
+        function AddFigObj(~,newobj)
+            global MPFOBJ
+            if ~isfield(MPFOBJ.Graphical,'allmfigobjs')
+                MPFOBJ.Graphical.allmfigobjs = newobj;
+            else
+                nfig = numel(MPFOBJ.Graphical.allmfigobjs);
+                isfigpresent = arrayfun(@(ifig)strcmp(MPFOBJ.Graphical.allmfigobjs(ifig).Tag,newobj.Tag),1:nfig);
+                if any(isfigpresent)
+                    MPFOBJ.Graphical.allmfigobjs(isfigpresent) = newobj;
+                else
+                    MPFOBJ.Graphical.allmfigobjs(end+1) = newobj;
+                end
+            end
+        end
+        function mfigobj = GetFigObj(mfigobj,figh)
+            MPFOBJ = mfigobj.GetMainPanel;
+            FigObjList = MPFOBJ.Graphical.allmfigobjs;
+            nfig = numel(FigObjList);
+            isfigpresent = arrayfun(@(ifig)strcmp(FigObjList(ifig).Tag,figh.Tag),1:nfig);
+            mfigobj = FigObjList(isfigpresent);
+        end
+        function allmfigobjs=GetAllFigs(mfigobj,varargin)
+            MPOBJ = mfigobj.GetMainPanel;
+            allmfigobjs = MPOBJ.Graphical.allmfigobjs;
             if nargin>1
                 if any(contains(varargin,'all'))
                     return
@@ -288,8 +301,8 @@ delete(tfh);
 isprops = repelem(isprops,2);
 figureargs = vertcat(figh,argin(isprops));
 otherargs = argin(~isprops);
-fields={'uifigure','category','figtype','volatile'};
-val = {false,'none','side',false};
+fields={'uifigure','category'};
+val = {false,'none'};
 for ifl = 1:numel(fields)
     otherargsstruc.(fields{ifl}) = val{ifl};
 end
@@ -297,12 +310,8 @@ for iot = 1:2:numel(otherargs)
     switch lower(otherargs{iot})
         case 'uifigure'
             val = str2logic(otherargs{iot+1});
-        case 'figtype'
-            val = otherargs{iot+1};
         case 'category'
             val = otherargs{iot+1};
-        case 'volatile'
-            val = str2logic(otherargs{iot+1});
     end
     otherargsstruc.(lower(otherargs{iot})) = val;
 end
@@ -312,4 +321,7 @@ if strcmpi(str,'true'),logic = true;else, logic = false;end
 end
 function str = logic2str(logic)
 if logic, str = 'true';else, str = 'false';end
+end
+function ClReq(figh,~,~)
+figh.Visible = 'off';
 end

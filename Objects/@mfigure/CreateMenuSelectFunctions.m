@@ -25,5 +25,8 @@ for im = 1:mfigobj.nSubMenu
     if contains(mfigobj.GetToolName(mfigobj.SubMenu(im)),'figuresload','IgnoreCase',true)
         mfigobj.SubMenu(im).MenuSelectedFcn = @mfigobj.Load;
     end
+    if contains(mfigobj.GetToolName(mfigobj.SubMenu(im)),'figuressave','IgnoreCase',true)
+        mfigobj.SubMenu(im).MenuSelectedFcn = @mfigobj.Save;
+    end
 end
 end
