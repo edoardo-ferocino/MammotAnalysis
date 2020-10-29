@@ -15,20 +15,28 @@ if ~isempty(varargin)
 end
 for iobj = 1:numel(maxesobj)
     maxesactvobj = maxesobj(iobj);
-    if strcmpi(maxesactvobj.Image.Selected,'on')&&~ImposeStatus||(ImposeStatus&&strcmpi(status,'off'))
-        maxesactvobj.Image.Selected = 'off';
+    if strcmpi(maxesactvobj.axes.Selected,'on')&&~ImposeStatus||(ImposeStatus&&strcmpi(status,'off'))
+        if ~isempty(maxesactvobj.Image)
+            maxesactvobj.Image.Selected = 'off';
+        else
+            maxesactvobj.axes.Selected = 'off';
+        end
         set(maxesactvobj.axes,'XColor','default');
         set(maxesactvobj.axes,'YColor','default');
-        if selectrois
+        if selectrois == true
             for ir = 1:maxesactvobj.Tool.nRoi
                 maxesactvobj.Tool.Roi(ir).Selected = false;
             end
         end
-    elseif strcmpi(maxesactvobj.Image.Selected,'off')&&~ImposeStatus||(ImposeStatus&&strcmpi(status,'on'))
-        maxesactvobj.Image.Selected = 'on';
+    elseif strcmpi(maxesactvobj.axes.Selected,'off')&&~ImposeStatus||(ImposeStatus&&strcmpi(status,'on'))
+        if ~isempty(maxesactvobj.Image)
+            maxesactvobj.Image.Selected = 'on';
+        else
+            maxesactvobj.axes.Selected = 'on';
+        end
         maxesactvobj.axes.XColor = 'red';
         maxesactvobj.axes.YColor = 'red';
-        if selectrois
+        if selectrois == true
             for ir = 1:maxesactvobj.Tool.nRoi
                 maxesactvobj.Tool.Roi(ir).Selected = true;
             end

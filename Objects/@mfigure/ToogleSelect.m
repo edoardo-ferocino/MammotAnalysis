@@ -1,5 +1,5 @@
 function ToogleSelect(mfigobj,varargin)
-% Axes selection tool
+% Figure selection tool
 ImposeStatus = false;
 status = 'nan';
 if nargin>1

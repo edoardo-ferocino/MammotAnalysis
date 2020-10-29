@@ -99,13 +99,13 @@ classdef mfigure < handle
             mfigobj.Graphical.MultiSelFigPanel = findobj(mfigobj.Figure,'Tag',...
                     strcat(mfigobj.Tag,mfigobj.spacer,'MultiFigPanel'));
             if isempty(mfigobj.Graphical.MultiSelFigPanel)
-                mfigobj.Graphical.MultiSelFigPanel=uipanel(mfigobj.Figure,'BorderType','none','Position',[0.97 0.97 0.03 0.03],...
+                mfigobj.Graphical.MultiSelFigPanel=uipanel(mfigobj.Figure,'BorderType','none','Position',[0.99 0.98 0.01 0.02],...
                     'tag',strcat(mfigobj.Tag,mfigobj.spacer,'MultiFigPanel'));
             end
             mfigobj.Graphical.MultiSelAxPanel = findobj(mfigobj.Figure,'Tag',...
                     strcat(mfigobj.Tag,mfigobj.spacer,'MultiAxPanel'));
             if isempty(mfigobj.Graphical.MultiSelAxPanel)
-                mfigobj.Graphical.MultiSelAxPanel=uipanel(mfigobj.Figure,'BorderType','none','Position',[0 0.97 0.03 0.03],...
+                mfigobj.Graphical.MultiSelAxPanel=uipanel(mfigobj.Figure,'BorderType','none','Position',[0 0.98 0.01 0.02],...
                     'tag',strcat(mfigobj.Tag,mfigobj.spacer,'MultiAxPanel'));
             end
             
@@ -154,10 +154,12 @@ classdef mfigure < handle
         function StartWait(mfigobj)
             %Start wait: changes pointer of figure to circle
             StartWait(mfigobj.Figure)
+            drawnow
         end
         function StopWait(mfigobj,varargin)
             %Stop wait: restores pointer of figure
             StopWait(mfigobj.Figure)
+            drawnow
         end
         function Show(mfigobj)
             %Shows figure

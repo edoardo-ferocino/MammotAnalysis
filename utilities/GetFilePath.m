@@ -31,7 +31,6 @@ FullPath = fullfile(PathName,FileName);
 mfigobj.Data.([DataType,'FilePath']) = FullPath;
 mfigobj.Data.([DataType,'FileNumel']) = numel(FullPath);
 mfigobj.Graphical.(['Disp',DataType,'FilePath']).String = strjoin(FileName,' - ');
-drawnow
 mfigobj.StopWait;
 end
 

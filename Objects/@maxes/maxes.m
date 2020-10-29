@@ -37,80 +37,80 @@ classdef maxes < handle
             maxesobj.Image = findobj(axesh.Children,'type','image');
             if isempty(maxesobj.Image)
                 maxesobj.Tool = mtool(maxesobj,maxesobj.Parent);
-                return;
-            end
-            maxesobj.CLim = GetPercentile(maxesobj.ImageData,[maxesobj.LowPercentile maxesobj.HighPercentile]);
-            maxesobj.OriginalCLim = maxesobj.CLim;
-            location = 'eastoutside';
-            if strcmpi(axesh.Parent.Type,'tiledlayout')
-                tlh = axesh.Parent;
-                if tlh.GridSize(1)<=tlh.GridSize(2)
-                    location = 'southoutside';
-                end
-            end
-            if isempty(maxesobj.Colorbar)
-                maxesobj.Colorbar = colorbar(axesh,'Location',location);
             else
-                maxesobj.Colorbar.Location = location;
-            end
-            switch maxesobj.Name
-                case 'A'
-                    colorbartitle = 'cm^{-1}';
-                case 'B'
-                    colorbartitle = 'adim';
-                case {'Hb','HbO2','HbTot'}
-                    colorbartitle = '\muM';
-                case {'Lipid','Collagen','Water'}
-                    colorbartitle = 'mg\\cm^{3}';
-                case 'SO2'
-                    colorbartitle = '%';
-                otherwise
-                    if contains(maxesobj.Parent.Name,'Counts','IgnoreCase',true)
-                        colorbartitle = 'ph';
-                    elseif contains(maxesobj.Parent.Name,'Count rate','IgnoreCase',true)
-                        colorbartitle = 'ph/s';
-                    else
-                        colorbartitle = 'tbd';
+                maxesobj.CLim = GetPercentile(maxesobj.ImageData,[maxesobj.LowPercentile maxesobj.HighPercentile]);
+                maxesobj.OriginalCLim = maxesobj.CLim;
+                location = 'eastoutside';
+                if strcmpi(axesh.Parent.Type,'tiledlayout')
+                    tlh = axesh.Parent;
+                    if tlh.GridSize(1)<=tlh.GridSize(2)
+                        location = 'southoutside';
                     end
+                end
+                if isempty(maxesobj.Colorbar)
+                    maxesobj.Colorbar = colorbar(axesh,'Location',location);
+                else
+                    maxesobj.Colorbar.Location = location;
+                end
+                switch maxesobj.Name
+                    case 'A'
+                        colorbartitle = 'cm^{-1}';
+                    case 'B'
+                        colorbartitle = 'adim';
+                    case {'Hb','HbO2','HbTot'}
+                        colorbartitle = '\muM';
+                    case {'Lipid','Collagen','Water'}
+                        colorbartitle = 'mg\\cm^{3}';
+                    case 'SO2'
+                        colorbartitle = '%';
+                    otherwise
+                        if contains(maxesobj.Parent.Name,'Counts','IgnoreCase',true)
+                            colorbartitle = 'ph';
+                        elseif contains(maxesobj.Parent.Name,'Count rate','IgnoreCase',true)
+                            colorbartitle = 'ph/s';
+                        else
+                            colorbartitle = 'tbd';
+                        end
+                end
+                if contains(maxesobj.Name,'absorption','IgnoreCase',true)
+                    maxesobj.Name = regexprep(maxesobj.Name,'absorption','\\mu_{a}','ignorecase');
+                    colorbartitle = 'cm^{-1}';
+                elseif contains(maxesobj.Name,'scattering','IgnoreCase',true)
+                    maxesobj.Name = regexprep(maxesobj.Name,'scattering','\\mu_{s}''','ignorecase');
+                    colorbartitle = 'cm^{-1}';
+                elseif contains(maxesobj.Name,'\mu_{a}','IgnoreCase',true)
+                    colorbartitle = 'cm^{-1}';
+                elseif contains(maxesobj.Name,'\mu_{s}''','IgnoreCase',true)
+                    colorbartitle = 'cm^{-1}';
+                elseif contains(maxesobj.Name,'gate','IgnoreCase',true)
+                    colorbartitle = 'counts';
+                end
+                maxesobj.Colorbar.Title.String = colorbartitle;
+                axesh.YDir = 'reverse';
+                axis(axesh,'image');
+                colormap(axesh,'pink');
+                shading(axesh,'interp');
+                %             drawnow
+                if ~isempty(axesh.XTickLabel)
+                    axesh.XTickLabel=cellstr(num2str(axesh.XTick'.*maxesobj.Parent.ScaleFactor));
+                    %                 maxesobj.axes.XTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.XTickLabel)*maxesobj.Parent.ScaleFactor));
+                end
+                if ~isempty(maxesobj.axes.YTickLabel)
+                    axesh.YTickLabel=cellstr(num2str(axesh.YTick'.*maxesobj.Parent.ScaleFactor));
+                    %                 maxesobj.axes.YTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.YTickLabel)*maxesobj.Parent.ScaleFactor));
+                end
+                maxesobj.History.Data = maxesobj.ImageData;
+                maxesobj.History.Message = {'Original Data'};
+                maxesobj.History.ToolName = 'originaldata';
+                maxesobj.History.Roi = [];
+                if isfield(maxesobj.Parent.Data,'PickData')
+                    maxesobj.History.PickData = maxesobj.Parent.Data.PickData;
+                else
+                    maxesobj.History.PickData = [];
+                end
+                addlistener(maxesobj,'ToolApplied',@maxesobj.UpdateHistory);
+                set(maxesobj.Image,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
             end
-            if contains(maxesobj.Name,'absorption','IgnoreCase',true)
-                maxesobj.Name = regexprep(maxesobj.Name,'absorption','\\mu_{a}','ignorecase');
-                colorbartitle = 'cm^{-1}';
-            elseif contains(maxesobj.Name,'scattering','IgnoreCase',true)
-                maxesobj.Name = regexprep(maxesobj.Name,'scattering','\\mu_{s}''','ignorecase');
-                colorbartitle = 'cm^{-1}';
-            elseif contains(maxesobj.Name,'\mu_{a}','IgnoreCase',true)
-                colorbartitle = 'cm^{-1}';
-            elseif contains(maxesobj.Name,'\mu_{s}''','IgnoreCase',true)
-                colorbartitle = 'cm^{-1}';
-            elseif contains(maxesobj.Name,'gate','IgnoreCase',true)
-                colorbartitle = 'counts';
-            end
-            maxesobj.Colorbar.Title.String = colorbartitle;
-            axesh.YDir = 'reverse';
-            axis(axesh,'image');
-            colormap(axesh,'pink');
-            shading(axesh,'interp');
-%             drawnow
-            if ~isempty(axesh.XTickLabel)
-                axesh.XTickLabel=cellstr(num2str(axesh.XTick'.*maxesobj.Parent.ScaleFactor));
-%                 maxesobj.axes.XTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.XTickLabel)*maxesobj.Parent.ScaleFactor));
-            end
-            if ~isempty(maxesobj.axes.YTickLabel)
-                axesh.YTickLabel=cellstr(num2str(axesh.YTick'.*maxesobj.Parent.ScaleFactor));
-%                 maxesobj.axes.YTickLabel=cellstr(num2str(cellfun(@str2num,maxesobj.axes.YTickLabel)*maxesobj.Parent.ScaleFactor));
-            end
-            maxesobj.History.Data = maxesobj.ImageData;
-            maxesobj.History.Message = {'Original Data'};
-            maxesobj.History.ToolName = 'originaldata';
-            maxesobj.History.Roi = [];
-            if isfield(maxesobj.Parent.Data,'PickData')
-               maxesobj.History.PickData = maxesobj.Parent.Data.PickData;
-            else
-               maxesobj.History.PickData = [];
-            end
-            addlistener(maxesobj,'ToolApplied',@maxesobj.UpdateHistory);
-            set(maxesobj.Image,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
             set(maxesobj.axes,'HitTest','on','PickableParts','visible','ButtonDownFcn',@maxesobj.ToogleSelect);
             maxesobj.Tool = mtool(maxesobj,maxesobj.Parent);
         end
@@ -133,12 +133,10 @@ classdef maxes < handle
             out = maxesobj.axes.CLim;
         end
         function set.Selected(maxesobj,newdata)     % set selection of axes
-            if isempty(maxesobj.Image),return; end
             maxesobj.ToogleSelect(logic2onoff(newdata));
         end
         function out = get.Selected(maxesobj)       % get selection of axes
-            if isempty(maxesobj.Image),out = false; return; end
-            out = onoff2logic(maxesobj.Image.Selected);
+            out = onoff2logic(maxesobj.axes.Selected);
         end
         function set.Name(maxesobj,newdata)
             maxesobj.axes.Title.String = newdata;

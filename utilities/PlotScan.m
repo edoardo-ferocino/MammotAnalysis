@@ -5,7 +5,6 @@ if ~isfield(MPOBJ.Data,'DatFilePath')
 end
 %% StartWait
 MPOBJ.StartWait;
-drawnow
 %% Read data
 for infile = 1:MPOBJ.Data.DatFileNumel
     clearvars('-except','MPOBJ','infile');
