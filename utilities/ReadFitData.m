@@ -43,7 +43,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
                 FitData.Properties.VariableNames(ic) = {'Patient'};
             end
         elseif strcmpi(FitData.Properties.VariableUnits{ic},'double')
-            if isequal(cats,MPOBJ.Wavelengths)
+            if ismember(cats,MPOBJ.Wavelengths)
               FitData.Properties.VariableNames(ic) = {'Lambda'};
             end
         end
