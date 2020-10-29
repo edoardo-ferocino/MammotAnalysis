@@ -1,30 +1,26 @@
-function PlotIrf(~,~,MFH)
-if ~isfield(MFH.UserData,'IrfFilePath')
-    errordlg('Please load the Irf file','Error');
+function PlotIrf(~,~,MPOBJ)
+if ~isfield(MPOBJ.Data,'IrfFilePath')
+    DisplayError('No data file','Please load the Data file');
     return
 end
 %% StartWait
-StartWait(MFH);
-
+MPOBJ.StartWait;
 %% Read data
-
-
-for infile = 1:MFH.UserData.IrfFileNumel
-    clearvars('-except','MFH','infile');
-    [Path ,FileName,~] = fileparts(MFH.UserData.IrfFilePath{infile});
-    
-    [RawIrf,H,CH,SUBH,~,~,DataSize,DataType]=DatRead3(fullfile(Path,FileName),'ForceReading',true);
+for infile = 1:MPOBJ.Data.IrfFileNumel
+    clearvars('-except','MPOBJ','infile');
+    CalcWidthLevel=MPOBJ.Data.CalcWidthLevel;
+    [Path ,FileName,~] = fileparts(MPOBJ.Data.IrfFilePath{infile});
+    [RawIrf,H,CH,SUBH,~,~,~,~]=DatRead(fullfile(Path,FileName),'ForceReading',true);
     [NumRep,NumChan,NumBin]=size(RawIrf);
-    if NumRep ~= 1 && NumChan == 1
-        NumBin = NumRep; NumRep = 1;
-        RawIrf = permute(RawIrf,[3 1 2]);
+    if NumBin == 1 && NumChan == 1
+        NumBin = NumRep; NumChan = 1;
+        RawIrf = permute(RawIrf,[2 1]);
+    else
+        RawIrf = squeeze(sum(RawIrf,1));
     end
-    
-    BinVect = 1:NumBin;
-    RawIrf = squeeze(sum(RawIrf,1));
-    Wavelengths = MFH.UserData.Wavelengths;
-    if isfield(MFH.UserData,'TRSSetFilePath')
-        TrsSet = TRSread(MFH.UserData.TRSSetFilePath);
+    Wavelengths = MPOBJ.Wavelengths;
+    if isfield(MPOBJ.Data,'TRSSetFilePath')
+        TrsSet = TRSread(MPOBJ.Data.TRSSetFilePath);
     else
         TrsSet.Roi = zeros(numel(Wavelengths),3);
         limits = round(linspace(0,NumBin-1,numel(Wavelengths)+1));
@@ -34,77 +30,56 @@ for infile = 1:MFH.UserData.IrfFileNumel
         end
     end
     
-    
     %% Analyze data
-        % Irf per channel
-        FH = CreateOrFindFig(['Irf per channel - ' FileName],'WindowState','maximized');
-        FH.UserData.FigCategory = 'IrfChannels';
-        nsub = numSubplots(NumChan);
-        subplot1(nsub(1),nsub(2),'yscale','log');
+    % Curve per channel
+    mfigobjs = mfigure('Name',['Curves per channel (all lambda) - ' FileName],'WindowState','maximized','Category','Irf');
+    nsub = numSubplots(NumChan);
+    tiledlayout(nsub(1),nsub(2),'Padding','compact','TileSpacing','none');
+    for ich = 1 : NumChan
+        nexttile
+        semilogy(1:NumBin,squeeze(RawIrf(ich,:)));
         xlim([1 NumBin]);
-        for ich = 1 : NumChan
-            subplot1(ich);
-            semilogy(BinVect,squeeze(RawIrf(ich,:)));
-            for iw = 2:numel(Wavelengths)+1
-                vline(TrsSet.Roi(iw-1,3)+1,'r','');
-            end
-            title(num2str(ich));
-        end
-        
-        
-        % Wavelenghts count rate
-        FH(end+1)=CreateOrFindFig(['Irf Wavelenghts - ' FileName],'WindowState','maximized');
-        FH(end).UserData.FigCategory = 'IrfWavelenghts';
-        nSub = numSubplots(numel(Wavelengths));
-        subH = subplot1(nSub(1),nSub(2),'yscale','log');
-        for iw = 1:numel(Wavelengths)
-            IrfWave(iw).Data = RawIrf(:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1);
-            for ich = 1:NumChan
-                IrfWave(iw).Chan(ich).Data = IrfWave(iw).Data(:,ich,:);
-            end
-            IrfWave(iw).SumChanData = squeeze(sum(IrfWave(iw).Data,1));
-            DataTable(iw) = GetStatistics(IrfWave(iw).SumChanData);
-            subplot1(iw);
-            semilogy(TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1,IrfWave(iw).SumChanData);
-            xlim([TrsSet.Roi(iw,2)+1 TrsSet.Roi(iw,3)+1]);
-            title(num2str(Wavelengths(iw)));
-        end
-        delete(subH(iw+1:end))
-        
-    FH(end+1) = CreateOrFindFig(['Overall Irf - ' FileName],'WindowState','maximized');
-    FH(end).UserData.FigCategory = 'IrfTotal';
-    AllChannIrf = squeeze(sum(RawIrf,1));
-    subH=subplot1(1,1,'yscale','log','min',[0.1 0.25]); subplot1(1);
-    semilogy(BinVect,AllChannIrf);
-    xlim([1 NumBin]);
-    for iw = 2:numel(Wavelengths)+1
-        vline(TrsSet.Roi(iw-1,3)+1,'r','');
+        title(['Channel ',num2str(ich)]);
     end
-    DataTableT = struct2table(DataTable); DataTableT.Width = DataTableT.Width.*CH.McaFactor;DataTableVar = DataTableT.Variables';
-    tbh = uitable(FH(end),'RowName',fieldnames(DataTable),'ColumnName',num2cell(Wavelengths),'Data',DataTableVar);
-    subH.Units = 'pixels'; 
-    tbh.ColumnWidth = repelem({subH.Position(3)/numel(Wavelengths)},numel(Wavelengths));
-    tbh.Position([3 4]) = tbh.Extent([3 4]);
-    tbh.Position(1)=subH.Position(1)-(tbh.Position(3)-subH.Position(3));
-    subH.Units = 'normalized';
-    title('Total Irf');
+    mfigobjs.Data.PickData = RawIrf';
+    
+    % Wavelenghts count rate
+    mfigobjs(end+1)=mfigure('Name',['Curves (bkg free) per lambda (all channels) - ' FileName],'WindowState','maximized','Category','Irf');
+    nSub = numSubplots(numel(Wavelengths));
+    tiledlayout(nSub(1),nSub(2),'Padding','none','TileSpacing','none');
+    ActAllChannelsCurves = IrfBkgSubtract(RawIrf,str2double(MPOBJ.Graphical.BkgFirst.String):str2double(MPOBJ.Graphical.BkgLast.String),'noneg');
+    for iw = 1:numel(Wavelengths)
+        Wave(iw).Data = ActAllChannelsCurves(:,TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1); %#ok<*AGROW>
+        Wave(iw).SummedChannelsData = squeeze(sum(Wave(iw).Data,1));
+        [Wave(iw).Width,Wave(iw).Bar] = CalcWidth(Wave(iw).SummedChannelsData(1,:),CalcWidthLevel);
+        nexttile;
+        semilogy(TrsSet.Roi(iw,2)+1:TrsSet.Roi(iw,3)+1,Wave(iw).SummedChannelsData)
+        xlim([TrsSet.Roi(iw,2)+1 TrsSet.Roi(iw,3)+1]);
+        title(['\lambda = ',num2str(Wavelengths(iw)),' nm']);
+    end
+    mfigobjs(end).Data.PickData = Wave;
+    
+    % Actual counts bkg free
+    mfigobjs(end+1) = mfigure('Name',['Curves (bkg free, all \lambda, all channel) - ' FileName],'WindowState','maximized','Category','Irf');
+    ActAllLambdaAllChannelsCurves = squeeze(sum(ActAllChannelsCurves,1));
+    semilogy(1:NumBin,ActAllLambdaAllChannelsCurves);
+    xlim([1 NumBin]);
+    title('Curves (bkg free, all \lambda, all channel)');
+    mfigobjs(end).Data.PickData = ActAllLambdaAllChannelsCurves';
     
     %% "Save" figures
-    for ifigs = 1:numel(FH)
-        FH(ifigs).UserData.ActualDatData = RawIrf;
-        FH(ifigs).UserData.CompiledHeaderData = CH;
-        FH(ifigs).UserData.HeaderData = H;
-        FH(ifigs).UserData.SubHeaderData = SUBH;
-        FH(ifigs).UserData.DataType = DataType;
-        FH(ifigs).UserData.DataSize = DataSize;
-        FH(ifigs).UserData.IrfFilePath=MFH.UserData.IrfFilePath{infile};
-        FH(ifigs).UserData.InfoData.Name = CH.LabelName;
-        FH(ifigs).UserData.InfoData.Value = CH.LabelContent;
-        FH(ifigs).UserData.TrsSet = TrsSet;
-        FH(ifigs).UserData.FileName = FileName;
+    for ifigs = 1:numel(mfigobjs)
+        mfigobjs(ifigs).Data.DatInfo.H = H;
+        mfigobjs(ifigs).Data.DatInfo.SUBH = SUBH;
+        mfigobjs(ifigs).Data.DatInfo.CH = CH;
+        mfigobjs(ifigs).Data.DataFilePath=MPOBJ.Data.IrfFilePath{infile};
+        mfigobjs(ifigs).Data.FileName = FileName;
+        mfigobjs(ifigs).ScaleFactor = abs(CH.LoopDelta(1));
+        mfigobjs(ifigs).AddAxesToFigure;
+        mfigobjs(ifigs).Hide;
     end
-    AddToFigureListStruct(FH,MFH,'data',MFH.UserData.IrfFilePath{infile});
 end
+MPOBJ.SelectMultipleFigures([],[],'show');
 %% StopWait
-StopWait(MFH)
+MPOBJ.StopWait;
 end
