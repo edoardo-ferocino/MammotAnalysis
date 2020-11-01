@@ -30,6 +30,7 @@ if isempty(allmh)
         uimenu(mdh,'Text','&Distance','Tag',[mdh.Tag mfigobj.spacer 'Distance']);
         uimenu(mdh,'Text','&Perimeter','Tag',[mdh.Tag mfigobj.spacer 'Perimeter']);
         uimenu(mdh,'Text','&Area','Tag',[mdh.Tag mfigobj.spacer 'Area']);
+        uimenu(mdh,'Text','&Curve Stats','Tag',[mdh.Tag mfigobj.spacer 'CurveStats']);
         %% Compare tools
         cmh=uimenu(mfigobj.Figure,'Text','C&ompare','Tag',[mfigobj.Tag mfigobj.spacer 'Compare']);
         uimenu(cmh,'Text','&New compare figure','Tag',[cmh.Tag mfigobj.spacer 'new']);
@@ -123,9 +124,6 @@ if isempty(allmh)
     fmh=uimenu(mfigobj.Figure,'Text','&Figures','Tag',[mfigobj.Tag mfigobj.spacer 'Figures']);
     uimenu(fmh,'Text','&Save','Tag',[fmh.Tag mfigobj.spacer 'Save']);
     uimenu(fmh,'Text','&Load','Tag',[fmh.Tag mfigobj.spacer 'Load']);
-    ffmh=uimenu(fmh,'Text','Format','Tag',[fmh.Tag mfigobj.spacer 'Format']);
-    uimenu(ffmh,'Text','png','Tag',[ffmh.Tag mfigobj.spacer 'png']);
-    uimenu(ffmh,'Text','svg','Tag',[ffmh.Tag mfigobj.spacer 'svg']);
     %% Add menus to mfigure object
     allmh = findobj(mfigobj.Figure,'type','uimenu');
 end

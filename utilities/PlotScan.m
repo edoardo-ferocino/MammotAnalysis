@@ -136,6 +136,7 @@ for infile = 1:MPOBJ.Data.DatFileNumel
         mfigobjs(ifigs).Data.DatInfo.H = H;
         mfigobjs(ifigs).Data.DatInfo.SUBH = SUBH;
         mfigobjs(ifigs).Data.DatInfo.CH = CH;
+        mfigobjs(ifigs).Data.TrsSet = TrsSet;
         mfigobjs(ifigs).Data.DataFilePath=MPOBJ.Data.DatFilePath{infile};
         mfigobjs(ifigs).Data.TotalReferenceMask = TotalReferenceMask;
         mfigobjs(ifigs).Data.FileName = FileName;

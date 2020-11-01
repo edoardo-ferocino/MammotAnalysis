@@ -72,6 +72,7 @@ for infile = 1:MPOBJ.Data.IrfFileNumel
         mfigobjs(ifigs).Data.DatInfo.H = H;
         mfigobjs(ifigs).Data.DatInfo.SUBH = SUBH;
         mfigobjs(ifigs).Data.DatInfo.CH = CH;
+        mfigobjs(ifigs).Data.TrsSet = TrsSet;
         mfigobjs(ifigs).Data.DataFilePath=MPOBJ.Data.IrfFilePath{infile};
         mfigobjs(ifigs).Data.FileName = FileName;
         mfigobjs(ifigs).ScaleFactor = abs(CH.LoopDelta(1));

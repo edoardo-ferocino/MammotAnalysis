@@ -31,6 +31,7 @@ if size(MP, 1) == 1  % Single monitor
     maxesobj.Parent.Figure.WindowState = 'normal';
 end
 mfigobj=mfigure('Name',['Pick curve of ',maxesobj.Name,'. ',maxesobj.Parent.Name],'Category','Pick Curve');
+mfigobj.Data = maxesobj.Parent.Data;
 Data = maxesobj.ImageData;
 PickData = maxesobj.Parent.Data.PickData;
 lambda = regexpi(maxesobj.Name,'\lambda\s=*\s(\d)+','tokens');
@@ -54,4 +55,5 @@ semilogy(1:numbin,squeeze(PickData(rpos,cpos,:)));
 xlim([1 numbin]);
 ylim([1 max(PickData(:))]);
 maxesobj.Parent.Show;
+mfigobj.AddAxesToFigure;
 end

@@ -2,6 +2,8 @@ function ApplyMeasureTool(mtoolobj,completetoolname,toolname)
 nobjs = numel(mtoolobj);
 dosetstatus = false;
 dosethistory = true;
+MPOBJ=mtoolobj(1).Axes.Parent.GetMainPanel;
+CalcWidthLevel = MPOBJ.Data.CalcWidthLevel;
 for iobj = 1:nobjs
     maxesactvobj = mtoolobj(iobj).Axes;
     mtoolactvobj = mtoolobj(iobj);
@@ -25,6 +27,14 @@ for iobj = 1:nobjs
             for is = 1:numel(selshapes)
                 addlistener(selshapes(is),'MovingROI',@(src,event)updateLabel(src,event,'Area',maxesactvobj.Parent.ScaleFactor));
                 updateLabel(selshapes(is),[],'Area',maxesactvobj.Parent.ScaleFactor);
+            end
+        case 'curvestats'
+            if iobj == 1
+                Stats = cell.empty(nobjs,0);
+            end
+            Stats{iobj} = GetCurveStats(maxesactvobj,CalcWidthLevel);
+            if iobj == nobjs
+                PlotCurveStats(Stats);
             end
     end
     if dosetstatus==true

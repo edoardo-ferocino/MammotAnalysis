@@ -10,9 +10,6 @@ for iobj = 1:nobjs
     switch toolname{1}
         case 'save'
             mfigobjs(iobj).Save;
-        case 'load'
-            mfigobjs(iobj).Load;
-            nobjs = 1;
     end
     if dosetstatus==true
         mtoolactvobj.Status.(completetoolname) = 1;
