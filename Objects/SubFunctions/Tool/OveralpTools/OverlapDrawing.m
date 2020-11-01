@@ -9,6 +9,10 @@ if isempty(Overlap)
         FullPathPicture = [PictFilePath,FileName];
     end
     ScannedImage = imread(FullPathPicture);
+    if ~ismatrix(ScannedImage)
+        ScannedImage = rgb2gray(ScannedImage);
+        ScannedImage(ScannedImage == 0) = 255;
+    end
     thresold=100;
     tScannedImage=ScannedImage<thresold;
     %Select the region of interest
@@ -22,7 +26,7 @@ if isempty(Overlap)
     % select the reference center in the scanner image (interp1)
     [XC1,YC1]=GetCenter(InterpolatedScannedImage);
     % open image of the breast and interpolate to PixelResoltution
-    TrimCoord=ShowTrimmerPoint(mtoolobj.Parent.Data.DataFilePath,mtoolobj.Axes.ImageData,mtoolobj.Parent.Data.Border);
+    TrimCoord=GetTrimmerPoint(mtoolobj.Parent.Data.DataFilePath,mtoolobj.Parent.Data.Border);
     if isempty(TrimCoord), return; end
 end
 TName = [tempname,'.tiff'];
@@ -80,12 +84,12 @@ mtoolobj.Axes.ImageData = rgb;
 mtoolobj.Axes.axes.XTickLabel=cellstr(num2str(mtoolobj.Axes.axes.XTick'*pixels_per_mm/PixelResolution*mtoolobj.Parent.ScaleFactor));
 mtoolobj.Axes.axes.YTickLabel=cellstr(num2str(mtoolobj.Axes.axes.YTick'*pixels_per_mm/PixelResolution*mtoolobj.Parent.ScaleFactor));
 
-    function TrimmCoord=ShowTrimmerPoint(DatFilePath,Data,Border)
+    function TrimmCoord=GetTrimmerPoint(DatFilePath,Border)
         TrimmCoord = [];
         [Path,FileName,~]=fileparts(DatFilePath);
         InfoFilePath = fullfile(Path,[FileName,'_info.txt']);
         if ~isfile(InfoFilePath)
-            [FileName,Path,FilterIndex]=uigetfilecustom(fullfile(fileparts(Path),'Data','*.txt'),'Select INFO file');
+            [FileName,Path,FilterIndex]=uigetfilecustom(fullfile(fileparts(Path),'Data','*.txt'),strcat('Select INFO - ',FileName,' - file'));
             if FilterIndex == 0, return, end
             InfoFilePath = [Path,FileName];
         end

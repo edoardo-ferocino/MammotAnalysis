@@ -18,9 +18,8 @@ for iobj = 1:numel(maxesobj)
     if strcmpi(maxesactvobj.axes.Selected,'on')&&~ImposeStatus||(ImposeStatus&&strcmpi(status,'off'))
         if ~isempty(maxesactvobj.Image)
             maxesactvobj.Image.Selected = 'off';
-        else
-            maxesactvobj.axes.Selected = 'off';
         end
+        maxesactvobj.axes.Selected = 'off';
         set(maxesactvobj.axes,'XColor','default');
         set(maxesactvobj.axes,'YColor','default');
         if selectrois == true
@@ -31,9 +30,8 @@ for iobj = 1:numel(maxesobj)
     elseif strcmpi(maxesactvobj.axes.Selected,'off')&&~ImposeStatus||(ImposeStatus&&strcmpi(status,'on'))
         if ~isempty(maxesactvobj.Image)
             maxesactvobj.Image.Selected = 'on';
-        else
-            maxesactvobj.axes.Selected = 'on';
         end
+        maxesactvobj.axes.Selected = 'on';
         maxesactvobj.axes.XColor = 'red';
         maxesactvobj.axes.YColor = 'red';
         if selectrois == true
