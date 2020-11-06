@@ -29,7 +29,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
                 FitData.Properties.VariableNames(ic) = {'Session'};
             elseif ~isempty(regexpi(cats{1},'rep\w?','match'))
                 FitData.Properties.VariableNames(ic) = {'Repetition'};
-            elseif ~isempty(regexpi(cats{1},'DX|SX|^R|^L','match'))
+            elseif ~isempty(regexpi(cats{1},'(?<!\w)DX(?!=\w)|(?<!\w)SX(?!=\w)|^R|^L','match'))
                 if strcmpi(cats{1},'DX')==false&&strcmpi(cats{1},'SX')==false
                     if strcmpi(cats{1},'r')||strcmpi(cats{1},'l')
                         FitData.Properties.VariableNames(ic) = {'Breast'};
@@ -37,9 +37,9 @@ for infile = 1:MPOBJ.Data.FitFileNumel
                 else
                     FitData.Properties.VariableNames(ic) = {'Breast'};
                 end
-            elseif ~isempty(regexpi(cats{1},'CC|OB','match'))
+            elseif ~isempty(regexpi(cats{1},'(?<!\w)CC(?!=\w)|(?<!\w)OB(?!=\w)','match'))
                 FitData.Properties.VariableNames(ic) = {'View'};
-            elseif ~isempty(regexpi(cats{1},'Patient','match'))
+            elseif ~isempty(regexpi(cats{1},'(Patient)\w?','match'))
                 FitData.Properties.VariableNames(ic) = {'Patient'};
             end
         elseif strcmpi(FitData.Properties.VariableUnits{ic},'double')
