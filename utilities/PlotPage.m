@@ -7,17 +7,24 @@ if(strcmpi(Fit.Type,'OptProps'))
     FigureName = ['Optical properties - ' Fit.FileName];
     Category = 'Mua&Mus';
     SelWave = Fit.Filters(vertcat(Fit.Filters.LambdaFilter)).SelectedCategory;
-else
+elseif(strcmpi(Fit.Type,'Spectral'))
     FigureName = ['Spectral - ' Fit.FileName];
     Category = 'Spectral';
+elseif(strcmpi(Fit.Type,'Dmua'))
+    FigureName = ['Dmua - ' Fit.FileName];
+    Category = 'Dmua';
+    SelWave = Fit.Filters(vertcat(Fit.Filters.LambdaFilter)).SelectedCategory;
 end
 mfigobj = mfigure('Name',FigureName,'Category',Category,'WindowState','maximized');
 mfigobj.Data.Fit = Fit;
 mfigobj.Data.DataFilePath = Fit.DataFilePath;
 mfigobj.Data.FileName = Fit.FileName;
-if numel(Page)>1
+if numel(Page)>1 && ~strcmpi(Fit.Type,'Dmua')
     nsub(2) = 2;
     nsub(1) = numel(Page);
+elseif numel(Page) > 1 && strcmpi(Fit.Type,'Dmua')
+    nsub(2) = numel(Page);
+    nsub(1) = 1;
 else
     [nsub]=numSubplots(numel(Fit.Params)-2);
 end
@@ -37,7 +44,7 @@ for ipage = 1:numel(Page)
             VisualPlotVar = PlotVar(sum(PlotVar,2,'omitnan')~=0,:);
             mfigobj.Data.Border = find(VisualPlotVar(1,:)~=0,1,'last');
             imagesc(VisualPlotVar);
-            if strcmpi(Fit.Type,'OptProps')
+            if ~strcmpi(Fit.Type,'Spectral')
                 titlename = [Fit.Params(ifit).Name ', \lambda = ',num2str(SelWave(ipage))];
             else
                 titlename = Fit.Params(ifit).Name;

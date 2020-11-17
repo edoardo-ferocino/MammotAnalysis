@@ -4,6 +4,7 @@ if ~isfield(MPOBJ.Data,'SpeFilePath')
     DisplayError('No spe file','Please load the spe file');
     return
 else
+    warning('off','MATLAB:table:ModifiedAndSavedVarnames');
     SpectraFileName = MPOBJ.Data.SpeFilePath{:};
     opts = detectImportOptions(SpectraFileName,'FileType','text');
     SpectraData=readtable(SpectraFileName,opts,'ReadVariableNames',1);%,'Delimiter','\t','EndOfLine','\r\n');
@@ -17,5 +18,6 @@ else
     Spe.Lambda = Lambda;
     Spe.Chromophores = SpectraData.Properties.VariableNames(2:end-1);
     Spe.Wavelengths = MPOBJ.Wavelengths;
+    warning('on','MATLAB:table:ModifiedAndSavedVarnames');
 end
 end

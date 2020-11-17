@@ -8,11 +8,28 @@ for infile = 1:MPOBJ.Data.FitFileNumel
     clearvars('-except','MPOBJ','infile');
     FitFileName = MPOBJ.Data.FitFilePath{infile};
     opts = detectImportOptions(FitFileName);
+    opts.ExtraColumnsRule = 'ignore';
     VarTypes = opts.VariableTypes;
     FitData=readtable(FitFileName,opts,'ReadVariableNames',true);
-    if any(strcmpi(FitData.Properties.VariableNames,'ExtraVar1'))
-        FitData = FitData(:,~strcmpi(FitData.Properties.VariableNames,'ExtraVar1'));
+    if any(contains(FitData.Properties.VariableNames,'Var')) && size(FitData,2) == 2
+        fid = fopen(FitFileName,'r');
+        tline = fgetl(fid);
+        while strcmp(tline,"DATA")==0
+            tline = fgetl(fid);
+        end
+        Buffer = fread(fid, Inf) ;
+        fclose(fid);
+        TempName = strcat(tempname,'.txt');
+        fid = fopen(TempName, 'w');
+        fwrite(fid, Buffer) ;
+        fclose(fid);
+        opts = detectImportOptions(TempName);
+        opts.ExtraColumnsRule = 'ignore';
+        VarTypes = opts.VariableTypes;
+        FitData=readtable(TempName,opts,'ReadVariableNames',true);
+        delete(TempName);
     end
+    
     FitData.Properties.VariableUnits = VarTypes;
     OriginalColNames = {'loop3actual','loop2actual','CodeActual','varconc00opt','varconc01opt',...
         'varconc02opt','varconc03opt','varconc04opt','vara0opt','varb0opt','varmua0opt','varmus0opt'}';
@@ -44,7 +61,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
             end
         elseif strcmpi(FitData.Properties.VariableUnits{ic},'double')
             if ismember(cats,MPOBJ.Wavelengths)
-              FitData.Properties.VariableNames(ic) = {'Lambda'};
+                FitData.Properties.VariableNames(ic) = {'Lambda'};
             end
         end
         match = find(strcmpi(OriginalColNames,ColumnNames{ic}));
@@ -79,7 +96,7 @@ for infile = 1:MPOBJ.Data.FitFileNumel
                 continue;
             end
             if strcmpi(FitData.Properties.VariableUnits{ic},'double')
-              Filters(ifil,1).Categories=num2cell(Filters(ifil,1).Categories); 
+                Filters(ifil,1).Categories=num2cell(Filters(ifil,1).Categories);
             end
             Filters(ifil,1).Categories = horzcat('Any',Filters(ifil,1).Categories');
             Filters(ifil,1).SelectedCategory = 'Any';

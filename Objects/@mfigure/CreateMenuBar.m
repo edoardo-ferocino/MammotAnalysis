@@ -103,6 +103,7 @@ if isempty(allmh)
         uimenu(pmh,'Text','&Generate IRF','Tag',[pmh.Tag mfigobj.spacer 'IRF']);
         %% Fit tools
         fmh=uimenu(mfigobj.Figure,'Text','&Fit','Tag',[mfigobj.Tag mfigobj.spacer 'Fit']);
+        uimenu(fmh,'Text','&Dmua map','Tag',[fmh.Tag mfigobj.spacer 'Dmua']);
         ftmh = uimenu(fmh,'Text','&2 Step','Tag',[fmh.Tag mfigobj.spacer '2Step']);
         uimenu(ftmh,'Text','lsq&nonneg','Tag',[ftmh.Tag mfigobj.spacer 'lsqnonneg']);
         uimenu(ftmh,'Text','&lsqlin','Tag',[ftmh.Tag mfigobj.spacer 'lsqlin']);

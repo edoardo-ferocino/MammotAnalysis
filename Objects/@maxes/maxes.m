@@ -84,6 +84,8 @@ classdef maxes < handle
                     colorbartitle = 'cm^{-1}';
                 elseif contains(maxesobj.Name,'gate','IgnoreCase',true)
                     colorbartitle = 'counts';
+                elseif contains(maxesobj.Name,'dmua','IgnoreCase',true)
+                    colorbartitle = 'cm^{-1}';
                 end
                 maxesobj.Colorbar.Title.String = colorbartitle;
                 axesh.YDir = 'reverse';

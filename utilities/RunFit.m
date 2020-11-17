@@ -28,11 +28,11 @@ for ipage = 1:npages
     end
     rows = true(size(Fit.Data(:,1).Variables,1),numel(Fit.Filters));
     for ifilter = 1:numel(Fit.Filters)
-        if ~strcmpi(Fit.Filters(ifilter).SelectedCategory,'Any')&&ifilter==lambdafilter
+        if ~strcmpi(Fit.Filters(ifilter).SelectedCategory,'Any')
             if strcmpi(Fit.Filters(ifilter).Type,'char')
                 rows(:,ifilter) = strcmpi(Fit.Data.(Fit.Filters(ifilter).Name),Fit.Filters(ifilter).SelectedCategory);
             else
-                rows(:,ifilter)= Fit.Data.(Fit.Filters(ifilter).Name) == Fit.Filters(ifilter).SelectedCategory;
+                rows(:,ifilter) = Fit.Data.(Fit.Filters(ifilter).Name) == Fit.Filters(ifilter).SelectedCategory;
             end
         end
     end

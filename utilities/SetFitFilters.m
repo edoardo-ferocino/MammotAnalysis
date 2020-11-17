@@ -7,7 +7,7 @@ Fit.FileName = FileName;
 Filters = Fit.Filters;
 poph=matlab.ui.control.UIControl.empty(numel(Filters),0);
 for ifil = 1:numel(Filters)
-    ch = uipanel(mfigobj.Figure,'Units','pixels','Position',[0 mfigobj.Figure.Position(4)/numel(Filters)*(ifil-1) mfigobj.Figure.Position(3) mfigobj.Figure.Position(4)/numel(Filters)],'BorderType','none');
+    ch = uipanel(mfigobj.Figure,'Units','normalized','Position',[0 (1/numel(Filters))*(ifil-1) 0.75 1/numel(Filters)],'BorderType','none');
     poph(ifil) = uicontrol(ch,'Style','popupmenu','Units','Normalized','String',Filters(ifil).Categories,...
         'Position',[0 0 0.3 0.8]);
     uicontrol(ch,'Style','edit','Units','Normalized','Position',...
