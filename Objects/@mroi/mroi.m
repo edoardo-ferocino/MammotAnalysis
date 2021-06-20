@@ -73,19 +73,28 @@ classdef mroi < handle
             shapeobj.Selected = false;
             ImageData = maxesobj.ImageData;
             RoiData = ImageData.*shapeobj.createMask;
+            OutRoiData = ImageData.*(~shapeobj.createMask);
             RoiData(RoiData==0) = NaN;
+            OutRoiData(RoiData==0) = NaN;
             Roi.ID = mroiobj.ID;
             Roi.FileName = maxesobj.Parent.Data.FileName;
             Roi.FigureName = maxesobj.Parent.Name;
             Roi.AxesName = maxesobj.Name;
             Roi.Name = mroiobj.Name;
             Roi.Mean = mean(RoiData(:),'omitnan');
-            Roi.Points = sum(isfinite(RoiData(:)));
+            Roi.Points = sum(isfinite(RoiData(:))&RoiData(:)~=0);
             Roi.Median = median(RoiData(:),'omitnan');
             Roi.Std = std(RoiData(:),'omitnan');
             Roi.CV = Roi.Std./Roi.Mean; Roi.CV(isnan(Roi.CV)) =0;
             Roi.Max = max(RoiData(:));
             Roi.Min = min(RoiData(:));
+            Roi.OutMean = mean(OutRoiData(:),'omitnan');
+            Roi.OutPoints = sum(isfinite(OutRoiData(:))&OutRoiData(:)~=0);
+            Roi.OutMedian = median(OutRoiData(:),'omitnan');
+            Roi.OutStd = std(OutRoiData(:),'omitnan');
+            Roi.OutCV = Roi.OutStd./Roi.OutMean; Roi.OutCV(isnan(Roi.OutCV)) =0;
+            Roi.OutMax = max(OutRoiData(:));
+            Roi.OutMin = min(OutRoiData(:));
             Labels = {'Session' 'Breast' 'View' 'Patient'};
             if isfield(mroiobj.Tool.Parent.Data,'Fit')
                if ~strcmpi(mroiobj.Tool.Parent.Data.Fit.Type,'spectral')
@@ -112,6 +121,7 @@ classdef mroi < handle
                Roi.Lambda = 0; 
                Roi.FitType = 'none';
             end
+            Roi.Position = strjoin(string(shapeobj.Position),',');
             mroiobj.RoiValues = Roi;
             if isnotify
                 notify(mroiobj,'SyncronousRoiMovement');

@@ -54,6 +54,8 @@ if isempty(allmh)
         uimenu(rmh,'Text','&Show','Tag',[rmh.Tag mfigobj.spacer 'Show'],'Accelerator','q');
         uimenu(rmh,'Text','&Change Color','Tag',[rmh.Tag mfigobj.spacer 'ChangeColor']);
         uimenu(rmh,'Text','&Move together','Tag',[rmh.Tag mfigobj.spacer 'movetogether']);
+        uimenu(rmh,'Text','&Save','Tag',[rmh.Tag mfigobj.spacer 'save']);
+        uimenu(rmh,'Text','&Load','Tag',[rmh.Tag mfigobj.spacer 'load']);
         %% Border tools
         bmh=uimenu(mfigobj.Figure,'Text','Define &border','Tag',[mfigobj.Tag mfigobj.spacer 'Border']);
         sbmh=uimenu(bmh,'Text','&Shape','Tag',[bmh.Tag mfigobj.spacer 'Shape']);

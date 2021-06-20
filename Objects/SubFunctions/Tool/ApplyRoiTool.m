@@ -53,6 +53,10 @@ for iobj = 1:nobjs
             message = DeleteRoi(mtoolactvobj);
         case 'deleteborder'
             message = DeleteBorder(mtoolactvobj,toolname{2});
+        case 'save'
+            message = SaveRoi(mtoolactvobj);
+        case 'load'
+            message = LoadRoi(mtoolactvobj);
     end
     if dosetstatus==true
         mtoolactvobj.Status.(completetoolname) = 1;

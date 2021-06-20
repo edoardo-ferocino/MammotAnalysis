@@ -39,11 +39,13 @@ for ipage = 1:numel(Page)
             UnstuckedRealPage.(Fit.Params(ifit).Name)(:,1) = [];
             %subplot1(isubp);
             nexttile
-            isubp = isubp+1;
             PlotVar = UnstuckedRealPage.(Fit.Params(ifit).Name).Variables;
             VisualPlotVar = PlotVar(sum(PlotVar,2,'omitnan')~=0,:);
-            mfigobj.Data.Border = find(VisualPlotVar(1,:)~=0,1,'last');
-            imagesc(VisualPlotVar);
+            if ~isfield(mfigobj.Data,'Border')
+               mfigobj.Data.Border = find(VisualPlotVar(1,:)~=0,1,'last');
+            end
+            imh(isubp)=imagesc(VisualPlotVar);
+            isubp = isubp+1;
             if ~strcmpi(Fit.Type,'Spectral')
                 titlename = [Fit.Params(ifit).Name ', \lambda = ',num2str(SelWave(ipage))];
             else
@@ -53,7 +55,16 @@ for ipage = 1:numel(Page)
         end
     end
 end
-%delete(subH((numel(Fit.Params)-2)*numel(Page)+1:end));
+px = -inf; py = -inf;
+for ip = 1:isubp-1
+   [nx,ny]=size(imh(ip).CData);
+   px = max(px,nx);
+   py = max(py,ny);
+end
+for ip = 1:isubp-1
+   imh(ip).CData = padarray(imh(ip).CData,px-size(imh(ip).CData,1),0,'post');
+   imh(ip).CData = padarray(imh(ip).CData,[0 py-size(imh(ip).CData,2)],0,'both');
+end
 mfigobj.AddAxesToFigure;
 mfigobj.Hide;
 mfigobj.SelectMultipleFigures([],[],'show');
