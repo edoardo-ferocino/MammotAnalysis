@@ -36,19 +36,19 @@ end
 %% Checking inputs parameters
 for iN = 1:NumArgin
     switch lower(varargin{iN})
-        case 'loop5'
+        case 'loop1'
             loop5 = varargin{iN+1};
             ismandatoryarg(LOOP5)=1;
-        case 'loop4'
+        case 'loop2'
             loop4 = varargin{iN+1};
             ismandatoryarg(LOOP4)=1;
         case 'loop3'
             loop3 = varargin{iN+1};
             ismandatoryarg(LOOP3)=1;
-        case 'loop2'
+        case 'loop4'
             loop2 = varargin{iN+1};
             ismandatoryarg(LOOP2)=1;
-        case 'loop1'
+        case 'loop5'
             loop1 = varargin{iN+1};
             ismandatoryarg(LOOP1)=1;
         case 'datatype'
@@ -188,7 +188,7 @@ Head=fread(fid,HeadLen,'uint8');
 Data=zeros(NumLoop(5),NumLoop(4),NumLoop(3),NumLoop(2),NumLoop(1),NumBoard,NumDet,NumSource,NumBin);
 Sub=zeros(NumLoop(5),NumLoop(4),NumLoop(3),NumLoop(2),NumLoop(1),NumBoard,NumDet,NumSource,SubLen);
 if isCompileSubHeader == true
-    CompiledSub = CreateDummyStruct(NumLoop(5),NumLoop(4),NumLoop(3),NumLoop(2),NumLoop(1));
+    CompiledSub = CreateDummyStruct(NumLoop(5),NumLoop(4),NumLoop(3),NumLoop(2),NumLoop(1),NumBoard,NumDet,NumSource);
 end
 isbreakcond = false;
 
@@ -199,7 +199,7 @@ try
                 for il2=1:NumLoop(2)
                     for il1=1:NumLoop(1)
                         for iB = 1:NumBoard
-                            for iD = 1: NumDet
+                            for iD = 1:NumDet
                                 for iS = 1:NumSource
                                     if SkipSub == false
                                         BuffSub = fread(fid,SubLen,'uint8');
@@ -216,7 +216,7 @@ try
                                             warnstr = strcat(warnstr,strcat('NumBoard: ',num2str(iB),'/',num2str(NumBoard),'\n'));
                                             warnstr = strcat(warnstr,strcat('NumDet: ',num2str(iD),'/',num2str(NumDet),'\n'));
                                             warnstr = strcat(warnstr,strcat('NumSource: ',num2str(iS),'/',num2str(NumSource),'\n'));
-                                            warnstr = strcat(warnstr,'Last valid point is the previous iteration');
+                                            warnstr = strcat(warnstr,'Last valid point is the previous iteration\n');
                                             warnstr = strcat(warnstr,'Output data will have the dimension specified in TRS settings (Header)');
                                             warning(warnstr,'');
                                             warning('backtrace','on')
@@ -224,7 +224,7 @@ try
                                             break;
                                         end
                                         if isCompileSubHeader  == true
-                                            CompiledSub(il5,il4,il3,il2,il1,iB,iD,iS) = {FillSub(squeeze(Sub(il5,il4,il3,il2,il1,iB,iD,iS,:)))};
+                                            CompiledSub(il5,il4,il3,il2,il1,iB,iD,iS) = FillSub(squeeze(Sub(il5,il4,il3,il2,il1,iB,iD,iS,:)));
                                         end
                                     else
                                         BuffSub = 0;
@@ -280,28 +280,38 @@ output{3} = squeeze(Sub);
 if isCompileSubHeader == false
     output{4} = [];
 else
-    output{4} = squeeze(cell2mat(CompiledSub));
+    output{4} = squeeze(CompiledSub);
 end
 output{5} = Sub;
 output{6} = datasize;
 output{7} = datatype;
+if isCompileSubHeader == false
+    output{8} = [];
+else
+    output{8} = CompiledSub;
+end
 
 varargout = output(1:NumArgOut);
 end
 
-function TS = CreateDummyStruct(Loop5,Loop4,Loop3,Loop2,Loop1)
+function TS = CreateDummyStruct(Loop5,Loop4,Loop3,Loop2,Loop1,NumBoard,NumDet,NumSource)
 FieldNames = {'Geom','Source','Fiber','Det','Board','Coord','Pad','Xf','Yf','Zf','Rf','Xs','Ys','Zs','Rs','Rho','TimeNom','TimeEff'...
     'n','Loop','Acq','Page','RoiNum','RoiFirst','RoiLast','RoiLambda','RoiPower'};
-for ifields = 1:numel(FieldNames)
-    DS.(FieldNames{ifields}) = 0;
-end
-TS = cell.empty(Loop5,Loop4,Loop3,Loop2,0);
+TS = struct.empty(Loop5,Loop4,Loop3,Loop2,Loop1,NumBoard,NumDet,0);
 for i5 = 1:Loop5
     for i4 = 1:Loop4
         for i3 = 1:Loop3
             for i2 = 1:Loop2
                 for i1 = 1:Loop1
-                    TS(i5,i4,i3,i2,i1) = {DS};
+                    for iB = 1:NumBoard
+                        for iD = 1: NumDet
+                            for iS = 1:NumSource
+                                for ifields = 1:numel(FieldNames)
+                                TS(i5,i4,i3,i2,i1,iB,iD,iS).(FieldNames{ifields}) = 0;
+                                end
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -397,6 +407,7 @@ while block(end)<length(Head)
                 Data = string(Data);
             end
             if strcmp(FieldNames{iF},'Date')
+                RawData = nonzeros(RawData);
                 Data = datetime(char(RawData'),'InputFormat','MM-dd-yyyy');
             end
             if strcmp(FieldNames{iF},'Time')
